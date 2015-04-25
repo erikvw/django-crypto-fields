@@ -1,0 +1,5 @@
+ModelAdmin Actions
+===================
+   
+.. automodule:: actions
+

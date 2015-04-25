@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Field SubClasses for Models &mdash; bhp_crypto 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="bhp_crypto 1.0 documentation" href="index.html" />
+    <link rel="next" title="Models" href="models.html" />
+    <link rel="prev" title="Field Classes" href="field_classes.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="models.html" title="Models"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="field_classes.html" title="Field Classes"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">bhp_crypto 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="field-subclasses-for-models">
+<h1>Field SubClasses for Models<a class="headerlink" href="#field-subclasses-for-models" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="rsa-encryption">
+<h2>RSA Encryption<a class="headerlink" href="#rsa-encryption" title="Permalink to this headline">¶</a></h2>
+<p>RSA encryption supports short text fields. IN :mod: &#8216;bhp_crypto&#8217; it is deployed at three levels of security:</p>
+<ol class="arabic simple">
+<li>Irreversible RSA: private key does not exist.</li>
+<li>Restricted RSA: private key exists but is often not available to the device running the application.</li>
+<li>Local RSA: private key is usually available to the device running the application</li>
+</ol>
+<p>In all cases, all private keys may be removed to disable the rsa_decrypt() method.</p>
+<p><strong>Resrticted RSA</strong></p>
+<dl class="class">
+<dt id="bhp_crypto.fields.EncryptedLastnameField">
+<em class="property">class </em><tt class="descclassname">bhp_crypto.fields.</tt><tt class="descname">EncryptedLastnameField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedLastnameField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">bhp_crypto.fields.restricted_rsa_encryption_field.RestrictedRsaEncryptionField</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bhp_crypto.fields.EncryptedIdentityField">
+<em class="property">class </em><tt class="descclassname">bhp_crypto.fields.</tt><tt class="descname">EncryptedIdentityField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedIdentityField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">bhp_crypto.fields.restricted_rsa_encryption_field.RestrictedRsaEncryptionField</span></tt></p>
+</dd></dl>
+
+<p><strong>Local RSA</strong></p>
+<dl class="class">
+<dt id="bhp_crypto.fields.EncryptedFirstnameField">
+<em class="property">class </em><tt class="descclassname">bhp_crypto.fields.</tt><tt class="descname">EncryptedFirstnameField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedFirstnameField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">bhp_crypto.fields.local_rsa_encryption_field.LocalRsaEncryptionField</span></tt></p>
+<p>Restricted-rsa encrypted field for a model&#8217;s Firstname attribute.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bhp_crypto.fields.EncryptedCharField">
+<em class="property">class </em><tt class="descclassname">bhp_crypto.fields.</tt><tt class="descname">EncryptedCharField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedCharField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">bhp_crypto.fields.local_rsa_encryption_field.LocalRsaEncryptionField</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bhp_crypto.fields.EncryptedIntegerField">
+<em class="property">class </em><tt class="descclassname">bhp_crypto.fields.</tt><tt class="descname">EncryptedIntegerField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedIntegerField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">bhp_crypto.fields.local_rsa_encryption_field.LocalRsaEncryptionField</span></tt></p>
+<dl class="method">
+<dt id="bhp_crypto.fields.EncryptedIntegerField.to_python">
+<tt class="descname">to_python</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedIntegerField.to_python" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns as integer</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bhp_crypto.fields.EncryptedDecimalField">
+<em class="property">class </em><tt class="descclassname">bhp_crypto.fields.</tt><tt class="descname">EncryptedDecimalField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedDecimalField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">bhp_crypto.fields.local_rsa_encryption_field.LocalRsaEncryptionField</span></tt></p>
+<dl class="method">
+<dt id="bhp_crypto.fields.EncryptedDecimalField.to_python">
+<tt class="descname">to_python</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedDecimalField.to_python" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns as integer</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="aes-encryption">
+<h2>AES Encryption<a class="headerlink" href="#aes-encryption" title="Permalink to this headline">¶</a></h2>
+<p>AES Encryption supports long text field. The keys, though protected, are on the device running the application.</p>
+<dl class="class">
+<dt id="bhp_crypto.fields.EncryptedAesCharField">
+<em class="property">class </em><tt class="descclassname">bhp_crypto.fields.</tt><tt class="descname">EncryptedAesCharField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedAesCharField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">bhp_crypto.fields.local_aes_encryption_field.LocalAesEncryptionField</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bhp_crypto.fields.EncryptedTextField">
+<em class="property">class </em><tt class="descclassname">bhp_crypto.fields.</tt><tt class="descname">EncryptedTextField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedTextField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">bhp_crypto.fields.local_aes_encryption_field.LocalAesEncryptionField</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bhp_crypto.fields.EncryptedOtherCharField">
+<em class="property">class </em><tt class="descclassname">bhp_crypto.fields.</tt><tt class="descname">EncryptedOtherCharField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#bhp_crypto.fields.EncryptedOtherCharField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">bhp_crypto.fields.local_aes_encryption_field.LocalAesEncryptionField</span></tt></p>
+</dd></dl>
+
+<span class="target" id="module-bhp_crypto.utils"></span></div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Field SubClasses for Models</a><ul>
+<li><a class="reference internal" href="#rsa-encryption">RSA Encryption</a></li>
+<li><a class="reference internal" href="#aes-encryption">AES Encryption</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="field_classes.html"
+                        title="previous chapter">Field Classes</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="models.html"
+                        title="next chapter">Models</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/field_subclasses.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="models.html" title="Models"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="field_classes.html" title="Field Classes"
+             >previous</a> |</li>
+        <li><a href="index.html">bhp_crypto 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, erik van widenfelt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
