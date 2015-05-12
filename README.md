@@ -8,7 +8,7 @@ All values are stored as a pair of hash and secret. A separate table relates the
 
 This module depends on M2Crypto which currently does not offer support for python3. 
 
-We plan to rewrite using a different encryption module such as http://cryptography.io that supports python3. Also, it needs to be cleaned up a bit anyway.
+The develop branch is where we are rewriting using pyCrypto. (Also, it needs to be cleaned up a anyway).
 
 This module is intended to be used as an app in a Django project.
 
