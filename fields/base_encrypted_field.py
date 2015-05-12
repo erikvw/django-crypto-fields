@@ -1,11 +1,14 @@
+import six
+
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from ..classes.constants import HASH_PREFIX, CIPHER_PREFIX
 from ..classes import FieldCryptor
 
 
-class BaseEncryptedField(models.Field):
+class BaseEncryptedField(six.with_metaclass(models.SubfieldBase), models.Field):
 
     """ A base field class to store sensitive data at rest in an encrypted
     format.
@@ -22,7 +25,7 @@ class BaseEncryptedField(models.Field):
     #  custom-model-fields/#the-subfieldbase-metaclass
     description = 'Field class that stores values as encrypted'
 
-    __metaclass__ = models.SubfieldBase
+    # __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         """
@@ -37,9 +40,8 @@ class BaseEncryptedField(models.Field):
         # set the db field length based on the hash length (default length)
         # if converting a DB, longtext fields should not be set to
         # the default length until after the conversion is complete
-        default_max_length = (self.field_cryptor.hasher.length +
-                              len(self.field_cryptor.cryptor.HASH_PREFIX) +
-                              len(self.field_cryptor.cryptor.SECRET_PREFIX))
+        default_max_length = (
+            self.field_cryptor.cryptor.hash_size + len(HASH_PREFIX) + len(CIPHER_PREFIX))
         try:
             if settings.FIELD_MAX_LENGTH == 'default':
                 max_length = default_max_length
@@ -64,9 +66,7 @@ class BaseEncryptedField(models.Field):
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
 
     def get_max_length(self):
-        return (self.field_cryptor.hasher.length +
-                len(self.field_cryptor.cryptor.HASH_PREFIX) +
-                len(self.field_cryptor.cryptor.SECRET_PREFIX))
+        return self.field_cryptor.cryptor.hash_size + len(HASH_PREFIX) + len(CIPHER_PREFIX)
 
     def is_encrypted(self, value):
         """ Wraps the cryptor method of same name """
@@ -86,12 +86,7 @@ class BaseEncryptedField(models.Field):
 
     def validate_with_cleaned_data(self, attname, cleaned_data):
         """ May be overridden to test field data against other values
-        in cleaned data.
-
-        Should raise a forms.ValidationError if the test fails
-
-        1. 'attname' is the key in cleaned_data for the value to be tested,
-        2. 'cleaned_data' comes from django.forms clean() method """
+        in cleaned data."""
         pass
 
     def to_python(self, value):
@@ -99,7 +94,7 @@ class BaseEncryptedField(models.Field):
         the encrypted value.
 
         Value comes from DB as a hash (e.g. <hash_prefix><hashed_value>). If DB value is being
-        acccessed for the first time, value is not an encrypted value (not a prefix+hashed_value)."""
+        accessed for the first time, value is not an encrypted value (not a prefix+hashed_value)."""
         retval = value
         if value:
             if not isinstance(value, basestring):
@@ -145,10 +140,10 @@ class BaseEncryptedField(models.Field):
             return self.get_prep_value(value, encrypt=False)
         elif lookup_type == 'startswith':
             # allow to test field value for the hash_prefix only, NO searching on the hash
-            if value != self.field_cryptor.cryptor.HASH_PREFIX:
+            if value != HASH_PREFIX:
                 raise TypeError(('Value for lookup type {0} may only be \'{1}\' for '
                                  'fields using encryption.').format(lookup_type,
-                                                                    self.field_cryptor.cryptor.HASH_PREFIX))
+                                                                    HASH_PREFIX))
             return self.get_prep_value(value, encrypt=False)
         elif lookup_type == 'in':
             return [self.get_prep_value(v) for v in value]
