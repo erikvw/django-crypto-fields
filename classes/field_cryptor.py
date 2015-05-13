@@ -45,12 +45,9 @@ class FieldCryptor(object):
         return ciphertext
 
     def decrypt(self, ciphertext):
-        """ Decrypts secret and if secret is a hash, uses hash to lookup the real secret first.
+        """ Decrypts "secret" segment of provided ciphertext.
 
-        Do not assume secret is an encrypted value, look for HASH_PREFIX or secret prefix.
-        By default we expect secret to be the stored field value -- which is a hash.
-        If we use this method for a secret that is not a hash, then the prefix is
-        the CIPHER_PREFIX and the lookup step is skipped. """
+        ciphertext = fully formed ciphertext OR hash_prefix+hash OR cipher_prefix+secret."""
         plaintext = None
         if ciphertext:
             if self.is_encrypted(ciphertext):
