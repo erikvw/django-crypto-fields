@@ -3,8 +3,9 @@ import logging
 from django.db.models import get_model
 
 from .cryptor import Cryptor
-from classes import cipher_buffer
-from classes.constants import KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING
+from .cipher_buffer import cipher_buffer
+from .constants import KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING
+from exceptions import CipherError, EncryptionError, MalformedCiphertextError
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class FieldCryptor(object):
                 ciphertext = (HASH_PREFIX.encode(ENCODING) + self.cryptor.hash(value, self.mode) +
                               CIPHER_PREFIX.encode(ENCODING) + cipher(value, self.mode))
             except AttributeError:
-                raise AttributeError(
+                raise CipherError(
                     'Cannot determine cipher method. Unknown encryption algorithm. '
                     'Valid options are {0}. Got {1}'.format(', '.join(KEY_FILENAMES), self.algorithm))
         return ciphertext
@@ -62,18 +63,18 @@ class FieldCryptor(object):
                     elif self.algorithm == 'rsa':
                         plaintext = self.cryptor.rsa_decrypt(secret, self.mode)
                     else:
-                        raise ValueError(
+                        raise CipherError(
                             'Cannot determine algorithm for decryption.'
                             ' Valid options are {0}. Got {1}'.format(
                                 ', '.join(list(KEY_FILENAMES)), self.algorithm))
                 else:
                     hashed_value = self.get_hash(ciphertext)
                     if hashed_value:
-                        raise ValueError(
+                        raise EncryptionError(
                             'Failed to decrypt. Could not find "secret" '
                             ' for hash \'{0}\''.format(hashed_value))
                     else:
-                        raise ValueError('Failed to decrypt. Malformed ciphertext')
+                        raise EncryptionError('Failed to decrypt. Malformed ciphertext')
         return plaintext or ciphertext
 
     def update_cipher_model(self, ciphertext):
@@ -110,12 +111,12 @@ class FieldCryptor(object):
             ValueError('Malformed ciphertext. Expected prefixes {}, {}'.format(HASH_PREFIX, CIPHER_PREFIX))
         try:
             if ciphertext[:len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
-                raise ValueError('Malformed ciphertext. Expected hash prefix {}'.format(HASH_PREFIX))
+                raise MalformedCiphertextError('Malformed ciphertext. Expected hash prefix {}'.format(HASH_PREFIX))
             if (ciphertext.split(HASH_PREFIX.encode(ENCODING))[1].split(
                     CIPHER_PREFIX.encode(ENCODING))[0] != self.cryptor.hash_size):
-                raise ValueError('Malformed ciphertext. Expected hash size of {}.'.format(self.cryptor.hash_size))
+                raise MalformedCiphertextError('Malformed ciphertext. Expected hash size of {}.'.format(self.cryptor.hash_size))
         except IndexError:
-            ValueError('Malformed ciphertext.')
+            MalformedCiphertextError('Malformed ciphertext.')
         return ciphertext
 
     def get_prep_value(self, ciphertext, value, update_cipher_model=None):
@@ -161,17 +162,17 @@ class FieldCryptor(object):
                         except CipherModel.DoesNotExist:
                             pass
                 if not secret:
-                    raise ValueError(
+                    raise EncryptionError(
                         'Could not retrieve a secret for given hash. Got {0}'.format(hashed_value))
             else:
-                raise ValueError('Value must be encrypted or None.')
+                raise EncryptionError('Value must be encrypted or None.')
         return secret
 
     def is_encrypted(self, value):
         """ Determines that a string value is encrypted if it starts
         with 'HASH_PREFIX' or CIPHER_PREFIX."""
         if value in [HASH_PREFIX, CIPHER_PREFIX]:
-            raise TypeError('Expected a value, got just the encryption prefix.')
+            raise MalformedCiphertextError('Expected a value, got just the encryption prefix.')
         is_encrypted = False
         if value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
             is_encrypted = True
