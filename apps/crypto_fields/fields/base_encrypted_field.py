@@ -1,14 +1,13 @@
-import six
-
-from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import models
 
-from ..classes.constants import HASH_PREFIX, CIPHER_PREFIX
 from ..classes import FieldCryptor
+from ..classes.constants import HASH_PREFIX, CIPHER_PREFIX
+from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
 
 
-class BaseEncryptedField(six.with_metaclass(models.SubfieldBase), models.Field):
+class BaseEncryptedField(models.Field):
 
     """ A base field class to store sensitive data at rest in an encrypted
     format.
@@ -24,8 +23,6 @@ class BaseEncryptedField(six.with_metaclass(models.SubfieldBase), models.Field):
     # see https://docs.djangoproject.com/en/dev/howto/
     #  custom-model-fields/#the-subfieldbase-metaclass
     description = 'Field class that stores values as encrypted'
-
-    # __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         """
@@ -68,58 +65,50 @@ class BaseEncryptedField(six.with_metaclass(models.SubfieldBase), models.Field):
     def get_max_length(self):
         return self.field_cryptor.cryptor.hash_size + len(HASH_PREFIX) + len(CIPHER_PREFIX)
 
-    def is_encrypted(self, value):
-        """ Wraps the cryptor method of same name """
-        return self.field_cryptor.is_encrypted(self.to_string(value))
+#     def is_encrypted(self, value):
+#         """ Wraps the cryptor method of same name """
+#         return self.field_cryptor.is_encrypted(self.to_string(value))
 
     def to_string(self, value):
         """ Users can override for non-string data types. """
         return value
-
-    def decrypt(self, value, **kwargs):
-        """ Wraps the cryptor method of same name """
-        return self.field_cryptor.decrypt(value)
-
-    def encrypt(self, value, **kwargs):
-        """ Wraps the cryptor method of same name """
-        return self.field_cryptor.encrypt(value)
 
     def validate_with_cleaned_data(self, attname, cleaned_data):
         """ May be overridden to test field data against other values
         in cleaned data."""
         pass
 
-    def to_python(self, value):
-        """ Returns the decrypted value IF the private key is found, otherwise returns
-        the encrypted value.
+    def decrypt_value(self, value):
+        if not self.algorithm or not self.mode:
+            raise ValidationError('Algorithm and mode not set for encrypted field')
+        try:
+            return_value = self.field_cryptor.decrypt(value)
+        except (CipherError, EncryptionError, MalformedCiphertextError) as e:
+            raise ValidationError(e)
+        self.readonly = return_value is not value
+        return return_value
 
-        Value comes from DB as a hash (e.g. <hash_prefix><hashed_value>). If DB value is being
-        accessed for the first time, value is not an encrypted value (not a prefix+hashed_value)."""
-        retval = value
-        if value:
-            if not isinstance(value, basestring):
-                try:
-                    value = str(value)
-                except:
-                    raise TypeError('Expected basestring. Got {0}'.format(value))
-            if not self.algorithm or not self.mode:
-                raise ValidationError('Algorithm and mode not set for encrypted field')
-            # decrypt will check if is_encrypted (e.g. enc1::<hash>)
-            retval = self.decrypt(value)
-            # if it did not decrypt, set field to read only
-            self.readonly = retval is not value
-        return retval
+    def from_db_value(self, value, expression, connection, context):
+        if value is None:
+            return value
+        return self.decrypt_value(value)
+
+    def to_python(self, value):
+        if isinstance(value, str):
+            return value
+        if value is None:
+            return value
+        return self.decrypt_value(value)
 
     def get_prep_value(self, value, encrypt=True):
         """ Returns the hashed_value with prefix (or None) and, if needed, updates the secret lookup.
 
         Keyword arguments:
-        encrypt -- if False, the value is returned as is (default True)
-
+            encrypt -- if False, the value is returned as is (default True)
         """
         retval = value
         if value and encrypt:
-            encrypted_value = self.encrypt(value)
+            encrypted_value = self.field_cryptor.encrypt(value)
             retval = self.field_cryptor.get_prep_value(encrypted_value, value)
         return retval
 

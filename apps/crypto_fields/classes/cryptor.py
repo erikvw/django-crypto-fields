@@ -6,6 +6,9 @@ import logging
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP, AES
+from Crypto.Util import number
+
+from ..exceptions import EncryptionError
 
 from .constants import KEY_FILENAMES, ENCODING, HASH_ALGORITHM, HASH_ROUNDS
 
@@ -24,6 +27,7 @@ class Cryptor(object):
     KEYS = copy.deepcopy(KEY_FILENAMES)
 
     def __init__(self):
+        self.rsa_key_info = {}
         self.load_keys()
         self.hash_size = len(self.hash('Foo', 'local'))
 
@@ -47,13 +51,29 @@ class Cryptor(object):
 
     def rsa_encrypt(self, plaintext, mode):
         rsa_key = self.KEYS.get('rsa').get(mode).get('public')
-        ciphertext = rsa_key.encrypt(plaintext.encode(ENCODING))
+        try:
+            plaintext = plaintext.encode(ENCODING)
+        except AttributeError:
+            pass
+        try:
+            ciphertext = rsa_key.encrypt(plaintext)
+        except (ValueError, TypeError) as e:
+            raise EncryptionError('RSA encryption failed for value. Got \'{}\''.format(e))
         return ciphertext
 
     def rsa_decrypt(self, ciphertext, mode):
         rsa_key = self.KEYS.get('rsa').get(mode).get('private')
         plaintext = rsa_key.decrypt(ciphertext)
         return plaintext.decode('utf-8')
+
+    def update_rsa_key_info(self, rsa_key, mode):
+        """Stores info about the RSA key."""
+        modBits = number.size(rsa_key._key.n)
+        self.rsa_key_info[mode] = {'bits': modBits}
+        k = number.ceil_div(modBits, 8)
+        self.rsa_key_info[mode].update({'bytes': k})
+        hLen = rsa_key._hashObj.digest_size
+        self.rsa_key_info[mode].update({'max_message_length': k - (2 * hLen) - 2})
 
     def load_keys(self):
         logger.info('/* Loading keys ...')
@@ -65,6 +85,7 @@ class Cryptor(object):
                     rsa_key = RSA.importKey(f.read())
                     rsa_key = PKCS1_OAEP.new(rsa_key)
                     self.KEYS['rsa'][mode][key] = rsa_key
+                    self.update_rsa_key_info(rsa_key, mode)
                 logger.info('(*) Loaded ' + key_file)
         # decrypt and load AES
         for mode in KEY_FILENAMES['aes']:

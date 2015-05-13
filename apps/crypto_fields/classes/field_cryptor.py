@@ -1,16 +1,17 @@
 import logging
 
-from django.db.models import get_model
+try:
+    from django.apps import apps
+except ImportError:
+    from django.db import models  # < Django 1.7
 
 from .cryptor import Cryptor
 from .cipher_buffer import cipher_buffer
 from .constants import KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING
-from exceptions import CipherError, EncryptionError, MalformedCiphertextError
+
+from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
 
 logger = logging.getLogger(__name__)
-
-
-CipherModel = get_model('crypto_fields', 'crypt')
 
 
 class FieldCryptor(object):
@@ -19,9 +20,22 @@ class FieldCryptor(object):
     ciphertext = hash_prefix + hashed_value + cipher_prefix + secret
     """
     def __init__(self, algorithm, mode):
+        self._cipher_model = None
         self.algorithm = algorithm
         self.mode = mode
         self.cryptor = Cryptor()
+
+    def get_model(self):
+        try:
+            return apps.get_model  # Django 1.7 +
+        except NameError:
+            return models.loading.get_model  # < Django 1.7
+
+    @property
+    def cipher_model(self):
+        if not self._cipher_model:
+            self._cipher_model = self.get_model('crypto_fields', 'crypt')
+        return self._cipher_model
 
     def encrypt(self, value):
         """ Returns ciphertext.
@@ -85,22 +99,17 @@ class FieldCryptor(object):
             secret = self.get_secret(ciphertext, hashed_value)
             found = cipher_buffer.retrieve_secret(hashed_value)
             if not found:
-                found = CipherModel.objects.filter(hash=hashed_value).exists()
+                found = self.cipher_model.objects.filter(hash=hashed_value).exists()
             if found and secret:
-                CipherModel.objects.filter(hash=hashed_value).update(secret=secret)
+                self.cipher_model.objects.filter(hash=hashed_value).update(secret=secret)
             elif secret:
-                CipherModel.objects.create(
+                self.cipher_model.objects.create(
                     hash=hashed_value,
                     secret=secret,
                     algorithm=self.algorithm,
                     mode=self.mode)
             else:
-                # if the hash is not in the crypt model and you do not have a secret
-                # update: if performing a search, instead of data entry, the hash will not
-                # exist, so this print should eventually be removed
-                logger.warning(
-                    'hash not found in crypt model. {0} {1} {2}'.format(
-                        self.algorithm, self.mode, hashed_value))
+                pass
 
     def verify_ciphertext(self, ciphertext):
         """Returns ciphertext after verifying format prefix + hash + prefix + secret."""
@@ -112,21 +121,17 @@ class FieldCryptor(object):
         try:
             if ciphertext[:len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
                 raise MalformedCiphertextError('Malformed ciphertext. Expected hash prefix {}'.format(HASH_PREFIX))
-            if (ciphertext.split(HASH_PREFIX.encode(ENCODING))[1].split(
-                    CIPHER_PREFIX.encode(ENCODING))[0] != self.cryptor.hash_size):
+            if (len(ciphertext.split(HASH_PREFIX.encode(ENCODING))[1].split(
+                    CIPHER_PREFIX.encode(ENCODING))[0]) != self.cryptor.hash_size):
                 raise MalformedCiphertextError('Malformed ciphertext. Expected hash size of {}.'.format(self.cryptor.hash_size))
         except IndexError:
             MalformedCiphertextError('Malformed ciphertext.')
         return ciphertext
 
-    def get_prep_value(self, ciphertext, value, update_cipher_model=None):
+    def get_prep_value(self, ciphertext, value):
         """ Gets the hash from encrypted value for the DB """
-        update_cipher_model = update_cipher_model or True
         if ciphertext != value:
-            # encrypted_value is a hashed_value + secret, use this
-            # to put the secret into the lookup for this hashed_value.
-            if update_cipher_model:
-                self.update_cipher_model(ciphertext)
+            self.update_cipher_model(ciphertext)
         hashed_value = self.get_hash(ciphertext)
         return HASH_PREFIX.encode(ENCODING) + hashed_value
 
@@ -156,10 +161,10 @@ class FieldCryptor(object):
                     if not secret:
                         # look in cipher model (Crypt)
                         try:
-                            cipher_model = CipherModel.objects.values('secret').get(hash=hashed_value)
+                            cipher_model = self.cipher_model.objects.values('secret').get(hash=hashed_value)
                             secret = cipher_model.get('secret')
                             cipher_buffer.append(hashed_value, secret)
-                        except CipherModel.DoesNotExist:
+                        except self.cipher_model.DoesNotExist:
                             pass
                 if not secret:
                     raise EncryptionError(

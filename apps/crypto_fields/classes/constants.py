@@ -10,6 +10,7 @@ HASH_ALGORITHM = 'sha256'
 HASH_ROUNDS = 100000
 HASH_PREFIX = 'enc1:::'
 CIPHER_PREFIX = 'enc2:::'
+CIPHER_BUFFER_SIZE = 10
 
 try:
     prefix = settings.PROJECT_NUMBER

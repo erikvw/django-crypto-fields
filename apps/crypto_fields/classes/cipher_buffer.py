@@ -1,12 +1,16 @@
+from .constants import CIPHER_BUFFER_SIZE
 
 
 class CipherBuffer(object):
-
+    """Buffers the last ten hash/cipher pairs for quick access."""
     def __init__(self):
         self._buffer = []
 
+    def clear(self):
+        self._buffer = []
+
     def append(self, hashed_value, secret):
-        if len(self._buffer) > 10:
+        if len(self._buffer) >= CIPHER_BUFFER_SIZE:
             self._buffer.pop(0)
         self._buffer.append((hashed_value, secret))
 

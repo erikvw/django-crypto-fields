@@ -1,21 +1,20 @@
 from django.db import models
-from edc.device.dispatch.models import BaseDispatchSyncUuidModel
+
+from base.models import BaseModel
 
 
-class Crypt (BaseDispatchSyncUuidModel):
+class Crypt (BaseModel):
 
     """ A secrets lookup model searchable by hash """
 
-    hash = models.CharField(
+    hash = models.BinaryField(
         verbose_name="Hash",
         max_length=128,
         db_index=True,
-        unique=True,
-        )
+        unique=True)
 
-    secret = models.TextField(
-        verbose_name="Secret",
-        )
+    secret = models.BinaryField(
+        verbose_name="Secret")
 
     algorithm = models.CharField(
         max_length=25,
@@ -41,6 +40,5 @@ class Crypt (BaseDispatchSyncUuidModel):
 
     class Meta:
         app_label = 'crypto_fields'
-        db_table = 'bhp_crypto_crypt'
         verbose_name = 'Crypt'
         unique_together = (('hash', 'algorithm', 'mode'),)
