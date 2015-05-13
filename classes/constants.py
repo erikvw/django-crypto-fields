@@ -8,8 +8,8 @@ RSA_KEY_SIZE = 2048
 ENCODING = 'utf-8'
 HASH_ALGORITHM = 'sha256'
 HASH_ROUNDS = 100000
-HASH_PREFIX = b'enc1:::'
-CIPHER_PREFIX = b'enc2:::'
+HASH_PREFIX = 'enc1:::'
+CIPHER_PREFIX = 'enc2:::'
 
 try:
     prefix = settings.PROJECT_NUMBER

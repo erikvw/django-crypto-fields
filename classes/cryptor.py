@@ -3,7 +3,6 @@ import copy
 import hashlib
 import logging
 
-# from M2Crypto import RSA, EVP
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP, AES
@@ -26,7 +25,7 @@ class Cryptor(object):
 
     def __init__(self):
         self.load_keys()
-        self.hash_size = len(self.cryptor.hash('Foo', 'local'))
+        self.hash_size = len(self.hash('Foo', 'local'))
 
     def hash(self, plaintext, mode):
         salt = self.KEYS.get('salt').get(mode).get('private')
@@ -42,7 +41,6 @@ class Cryptor(object):
     def aes_decrypt(self, ciphertext, mode):
         aes_key = self.KEYS.get('aes').get(mode).get('private')
         iv = ciphertext[:AES.block_size]
-        print(len(iv))
         cipher = AES.new(aes_key, AES.MODE_CFB, iv)
         plaintext = cipher.decrypt(ciphertext)[AES.block_size:]
         return plaintext.decode('utf-8')
@@ -55,7 +53,7 @@ class Cryptor(object):
     def rsa_decrypt(self, ciphertext, mode):
         rsa_key = self.KEYS.get('rsa').get(mode).get('private')
         plaintext = rsa_key.decrypt(ciphertext)
-        return plaintext
+        return plaintext.decode('utf-8')
 
     def load_keys(self):
         logger.info('/* Loading keys ...')

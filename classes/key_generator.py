@@ -52,4 +52,4 @@ class KeyGenerator(object):
         key_file = KEY_FILENAMES.get('salt').get(mode).get('private')
         with open(key_file, 'xb') as fsalt:
             fsalt.write(rsa_key.encrypt(salt))
-        print('(*) Created new salt local key {1}'.format(key_file))
+        print('(*) Created new salt local key {0}'.format(key_file))
