@@ -38,7 +38,7 @@ class BaseEncryptedField(models.Field):
         # if converting a DB, longtext fields should not be set to
         # the default length until after the conversion is complete
         default_max_length = (
-            self.field_cryptor.cryptor.hash_size + len(HASH_PREFIX) + len(CIPHER_PREFIX))
+            self.field_cryptor.hash_size + len(HASH_PREFIX) + len(CIPHER_PREFIX))
         try:
             if settings.FIELD_MAX_LENGTH == 'default':
                 max_length = default_max_length

@@ -53,7 +53,7 @@ class FieldCryptor(object):
         """Returns a hexified hash of a plaintext value.
 
         The hashed value is used as a reference to the "secret"."""
-        salt = self.KEYS.get('salt').get(mode).get('private')
+        salt = self.cryptor.KEYS.get('salt').get(mode).get('private')
         dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext.encode('utf-8'), salt, HASH_ROUNDS)
         return binascii.hexlify(dk)
 
