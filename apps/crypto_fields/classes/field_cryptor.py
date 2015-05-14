@@ -2,6 +2,8 @@ import binascii
 import hashlib
 import logging
 
+from Crypto import Random
+
 try:
     from django.apps import apps
 except ImportError:
@@ -12,7 +14,7 @@ from .cipher_buffer import cipher_buffer
 from .constants import (KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING,
                         HASH_ALGORITHM, HASH_ROUNDS)
 
-from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
+from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +55,10 @@ class FieldCryptor(object):
         """Returns a hexified hash of a plaintext value.
 
         The hashed value is used as a reference to the "secret"."""
-        salt = self.cryptor.KEYS.get('salt').get(mode).get('private')
+        try:
+            salt = self.cryptor.KEYS.get('salt').get(mode).get('private')
+        except AttributeError:
+            raise EncryptionKeyError('Invalid mode for salt key. Got {}'.format(mode))
         dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext.encode('utf-8'), salt, HASH_ROUNDS)
         return binascii.hexlify(dk)
 
@@ -67,9 +72,9 @@ class FieldCryptor(object):
         """
         if self.is_encrypted(value):
             try:
-                ciphertext = value.encode(ENCODING)
+                value = value.encode(ENCODING)
             except AttributeError:
-                ciphertext = value
+                pass
         else:
             try:
                 if self.algorithm == 'aes':
@@ -80,10 +85,10 @@ class FieldCryptor(object):
                     cipher = None
                 ciphertext = (HASH_PREFIX.encode(ENCODING) + self.hash(value, self.mode) +
                               CIPHER_PREFIX.encode(ENCODING) + cipher(value, self.mode))
-            except AttributeError:
+            except AttributeError as e:
                 raise CipherError(
                     'Cannot determine cipher method. Unknown encryption algorithm. '
-                    'Valid options are {0}. Got {1}'.format(', '.join(KEY_FILENAMES), self.algorithm))
+                    'Valid options are {0}. Got {1} ({2})'.format(', '.join(KEY_FILENAMES), self.algorithm, e))
         return ciphertext
 
     def decrypt(self, ciphertext):

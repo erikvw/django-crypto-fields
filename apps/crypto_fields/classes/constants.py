@@ -27,8 +27,6 @@ except (ImproperlyConfigured, AttributeError) as e:
 KEY_FILENAMES = {
     # algorithm : {mode: {key:path}}
     'rsa': {
-        'irreversible': {
-            'public': os.path.join(KEY_PATH, prefix + '-rsa-irreversible-public.pem')},
         'restricted': {
             'public': os.path.join(KEY_PATH, prefix + '-rsa-restricted-public.pem'),
             'private': os.path.join(KEY_PATH, prefix + '-rsa-restricted-private.pem')},
@@ -37,8 +35,12 @@ KEY_FILENAMES = {
             'private': os.path.join(KEY_PATH, prefix + '-rsa-local-private.pem')}},
     'aes': {
         'local': {
-            'private': os.path.join(KEY_PATH, prefix + '-aes-local.key')}},
+            'private': os.path.join(KEY_PATH, prefix + '-aes-local.key')},
+        'restricted': {
+            'private': os.path.join(KEY_PATH, prefix + '-aes-restricted.key')}},
     'salt': {
         'local': {
-            'private': os.path.join(KEY_PATH, prefix + '-salt-local.key')}},
+            'private': os.path.join(KEY_PATH, prefix + '-salt-local.key')},
+        'restricted': {
+            'private': os.path.join(KEY_PATH, prefix + '-salt-restricted.key')}},
 }

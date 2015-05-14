@@ -3,7 +3,7 @@ from datetime import datetime
 from django.test import TestCase
 
 from ..classes import Cryptor, FieldCryptor
-from ..classes.constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING
+from ..classes.constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, KEY_FILENAMES
 from ..exceptions import EncryptionError, MalformedCiphertextError
 
 
@@ -15,15 +15,7 @@ class TestCryptors(TestCase):
         plaintext = 'erik is a pleeb!!'
         for mode in cryptor.KEYS['rsa']:
             ciphertext = cryptor.rsa_encrypt(plaintext, mode)
-            if mode != 'irreversible':
-                self.assertEqual(plaintext, cryptor.rsa_decrypt(ciphertext, mode))
-
-    def test_encrypt_rsa_irreversible(self):
-        """Assert RSA irreversible cannot decrypt"""
-        cryptor = Cryptor()
-        plaintext = 'erik is a pleeb!!'
-        ciphertext = cryptor.rsa_encrypt(plaintext, 'irreversible')
-        self.assertRaises(AttributeError, cryptor.rsa_decrypt, ciphertext, 'irreversible')
+            self.assertEqual(plaintext, cryptor.rsa_decrypt(ciphertext, mode))
 
     def test_encrypt_aes(self):
         """Assert successful AES roundtrip."""
@@ -103,3 +95,11 @@ class TestCryptors(TestCase):
         field_cryptor = FieldCryptor('rsa', 'local')
         value = 'erik'
         self.assertFalse(field_cryptor.is_encrypted(value))
+
+    def test_rsa_field_encryption(self):
+        """Assert successful RSA field roundtrip."""
+        plaintext = 'erik is a pleeb!!'
+        for mode in KEY_FILENAMES['rsa']:
+            field_cryptor = FieldCryptor('rsa', mode)
+            ciphertext = field_cryptor.encrypt(plaintext)
+            self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext))
