@@ -1,6 +1,4 @@
-import binascii
 import copy
-import hashlib
 import logging
 
 from Crypto import Random
@@ -10,7 +8,7 @@ from Crypto.Util import number
 
 from ..exceptions import EncryptionError
 
-from .constants import KEY_FILENAMES, ENCODING, HASH_ALGORITHM, HASH_ROUNDS
+from .constants import KEY_FILENAMES, ENCODING
 
 logger = logging.getLogger(__name__)
 
@@ -22,19 +20,16 @@ nullhandler = logger.addHandler(NullHandler())
 
 
 class Cryptor(object):
-    """Base class for all classes providing RSA and AES encryption methods."""
-    # ..note:: The model :class:`UserProfile` expects this dictionary structure as well
+    """Base class for all classes providing RSA and AES encryption methods.
+
+    The PEM file names and paths are in KEY_FILENAMES. KEYS is a copy of this except the
+    filenames are replaced with the actual keys."""
+
     KEYS = copy.deepcopy(KEY_FILENAMES)
 
     def __init__(self):
         self.rsa_key_info = {}
         self.load_keys()
-        self.hash_size = len(self.hash('Foo', 'local'))
-
-    def hash(self, plaintext, mode):
-        salt = self.KEYS.get('salt').get(mode).get('private')
-        dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext.encode('utf-8'), salt, HASH_ROUNDS)
-        return binascii.hexlify(dk)
 
     def aes_encrypt(self, plaintext, mode):
         aes_key = self.KEYS.get('aes').get(mode).get('private')
