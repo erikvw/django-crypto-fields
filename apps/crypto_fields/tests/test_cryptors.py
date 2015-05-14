@@ -2,8 +2,9 @@ from datetime import datetime
 
 from django.test import TestCase
 
-from ..classes import Cryptor
-from ..exceptions import EncryptionError
+from ..classes import Cryptor, FieldCryptor
+from ..classes.constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING
+from ..exceptions import EncryptionError, MalformedCiphertextError
 
 
 class TestCryptors(TestCase):
@@ -65,3 +66,40 @@ class TestCryptors(TestCase):
         plaintext = 'erik is a pleeb!!'
         ciphertext1 = cryptor.rsa_encrypt(plaintext, 'local')
         self.assertRaises(EncryptionError, cryptor.rsa_encrypt, ciphertext1, 'local')
+
+    def test_is_encrypted_prefix(self):
+        """Assert that just the HASH_PREFIX is a malformed ciphertext."""
+        field_cryptor = FieldCryptor('rsa', 'local')
+        value = HASH_PREFIX
+        self.assertRaises(MalformedCiphertextError, field_cryptor.is_encrypted, value)
+        value = HASH_PREFIX.encode(ENCODING)
+        self.assertRaises(MalformedCiphertextError, field_cryptor.is_encrypted, value)
+        value = CIPHER_PREFIX
+        self.assertRaises(MalformedCiphertextError, field_cryptor.is_encrypted, value)
+        value = CIPHER_PREFIX.encode(ENCODING)
+        self.assertRaises(MalformedCiphertextError, field_cryptor.is_encrypted, value)
+
+    def test_is_encrypted_format(self):
+        """Assert malformed encrypted values raise exceptions."""
+        field_cryptor = FieldCryptor('rsa', 'local')
+        value = HASH_PREFIX + 'erik'
+        self.assertRaises(MalformedCiphertextError, field_cryptor.is_encrypted, value)
+        value = HASH_PREFIX.encode(ENCODING) + field_cryptor.hash('erik', 'local') + CIPHER_PREFIX.encode(ENCODING)
+        self.assertRaises(MalformedCiphertextError, field_cryptor.is_encrypted, value)
+
+    def test_is_encrypted(self):
+        """Assert valid encrypted values are correctly interpreted as encrypted."""
+        field_cryptor = FieldCryptor('rsa', 'local')
+        value = HASH_PREFIX.encode(ENCODING) + field_cryptor.hash('erik', 'local')
+        self.assertTrue(field_cryptor.is_encrypted(value))
+        value = (HASH_PREFIX.encode(ENCODING) + field_cryptor.hash('erik', 'local') +
+                 CIPHER_PREFIX.encode(ENCODING) + field_cryptor.encrypt('erik'))
+        self.assertTrue(field_cryptor.is_encrypted(value))
+        value = 'erik'
+        self.assertFalse(field_cryptor.is_encrypted(value))
+
+    def test_is_not_encrypted(self):
+        """Assert plaintext value is correctly interpreted as not encrypted."""
+        field_cryptor = FieldCryptor('rsa', 'local')
+        value = 'erik'
+        self.assertFalse(field_cryptor.is_encrypted(value))

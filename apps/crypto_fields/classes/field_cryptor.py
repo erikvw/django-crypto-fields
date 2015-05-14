@@ -201,16 +201,11 @@ class FieldCryptor(object):
         return secret
 
     def is_encrypted(self, value):
-        """Returns True if value is encrypted and formatted as 'ciphertext'; that is, if it starts
-        with 'HASH_PREFIX'.
-
-        Also assumes a value prefix by CIPHER_PREFIX is encrypted."""
+        """Returns True if value is encrypted."""
         is_encrypted = False
-        if value in [HASH_PREFIX, CIPHER_PREFIX]:
-            raise MalformedCiphertextError('Expected a value, got just the encryption prefix.')
-        if value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
-            is_encrypted = True
-        elif value[:len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING):
+        value = self.verify_value(value)
+        if (value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING) or
+                value[:len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING)):
             is_encrypted = True
         return is_encrypted
 
@@ -220,3 +215,30 @@ class FieldCryptor(object):
             return mask
         else:
             return value
+
+    def verify_value(self, value):
+        """Encodes the value, validates its format, and returns it or raises an exception.
+
+        * A value cannot just be equal to HASH_PREFIX or CIPHER_PREFIX;
+        * A value prefixed with HASH_PREFIX must be followed by a valid hash (by length);
+        * A value prefixed with HASH_PREFIX + hashed_value + CIPHER_PREFIX must be followed by some text;
+        * A value prefix by CIPHER_PREFIX must be followed by some text;
+        """
+        try:
+            value = value.encode(ENCODING)
+        except AttributeError:
+            pass
+        if value in [HASH_PREFIX.encode(ENCODING), CIPHER_PREFIX.encode(ENCODING)]:
+            raise MalformedCiphertextError('Expected a value, got just the encryption prefix.')
+        if value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
+            if len(value[len(HASH_PREFIX):].split(CIPHER_PREFIX.encode(ENCODING))[0]) != self.hash_size:
+                raise MalformedCiphertextError(
+                    'Expected hash prefix to be followed by a hash. Got something else or nothing')
+            if CIPHER_PREFIX.encode(ENCODING) in value and value.split(CIPHER_PREFIX.encode(ENCODING)) == 0:
+                raise MalformedCiphertextError(
+                    'Expected cipher prefix to be followed by a secret. Got nothing')
+        if value[-1 * len(CIPHER_PREFIX):] == CIPHER_PREFIX.encode(ENCODING):
+            if len(value.split(CIPHER_PREFIX.encode(ENCODING))[1]) == 0:
+                raise MalformedCiphertextError(
+                    'Expected cipher prefix to be followed by a secret. Got nothing')
+        return value
