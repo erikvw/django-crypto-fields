@@ -1,14 +1,17 @@
 # crypto_fields
 model field-level encryption used in our Edc project (Django)
 
+The develop branch is where we are rewriting using pyCrypto.
 
-This module is used in our Edc projects to handle field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Users accessing the data through the Edc can see PII. Users accessing the DB directly cannot.
+This module has been used in our Edc projects to handle field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Users accessing the data through the Edc can see PII. Users accessing the DB directly cannot.
 
-All values are stored as a pair of hash and secret. A separate table relates the hash to it's secret. The hash is created consistently for a given value. This approach means a unique constraint may be applied to an encrypted field and all the django admin features work. With the hash as a placeholder for the secret the database is useable for analysis and de-identified at rest. To completely obscure the encrypted data, the "crypt" table may be dropped before releasing the database. 
+All values are stored as a pair of hash and secret. A separate table relates the hash to it's secret. Since the hash of a value is always the same and cannot be reversed, these field classes support unique constraints and all the django admin features work.
 
-This module depends on M2Crypto which currently does not offer support for python3. 
+For analysis, the datatable only has the hashed field values and is considered de-identified at rest but is still useable if joined on a key field that uses the same hashing algorithm.
 
-The develop branch is where we are rewriting using pyCrypto. (Also, it needs to be cleaned up a anyway).
+To completely obscure the encrypted data, the "crypt" table may be dropped before releasing the database. 
 
-This module is intended to be used as an app in a Django project.
+Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
+
+This module is intended to be used in a Django project.
 
