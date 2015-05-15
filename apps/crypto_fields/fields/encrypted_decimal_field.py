@@ -8,8 +8,8 @@ class EncryptedDecimalField(BaseRsaField):
     description = "local-rsa encrypted field for 'IntegerField'"
 
     def __init__(self, *args, **kwargs):
-        #models.DecimalField(..., max_digits=5, decimal_places=2)
-        if not 'max_digits' in kwargs.keys():
+        # models.DecimalField(..., max_digits=5, decimal_places=2)
+        if 'max_digits' not in kwargs.keys():
             raise AttributeError('EncryptedDecimalField requires attribute \'max_digits\. Got none')
         elif 'max_digits' in kwargs.keys():
             try:
@@ -17,7 +17,7 @@ class EncryptedDecimalField(BaseRsaField):
             except:
                 raise AttributeError('EncryptedDecimalField attribute \'max_digits\ must be an '
                                      'integer. Got {0}'.format(kwargs.get('max_digits')))
-        if not 'decimal_places' in kwargs.keys():
+        if 'decimal_places' not in kwargs.keys():
             raise AttributeError('EncryptedDecimalField requires attribute \'decimal_places\. Got none')
         elif 'decimal_places' in kwargs.keys():
             try:
