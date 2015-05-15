@@ -1,13 +1,15 @@
+from collections import OrderedDict
+
 from .constants import CIPHER_BUFFER_SIZE
 
 
 class CipherBuffer(object):
     """Buffers the last ten hash/cipher pairs for quick access."""
     def __init__(self):
-        self._buffer = []
+        self._buffer = OrderedDict()
 
     def clear(self):
-        self._buffer = []
+        self._buffer = OrderedDict()
 
     def append(self, hashed_value, secret):
         if len(self._buffer) >= CIPHER_BUFFER_SIZE:

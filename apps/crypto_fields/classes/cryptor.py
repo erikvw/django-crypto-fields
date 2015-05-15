@@ -32,17 +32,21 @@ class Cryptor(object):
         self.load_keys()
 
     def aes_encrypt(self, plaintext, mode):
+        try:
+            plaintext = plaintext.encode(ENCODING)
+        except AttributeError:
+            pass
         aes_key = self.KEYS.get('aes').get(mode).get('private')
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(aes_key, AES.MODE_CFB, iv)
-        return iv + cipher.encrypt(plaintext.encode('utf-8'))
+        return iv + cipher.encrypt(plaintext)
 
     def aes_decrypt(self, ciphertext, mode):
         aes_key = self.KEYS.get('aes').get(mode).get('private')
         iv = ciphertext[:AES.block_size]
         cipher = AES.new(aes_key, AES.MODE_CFB, iv)
         plaintext = cipher.decrypt(ciphertext)[AES.block_size:]
-        return plaintext.decode('utf-8')
+        return plaintext.decode(ENCODING)
 
     def rsa_encrypt(self, plaintext, mode):
         rsa_key = self.KEYS.get('rsa').get(mode).get('public')
@@ -59,7 +63,7 @@ class Cryptor(object):
     def rsa_decrypt(self, ciphertext, mode):
         rsa_key = self.KEYS.get('rsa').get(mode).get('private')
         plaintext = rsa_key.decrypt(ciphertext)
-        return plaintext.decode('utf-8')
+        return plaintext.decode(ENCODING)
 
     def update_rsa_key_info(self, rsa_key, mode):
         """Stores info about the RSA key."""
@@ -112,7 +116,7 @@ class Cryptor(object):
                 print('( ) Failed encrypt: {} public ({})'.format(mode, e))
             try:
                 rsa_key = self.KEYS.get('rsa').get(mode).get('private')
-                assert plaintext == rsa_key.decrypt(ciphertext).decode('utf-8')
+                assert plaintext == rsa_key.decrypt(ciphertext).decode(ENCODING)
                 print('(*) Passed decrypt: ' + KEY_FILENAMES.get('rsa').get(mode).get('private'))
             except (AttributeError, TypeError) as e:
                 print('( ) Failed decrypt: {} private ({})'.format(mode, e))

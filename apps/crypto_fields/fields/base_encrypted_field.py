@@ -34,11 +34,7 @@ class BaseEncryptedField(models.Field):
           widget: a custom widget (default: default django widget)
         """
         self.field_cryptor = FieldCryptor(self.algorithm, self.mode)
-        # set the db field length based on the hash length (default length)
-        # if converting a DB, longtext fields should not be set to
-        # the default length until after the conversion is complete
-        default_max_length = (
-            self.field_cryptor.hash_size + len(HASH_PREFIX) + len(CIPHER_PREFIX))
+        default_max_length = self.field_cryptor.hash_size + len(HASH_PREFIX)
         try:
             if settings.FIELD_MAX_LENGTH == 'default':
                 max_length = default_max_length
@@ -62,12 +58,9 @@ class BaseEncryptedField(models.Field):
         kwargs.update(defaults)
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
 
-    def get_max_length(self):
-        return self.field_cryptor.cryptor.hash_size + len(HASH_PREFIX) + len(CIPHER_PREFIX)
-
-#     def is_encrypted(self, value):
-#         """ Wraps the cryptor method of same name """
-#         return self.field_cryptor.is_encrypted(self.to_string(value))
+    @property
+    def max_length(self):
+        return len(HASH_PREFIX) + self.field_cryptor.cryptor.hash_size
 
     def to_string(self, value):
         """ Users can override for non-string data types. """

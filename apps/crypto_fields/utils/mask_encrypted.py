@@ -1,6 +1,6 @@
-from ..classes import BaseCryptor
+from ..classes import FieldCryptor
 
 
-def mask_encrypted(value):
-    base_cryptor = BaseCryptor()
-    return base_cryptor.mask(value)
+def mask_encrypted(value, mask=None):
+    field_cryptor = FieldCryptor()
+    return field_cryptor.mask(value, mask)
