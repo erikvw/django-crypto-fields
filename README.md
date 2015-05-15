@@ -5,7 +5,7 @@ The develop branch is where we are rewriting using pyCrypto.
 
 This module has been used in our Edc projects to handle field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Users accessing the data through the Edc can see PII. Users accessing the DB directly cannot.
 
-All values are stored as a pair of hash and secret. A separate table relates the hash to it's secret. Since the hash of a value is always the same and cannot be reversed, these field classes support unique constraints and all the django admin features work.
+All values are stored as a pair of hash (hashlib.pbkdf2_hmac) and secret (rsa or aes). A separate table relates the hash to it's secret. Since the hash of a value is always the same and cannot be reversed, these field classes support unique constraints and all the django admin features work.
 
 For analysis, the datatable only has the hashed field values and is considered de-identified at rest but is still useable if joined on a key field that uses the same hashing algorithm.
 
