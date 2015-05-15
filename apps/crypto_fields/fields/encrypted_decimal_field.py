@@ -1,9 +1,9 @@
 from decimal import Decimal
 
-from .rsa_field import RsaField
+from .base_rsa_field import BaseRsaField
 
 
-class EncryptedDecimalField(RsaField):
+class EncryptedDecimalField(BaseRsaField):
 
     description = "local-rsa encrypted field for 'IntegerField'"
 

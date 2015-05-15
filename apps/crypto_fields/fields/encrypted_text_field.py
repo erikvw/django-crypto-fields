@@ -1,9 +1,9 @@
 from django.forms import widgets
 
-from .aes_field import AesField
+from .base_aes_field import BaseAesField
 
 
-class EncryptedTextField(AesField):
+class EncryptedTextField(BaseAesField):
 
     description = "Custom field for 'Text' form field, uses local AES"
 

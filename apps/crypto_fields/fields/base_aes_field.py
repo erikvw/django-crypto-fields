@@ -1,9 +1,9 @@
-from apps.crypto_fields.fields.base_field import BaseEncryptedField
+from .base_field import BaseField
 
 
-class AesField(BaseEncryptedField):
+class BaseAesField(BaseField):
     def __init__(self, *args, **kwargs):
         kwargs['algorithm'] = 'aes'
         kwargs['mode'] = kwargs.get('mode', 'local')
         kwargs['help_text'] = kwargs.get('help_text', '') + ' (Encryption: AES {})'.format(kwargs['mode'])
-        super(AesField, self).__init__(*args, **kwargs)
+        super(BaseAesField, self).__init__(*args, **kwargs)

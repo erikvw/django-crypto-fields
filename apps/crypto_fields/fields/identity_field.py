@@ -1,5 +1,5 @@
-from .rsa_field import RsaField
+from .base_rsa_field import BaseRsaField
 
 
-class IdentityField(RsaField):
+class IdentityField(BaseRsaField):
     pass

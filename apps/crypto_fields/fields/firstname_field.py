@@ -2,10 +2,10 @@ import re
 
 from django.forms import ValidationError
 
-from .rsa_field import RsaField
+from .base_rsa_field import BaseRsaField
 
 
-class FirstnameField(RsaField):
+class FirstnameField(BaseRsaField):
 
     """ Restricted-rsa encrypted field for a model's Firstname attribute. """
 

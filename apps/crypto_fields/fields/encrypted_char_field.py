@@ -1,6 +1,6 @@
-from .rsa_field import RsaField
+from .base_rsa_field import BaseRsaField
 
 
-class EncryptedCharField(RsaField):
+class EncryptedCharField(BaseRsaField):
 
     description = "rsa encrypted field for 'CharField'"
