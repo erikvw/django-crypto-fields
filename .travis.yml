@@ -17,4 +17,8 @@ install:
 before_script:
   - flake8 apps
 
-script: python manage.py test
+script: 
+  - coverage run --source=apps python manage.py test
+
+after_success:
+  - coveralls
