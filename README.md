@@ -1,3 +1,5 @@
+[https://travis-ci.org/erikvw/crypto_fields.svg?branch=develop]
+
 # crypto_fields
 model field-level encryption used in our Edc projects (Django)
 
