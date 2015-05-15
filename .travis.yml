@@ -1,0 +1,16 @@
+language: python
+python:
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "nightly"
+env:
+  - DJANGO_VERSION=1.7
+  - DJANGO_VERSION=1.8
+
+install:
+  - pip install -q Django==$DJANGO_VERSION --use-mirrors
+  - pip install -q -r requirements.txt --use-mirrors
+
+script: python manage.py test
