@@ -1,3 +1,5 @@
+import six
+
 from decimal import Decimal
 
 from .base_rsa_field import BaseRsaField
@@ -34,7 +36,7 @@ class EncryptedDecimalField(BaseRsaField):
         self.decimal_max_digits = decimal_max_digits
 
     def to_string(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             raise TypeError('Expected basestring. Got {0}'.format(value))
         return str(value)
 

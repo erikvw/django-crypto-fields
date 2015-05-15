@@ -21,11 +21,16 @@ class FirstnameField(BaseRsaField):
                     initials = cleaned_data.get('initials', None)
                     last_name = cleaned_data.get('last_name', None)
                     if not re.match(r'^[A-Z]{2,3}$', initials):
-                        raise ValidationError("Ensure initials are letters (A-Z) in upper case, no spaces or numbers.")
+                        raise ValidationError(
+                            'Ensure initials are letters (A-Z) in upper case, no spaces or numbers.')
                     # check first and last initial matches first and last name
                     if initials and first_name:
                         if first_name[:1].upper() != initials[:1].upper():
-                            raise ValidationError("First initial does not match first name, expected '%s' but you wrote %s." % (first_name[:1], initials[:1]))
+                            raise ValidationError(
+                                'First initial does not match first name, expected \'{}\' but '
+                                'you wrote \'{}\'.'.format(first_name[:1], initials[:1]))
                     if initials and last_name:
                         if last_name[:1].upper() != initials[-1:].upper():
-                            raise ValidationError("Last initial does not match last name, expected '%s' but you wrote %s." % (last_name[:1], initials[-1:]))
+                            raise ValidationError(
+                                'Last initial does not match last name, expected \'{}\' but '
+                                'you wrote \'{}\'.'.format(last_name[:1], initials[-1:]))

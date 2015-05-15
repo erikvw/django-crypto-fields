@@ -1,5 +1,7 @@
+# flake8: noqa
 import datetime
 import json
+import six
 
 from django.conf import settings
 from django import forms
@@ -41,7 +43,7 @@ class EncryptedDateField(BaseRsaField, models.DateField):
 
         retval = value
         if value:
-            if not isinstance(value, basestring):
+            if not isinstance(value, six.string_types):
                 try:
                     value = str(value)
                 except:

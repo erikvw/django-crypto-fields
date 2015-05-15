@@ -224,24 +224,31 @@ class FieldCryptor(object):
             pass
         if value in [HASH_PREFIX.encode(ENCODING), CIPHER_PREFIX.encode(ENCODING)]:
             raise MalformedCiphertextError('Expected a value, got just the encryption prefix.')
-        if value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
-            if len(value[len(HASH_PREFIX):].split(CIPHER_PREFIX.encode(ENCODING))[0]) != self.hash_size:
-                raise MalformedCiphertextError(
-                    'Expected hash prefix to be followed by a hash. Got something else or nothing')
-            if has_secret:
-                if CIPHER_PREFIX.encode(ENCODING) not in value:
-                    raise MalformedCiphertextError('Expected cipher prefix. Got nothing')
-                try:
-                    secret = value.split(CIPHER_PREFIX.encode(ENCODING))[1]
-                    if len(secret) == 0:
-                        raise MalformedCiphertextError('Expected cipher prefix to be followed by secret. Got nothing')
-                except IndexError:
-                    raise MalformedCiphertextError('Expected cipher prefix to be followed by secret. Got nothing')
-        if value[-1 * len(CIPHER_PREFIX):] == CIPHER_PREFIX.encode(ENCODING):
-            if len(value.split(CIPHER_PREFIX.encode(ENCODING))[1]) == 0:
-                raise MalformedCiphertextError(
-                    'Expected cipher prefix to be followed by a secret. Got nothing')
+        self.verify_hash(value)
+        self.verify_secret(value, has_secret)
         return value
+
+    def verify_hash(self, value):
+        """Verifies hash segment of value and raises and exception if not OK."""
+        if (value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING) and
+                len(value[len(HASH_PREFIX):].split(CIPHER_PREFIX.encode(ENCODING))[0]) != self.hash_size):
+            raise MalformedCiphertextError(
+                'Expected hash prefix to be followed by a hash. Got something else or nothing')
+
+    def verify_secret(self, value, has_secret):
+        """Verifies secret segment of value and raises and exception if not OK."""
+        if value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING) and has_secret:
+            if CIPHER_PREFIX.encode(ENCODING) not in value:
+                raise MalformedCiphertextError('Expected cipher prefix. Got nothing')
+            try:
+                secret = value.split(CIPHER_PREFIX.encode(ENCODING))[1]
+                if len(secret) == 0:
+                    raise MalformedCiphertextError('Expected cipher prefix to be followed by secret. Got nothing')
+            except IndexError:
+                raise MalformedCiphertextError('Expected cipher prefix to be followed by secret. Got nothing')
+        if (value[-1 * len(CIPHER_PREFIX):] == CIPHER_PREFIX.encode(ENCODING) and
+                len(value.split(CIPHER_PREFIX.encode(ENCODING))[1]) == 0):
+            raise MalformedCiphertextError('Expected cipher prefix to be followed by a secret. Got nothing')
 
     def mask(self, value, mask=None):
         """ Returns 'mask' if value is encrypted."""

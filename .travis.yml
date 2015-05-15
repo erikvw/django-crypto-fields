@@ -11,12 +11,10 @@ env:
 
 install:
   - pip install -q Django==$DJANGO_VERSION --use-mirrors
-  - pip install pep8 --use-mirrors
-  - pip install pyflakes --use-mirrors
+  - pip install flake8 --use-mirrors
   - pip install -q -r requirements.txt --use-mirrors
 
 before_script:
-  - "pep8 --exclude=migrations --ignore=E501,E225 apps"
-  - pyflakes -x W src
+  - flake8 apps
 
 script: python manage.py test
