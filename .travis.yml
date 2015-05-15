@@ -12,6 +12,7 @@ env:
 install:
   - pip install -q Django==$DJANGO_VERSION --use-mirrors
   - pip install flake8 --use-mirrors
+  - pip install coveralls
   - pip install -q -r requirements.txt --use-mirrors
 
 before_script:
