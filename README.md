@@ -1,5 +1,5 @@
 # crypto_fields
-model field-level encryption used in our Edc project (Django)
+model field-level encryption used in our Edc projects (Django)
 
 The develop branch is where we are rewriting using pyCrypto.
 
