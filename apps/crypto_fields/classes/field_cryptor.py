@@ -9,11 +9,9 @@ try:
 except ImportError:
     from django.db import models  # < Django 1.7
 
-from .cryptor import Cryptor
-# from .cipher_buffer import cipher_buffer
 from .constants import (KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING,
                         HASH_ALGORITHM, HASH_ROUNDS)
-
+from .cryptor import Cryptor
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError
 
 logger = logging.getLogger(__name__)
