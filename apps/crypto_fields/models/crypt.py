@@ -26,14 +26,7 @@ class Crypt (BaseModel):
         db_index=True,
         null=True)
 
-    salt = models.CharField(
-        max_length=50,
-        null=True)
-
     objects = models.Manager()
-
-    def deserialize_on_duplicate(self):
-        return False
 
     def natural_key(self):
         return (self.hash, self.algorithm, self.mode,)
