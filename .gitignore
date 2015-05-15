@@ -7,16 +7,6 @@
 south.log
 *.bz2
 .DS_Store
-bhp066/edc
-bhp066/lis
-bhp066/keys
 htmlcov
 .coverage
-xkeys
-keys
-fabric/keys
-fabric/sql
-bhp066/templates
-bhp066/static
-bhp066/media
 db.sqlite3
