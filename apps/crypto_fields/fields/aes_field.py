@@ -1,4 +1,4 @@
-from .base_encrypted_field import BaseEncryptedField
+from apps.crypto_fields.fields.base_field import BaseEncryptedField
 
 
 class AesField(BaseEncryptedField):

@@ -1,5 +1,4 @@
 from .aes_field import AesField
-from .base_encrypted_field import BaseEncryptedField
 from .encrypted_char_field import EncryptedCharField
 from .encrypted_date_field import EncryptedDateField
 from .encrypted_decimal_field import EncryptedDecimalField

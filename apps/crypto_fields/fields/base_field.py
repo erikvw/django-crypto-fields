@@ -6,7 +6,7 @@ from ..classes.constants import HASH_PREFIX, ENCODING
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
 
 
-class BaseEncryptedField(models.Field):
+class BaseField(models.Field):
 
     description = 'Field class that stores values as encrypted'
 
@@ -31,10 +31,10 @@ class BaseEncryptedField(models.Field):
         except KeyError:
             pass
         kwargs['max_length'] = max_length
-        super(BaseEncryptedField, self).__init__(*args, **kwargs)
+        super(BaseField, self).__init__(*args, **kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(BaseEncryptedField, self).deconstruct()
+        name, path, args, kwargs = super(BaseField, self).deconstruct()
         del kwargs["max_length"]
         return name, path, args, kwargs
 
