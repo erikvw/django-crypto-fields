@@ -10,10 +10,10 @@ from django.core import exceptions
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 
-from .local_rsa_encryption_field import LocalRsaEncryptionField
+from .rsa_field import RsaField
 
 
-class EncryptedDateField(LocalRsaEncryptionField, models.DateField):
+class EncryptedDateField(RsaField, models.DateField):
     __metaclass__ = models.SubfieldBase
     form_widget = forms.DateInput
     form_field = forms.DateField

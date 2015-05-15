@@ -1,6 +1,6 @@
-from .local_rsa_encryption_field import LocalRsaEncryptionField
+from .rsa_field import RsaField
 
 
-class EncryptedCharField(LocalRsaEncryptionField):
+class EncryptedCharField(RsaField):
 
-    description = "local-rsa encrypted field for 'CharField'"
+    description = "rsa encrypted field for 'CharField'"

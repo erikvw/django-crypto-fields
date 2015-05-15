@@ -4,8 +4,6 @@ import logging
 
 from collections import OrderedDict
 
-from Crypto import Random
-
 try:
     from django.apps import apps
 except ImportError:
@@ -53,7 +51,7 @@ class FieldCryptor(object):
     def hash(self, plaintext):
         """Returns a hexified hash of a plaintext value.
 
-        The hashed value is used as a reference to the "secret"."""
+        The hashed value is used as a signature of the "secret"."""
         try:
             plaintext = plaintext.encode(ENCODING)
         except AttributeError:

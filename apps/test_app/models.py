@@ -2,19 +2,19 @@ from django.db import models
 
 from base.models import BaseModel
 
-from apps.crypto_fields.fields import EncryptedAesCharField, EncryptedFirstnameField, EncryptedTextField
+from apps.crypto_fields.fields import EncryptedTextField, FirstnameField, IdentityField
 
 
 class TestModel (BaseModel):
 
-    first_name = EncryptedFirstnameField(
+    first_name = FirstnameField(
         verbose_name="First Name")
 
-    identity = EncryptedTextField(
+    identity = IdentityField(
         verbose_name="Identity",
         unique=True)
 
-    comment = EncryptedAesCharField(
+    comment = EncryptedTextField(
         verbose_name="AES",
         max_length=500)
 

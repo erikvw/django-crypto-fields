@@ -1,109 +1,84 @@
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..classes import FieldCryptor
-from ..classes.constants import HASH_PREFIX, CIPHER_PREFIX
+from ..classes.constants import HASH_PREFIX, ENCODING
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
 
 
 class BaseEncryptedField(models.Field):
 
-    """ A base field class to store sensitive data at rest in an encrypted
-    format.
-
-    * To maintain uniqueness and searchability, only the hash is ever
-      stored in the model field.
-    * The cipher is stored with the hash in the :class:`bhp_crypto.models.Crypt`
-      cipher lookup model and is made available when required for
-      de-encryption (e.g. the private key is available)
-    * Salt, public key filename and private key filename are referred to
-      via the settings file. """
-
-    # see https://docs.djangoproject.com/en/dev/howto/
-    #  custom-model-fields/#the-subfieldbase-metaclass
     description = 'Field class that stores values as encrypted'
 
     def __init__(self, *args, **kwargs):
-        """
-        Keyword Arguments (listing those of note only):
-          max_length: length of table field for database. If settings.FIELD_MAX_LENGTH='default',
-                      sets max_length to the default. If settings.FIELD_MAX_LENGTH='migration',
-                      sets to default if less than default otherwise to the value defined on the model.
-                      (default: length of hash plus prefixes e.g. 78L)
-          widget: a custom widget (default: default django widget)
-        """
-        self.field_cryptor = FieldCryptor(self.algorithm, self.mode)
-        default_max_length = self.field_cryptor.hash_size + len(HASH_PREFIX)
+        algorithm = kwargs.get('algorithm', 'rsa')
+        mode = kwargs.get('mode', 'local')
+        self.field_cryptor = FieldCryptor(algorithm, mode)
+        max_length = kwargs.get('max_length', None) or len(HASH_PREFIX) + self.field_cryptor.hash_size
+        if algorithm == 'rsa':
+            max_message_length = self.field_cryptor.cryptor.rsa_key_info[mode]['max_message_length']
+            if max_length > max_message_length:
+                raise EncryptionError(
+                    '{} attribute \'max_length\' cannot exceed {} for RSA. Got {}. '
+                    'Try setting \'algorithm\' = \'aes\'.'.format(
+                        self.__class__.__name__, max_message_length, max_length))
         try:
-            if settings.FIELD_MAX_LENGTH == 'default':
-                max_length = default_max_length
-            elif settings.FIELD_MAX_LENGTH == 'migration':
-                max_length = kwargs.get('max_length', default_max_length)
-                if max_length < default_max_length:
-                    max_length = default_max_length
-            else:
-                raise TypeError('Invalid value for settings attribute FIELD_MAX_LENGTH. '
-                                'Valid options are \'migration\' and \'default\'. '
-                                'Got {0}'.format(settings.FIELD_MAX_LENGTH))
-        except AttributeError as attribute_error:
-            if 'FIELD_MAX_LENGTH' in str(attribute_error):
-                raise AttributeError('Settings attribute \'FIELD_MAX_LENGTH\' not found. '
-                                     'Set FIELD_MAX_LENGTH=\'migration\' before migrating an existing '
-                                     'DB to use Encrypted Fields. Migrate, encrypt, then set FIELD_MAX_LENGTH=\'default\','
-                                     'create a new schemamigration, and migrate again.')
-            else:
-                raise AttributeError(str(attribute_error))
-        defaults = {'max_length': max_length}
-        kwargs.update(defaults)
+            del kwargs['algorithm']
+        except KeyError:
+            pass
+        try:
+            del kwargs['mode']
+        except KeyError:
+            pass
+        kwargs['max_length'] = max_length
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
 
-    @property
-    def max_length(self):
-        return len(HASH_PREFIX) + self.field_cryptor.cryptor.hash_size
+    def deconstruct(self):
+        name, path, args, kwargs = super(BaseEncryptedField, self).deconstruct()
+        del kwargs["max_length"]
+        return name, path, args, kwargs
 
     def to_string(self, value):
         """ Users can override for non-string data types. """
         return value
 
-    def validate_with_cleaned_data(self, attname, cleaned_data):
-        """ May be overridden to test field data against other values
-        in cleaned data."""
-        pass
-
-    def decrypt_value(self, value):
-        if not self.algorithm or not self.mode:
-            raise ValidationError('Algorithm and mode not set for encrypted field')
+    def decrypt(self, value):
+        if value is None:
+            return value
+        decrypted_value = None
         try:
-            return_value = self.field_cryptor.decrypt(value)
+            decrypted_value = self.field_cryptor.decrypt(value)
         except (CipherError, EncryptionError, MalformedCiphertextError) as e:
             raise ValidationError(e)
-        self.readonly = return_value is not value
-        return return_value
+        if decrypted_value == value:
+            self.readonly = True  # did not decrypt
+        return decrypted_value
 
     def from_db_value(self, value, expression, connection, context):
         if value is None:
             return value
-        return self.decrypt_value(value)
+        return self.decrypt(value)
 
     def to_python(self, value):
-        if isinstance(value, str):
-            return value
         if value is None:
             return value
-        return self.decrypt_value(value)
+        return self.decrypt(value)
 
-    def get_prep_value(self, value, encrypt=True):
-        """ Returns the hashed_value with prefix (or None) and, if needed, updates the secret lookup.
+    def get_prep_value(self, value, encrypt=None):
+        """ Returns the hashed_value with prefix (or None) and, if needed, updates the cipher_model.
 
         Keyword arguments:
             encrypt -- if False, the value is returned as is (default True)
         """
-        retval = value
-        if value and encrypt:
-            encrypted_value = self.field_cryptor.encrypt(value)
-            retval = self.field_cryptor.get_prep_value(encrypted_value, value)
-        return retval
+        if value is None:
+            return value
+        encrypt = True if encrypt is None else encrypt
+        if encrypt:
+            ciphertext = self.field_cryptor.encrypt(value)
+            if ciphertext != value:
+                self.field_cryptor.update_cipher_model(ciphertext)
+            value = HASH_PREFIX.encode(ENCODING) + self.field_cryptor.get_hash(ciphertext)
+        return value
 
     def get_prep_lookup(self, lookup_type, value):
         """ Only decrypts the stored value to handle 'exact' and 'in'
@@ -135,13 +110,4 @@ class BaseEncryptedField(models.Field):
     def get_internal_type(self):
         """This is a Charfield as we only ever store the hash, which is a \
         fixed length char. """
-        return "CharField"
-
-    def south_field_triple(self):
-        "Returns a suitable description of this field for South."
-        # We'll just introspect the _actual_ field.
-        from south.modelsinspector import introspector
-        field_class = "django.db.models.fields.CharField"
-        args, kwargs = introspector(self)
-        # That's our definition!
-        return (field_class, args, kwargs)
+        return "BinaryField"

@@ -1,7 +1,7 @@
-from .local_rsa_encryption_field import LocalRsaEncryptionField
+from .rsa_field import RsaField
 
 
-class EncryptedIntegerField(LocalRsaEncryptionField):
+class EncryptedIntegerField(RsaField):
 
     description = "local-rsa encrypted field for 'IntegerField'"
 

@@ -1,12 +1,12 @@
 from django.forms import widgets
-from .local_aes_encryption_field import LocalAesEncryptionField
+
+from .aes_field import AesField
 
 
-class EncryptedTextField(LocalAesEncryptionField):
+class EncryptedTextField(AesField):
 
     description = "Custom field for 'Text' form field, uses local AES"
 
     def formfield(self, **kwargs):
-        defaults = {'widget': widgets.Textarea()}
-        defaults.update(kwargs)
-        return super(EncryptedTextField, self).formfield(**defaults)
+        kwargs['widget'] = widgets.Textarea()
+        return super(EncryptedTextField, self).formfield(**kwargs)
