@@ -1,20 +1,15 @@
 import binascii
 import hashlib
-import logging
 
 from collections import OrderedDict
 
-# try:
 from django.apps import apps
-# except ImportError:
-#    from django.db import models  # < Django 1.7
 
 from .constants import (KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING,
                         HASH_ALGORITHM, HASH_ROUNDS)
 from .cryptor import Cryptor
-from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError
 
-logger = logging.getLogger(__name__)
+from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError
 
 
 class FieldCryptor(object):
@@ -40,10 +35,7 @@ class FieldCryptor(object):
     def cipher_model(self):
         """Returns the cipher model and avoids issues with model loading and field classes."""
         if not self._cipher_model:
-            # try:
-            self._cipher_model = apps.get_model('crypto_fields', 'crypt')
-            # except NameError:
-            #    self._cipher_model = models.loading.get_model('crypto_fields', 'crypt')
+            self._cipher_model = apps.get_model('crypto_fields', 'Crypt')
         return self._cipher_model
 
     def hash(self, plaintext):
