@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/erikvw/django-crypto-fields.svg?branch=master)](https://travis-ci.org/erikvw/django-crypto-fields)
-[![Coverage Status](https://coveralls.io/repos/erikvw/django_crypto_fields/badge.svg?branch=master)](https://coveralls.io/r/erikvw/django_crypto_fields?branch=master)
+[![Coverage Status](https://coveralls.io/repos/erikvw/django-crypto-fields/badge.svg)](https://coveralls.io/r/erikvw/django-crypto-fields)
 [![Documentation Status](https://readthedocs.org/projects/django-crypto-fields/badge/?version=latest)](https://readthedocs.org/projects/django-crypto-fields/?badge=master)
 
 # django-crypto-fields
