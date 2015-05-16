@@ -1,8 +1,8 @@
 language: python
 python:
 #  - "2.7"
-#  - "3.2"
-#  - "3.3"
+  - "3.2"
+  - "3.3"
   - "3.4"
 #  - "nightly"
 env:
@@ -12,7 +12,7 @@ env:
 install:
   - pip install -q Django==$DJANGO_VERSION --use-mirrors
   - pip install flake8 --use-mirrors
-  - pip install coveralls
+  - pip install coveralls --use-mirrors
   - pip install -q -r requirements.txt --use-mirrors
 
 before_script:

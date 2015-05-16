@@ -19,6 +19,3 @@ class TestModel (BaseModel):
         max_length=500)
 
     objects = models.Manager()
-
-#     class Meta:
-#         app_label = 'crypto_fields'
