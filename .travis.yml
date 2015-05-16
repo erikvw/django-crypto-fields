@@ -19,7 +19,7 @@ before_script:
   - flake8 crypto_fields
 
 script: 
-  - coverage run --source=apps manage.py test
+  - coverage run --source=crypto_fields manage.py test crypto_fields.tests
 
 after_success:
   - coveralls
