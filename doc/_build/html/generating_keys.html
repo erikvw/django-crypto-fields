@@ -1,0 +1,146 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Generating Keys &mdash; bhp_crypto 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="bhp_crypto 1.0 documentation" href="index.html" />
+    <link rel="next" title="Choosing a Field Class for Your Model" href="selecting_field_classes.html" />
+    <link rel="prev" title="Pre-loading Keys" href="preloading_keys.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="selecting_field_classes.html" title="Choosing a Field Class for Your Model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="preloading_keys.html" title="Pre-loading Keys"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">bhp_crypto 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="generating-keys">
+<h1>Generating Keys<a class="headerlink" href="#generating-keys" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Keys should be safely stored and properly backed up.</p>
+</div>
+<p>The EDC is often deployed on disconnected mobile devices. In this environment the keys are stored on the device
+and should be secured inside a mountable <em>truecrypt</em> file (see also <a class="reference internal" href="protecting_keys_with_truecrypt.html"><em>Protecting Keys with Truecrypt</em></a>).</p>
+<p>Use the <em>settings</em> attribute <em>KEY_PATH</em> to indicate the location of the mounted truecrypt file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">KEY_PATH</span><span class="o">=</span><span class="s">&#39;/Volume/project_keys/keys&#39;</span>
+</pre></div>
+</div>
+<p>With the KEY_PATH attribute set, generate new keys:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">generate_keys</span>
+</pre></div>
+</div>
+<p>The new keys will be in the KEY_PATH folder:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">user</span><span class="o">-</span><span class="n">aes</span><span class="o">-</span><span class="n">local</span>
+<span class="n">user</span><span class="o">-</span><span class="n">encrypted</span><span class="o">-</span><span class="n">salt</span>
+<span class="n">user</span><span class="o">-</span><span class="n">public</span><span class="o">-</span><span class="n">irreversible</span><span class="o">.</span><span class="n">pem</span>
+<span class="n">user</span><span class="o">-</span><span class="n">public</span><span class="o">-</span><span class="n">restricted</span><span class="o">.</span><span class="n">pem</span>
+<span class="n">user</span><span class="o">-</span><span class="n">private</span><span class="o">-</span><span class="n">restricted</span><span class="o">.</span><span class="n">pem</span>
+<span class="n">user</span><span class="o">-</span><span class="n">public</span><span class="o">-</span><span class="n">local</span><span class="o">.</span><span class="n">pem</span>
+<span class="n">user</span><span class="o">-</span><span class="n">private</span><span class="o">-</span><span class="n">local</span><span class="o">.</span><span class="n">pem</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Keys load from the files into memory when apache is started on a netbook after which the key files may be removed. To avoid storing keys on the device, set the KEY_PATH to a remote drive and disconnect from the remote drive once apache is started.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="preloading_keys.html"
+                        title="previous chapter">Pre-loading Keys</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="selecting_field_classes.html"
+                        title="next chapter">Choosing a Field Class for Your Model</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/generating_keys.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="selecting_field_classes.html" title="Choosing a Field Class for Your Model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="preloading_keys.html" title="Pre-loading Keys"
+             >previous</a> |</li>
+        <li><a href="index.html">bhp_crypto 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, erik van widenfelt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

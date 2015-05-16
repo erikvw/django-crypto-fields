@@ -1,0 +1,216 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Choosing a Field Class for Your Model &mdash; bhp_crypto 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="bhp_crypto 1.0 documentation" href="index.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Generating Keys" href="generating_keys.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="Examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generating_keys.html" title="Generating Keys"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">bhp_crypto 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="choosing-a-field-class-for-your-model">
+<h1>Choosing a Field Class for Your Model<a class="headerlink" href="#choosing-a-field-class-for-your-model" title="Permalink to this headline">¶</a></h1>
+<p>Field classes in <tt class="xref py py-mod docutils literal"><span class="pre">bhp_crypto</span></tt> are designed to protect sensitive data stored in models. In a clinical trail setting, any
+model field that contains <strong>personally identifying information</strong> (PII) must use encryption. Some examples of PII include a
+subject&#8217;s first and last name, identity number, cell number, address, directions to a residence, names of relatives and date of birth.</p>
+<p>&#8216;&#8217;bhp_crypto&#8217;&#8217; offers field classes that use either RSA and AES encryption. RSA is used for short text and AES for long text.</p>
+<p>If <tt class="xref py py-mod docutils literal"><span class="pre">bhp_crypto</span></tt> does not have the required keys to encrypt a field value, an error will be raised on any attempt to save data.</p>
+<p>All data additions and changes will raise an error if the restricted and local RSA private keys are unavailable to the application.</p>
+<div class="section" id="rsa-encryption">
+<h2>RSA Encryption<a class="headerlink" href="#rsa-encryption" title="Permalink to this headline">¶</a></h2>
+<p>There are three types of RSA field classes where the difference is determined by the existence or availability of the private RSA key:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><dl class="first docutils">
+<dt><strong>Irreversible RSA</strong>: the saved value is never to be decrypted. Uses only a public RSA key:</dt>
+<dd><ul class="first last simple">
+<li>public key <em>user-public-irreversible.pem</em></li>
+<li>private key <em>does not exist!</em></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>Restricted RSA</strong>: private key and normally NOT stored on the device running the application. Uses RSA keys:</dt>
+<dd><ul class="first last simple">
+<li>public key <em>user-public-restricted.pem</em></li>
+<li>private key <em>user-private-restricted.pem</em> .</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>Local RSA</strong>: private key is usually available to the device running the application. Uses RSA keys:</dt>
+<dd><ul class="first last simple">
+<li>public key <em>user-public-local.pem</em></li>
+<li>private key <em>user-private-local.pem</em></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</div></blockquote>
+<div class="section" id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
+<p>Irreversible RSA can be used to collect information meant to remain anonymous. For example, collecting samples at
+multiple time points form a subject whose identity must remain anonymous but needs to be confirmed and linked in data.
+By using Irreversible RSA, the field class creates a hash and secret of the PII but no private key exists
+to reverse the encryption.</p>
+<p>Restricted RSA is useful for the subject&#8217;s identity number and lastname. Under normal operation, the private key is
+not available to the application and these values are cannot be decrypted during normal use.</p>
+<p>Local RSA is used for PII that unfortunately is needed for normal operation of the EDC. This includes values such as
+<em>first name, initials, date of birth, cell number, relative&#8217;s name, and any other moderately sensitive value*</em>.</p>
+</div>
+</div>
+<div class="section" id="aes-encryption">
+<h2>AES Encryption<a class="headerlink" href="#aes-encryption" title="Permalink to this headline">¶</a></h2>
+<p>AES encryption uses a secret AES key stored in <em>user-aes-local</em>. The key is stored as an RSA secret created with the LocalRSA cipher.
+This means that the local-rsa private key must be available for AES encryption. Uses keys:</p>
+<blockquote>
+<div><ul class="simple">
+<li>aes key <em>user-aes-local</em></li>
+<li>private key <em>user-private-local.pem</em> (required to decrypt the aes key)</li>
+</ul>
+</div></blockquote>
+<p>Note that AES and Local RSA are linked by the same private key. The reason for this is that the level of security required
+for data saved using either method is expected to be the same.</p>
+<p>By removing the <em>local-rsa</em> private key, an attempt to save a field value through a field class using AES will raise an error.</p>
+<div class="section" id="id1">
+<h3>Usage<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Use AES encryption for an field that is a long text and may contain sensitive information. A locator form with
+<em>directions to a household</em> or a <em>comment</em> field on a consent document are good examples.</p>
+</div>
+</div>
+<div class="section" id="application-data-and-keys">
+<h2>Application, Data and Keys<a class="headerlink" href="#application-data-and-keys" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>A dataset with encrypted PII is only de-identified by removing BOTH the restricted and local RSA private keys from the application.</li>
+<li>the AES key is not available if the local RSA private key is not available</li>
+<li>AES encryption is not possible if the AES key is not available</li>
+<li>If a field class cannot encrypt a value, an error will be raised.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Choosing a Field Class for Your Model</a><ul>
+<li><a class="reference internal" href="#rsa-encryption">RSA Encryption</a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#aes-encryption">AES Encryption</a><ul>
+<li><a class="reference internal" href="#id1">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#application-data-and-keys">Application, Data and Keys</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generating_keys.html"
+                        title="previous chapter">Generating Keys</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="next chapter">Examples</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/selecting_field_classes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="Examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generating_keys.html" title="Generating Keys"
+             >previous</a> |</li>
+        <li><a href="index.html">bhp_crypto 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, erik van widenfelt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

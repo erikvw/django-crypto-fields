@@ -1,0 +1,25 @@
+language: python
+python:
+#  - "2.7"
+#  - "3.2"
+#  - "3.3"
+  - "3.4"
+#  - "nightly"
+env:
+  - DJANGO_VERSION=1.7
+  - DJANGO_VERSION=1.8
+
+install:
+  - pip install -q Django==$DJANGO_VERSION --use-mirrors
+  - pip install flake8 --use-mirrors
+  - pip install coveralls --use-mirrors
+  - pip install -q -r requirements.txt --use-mirrors
+
+before_script:
+  - flake8 crypto_fields
+
+script: 
+  - coverage run --source=crypto_fields manage.py test crypto_fields.tests
+
+after_success:
+  - coveralls

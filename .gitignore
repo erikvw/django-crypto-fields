@@ -1,0 +1,12 @@
+*.py[cod]
+*.sh
+.project
+.pydevproject
+.settings
+.ropeproject
+south.log
+*.bz2
+.DS_Store
+htmlcov
+.coverage
+db.sqlite3
