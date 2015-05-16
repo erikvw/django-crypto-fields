@@ -16,7 +16,7 @@ install:
   - pip install -q -r requirements.txt --use-mirrors
 
 before_script:
-  - flake8 apps
+  - flake8 crypto_fields
 
 script: 
   - coverage run --source=apps manage.py test
