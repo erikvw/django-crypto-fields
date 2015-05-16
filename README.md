@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/erikvw/crypto_fields.svg?branch=develop)](https://travis-ci.org/erikvw/crypto_fields)
 [![Coverage Status](https://coveralls.io/repos/erikvw/crypto_fields/badge.svg?branch=develop)](https://coveralls.io/r/erikvw/crypto_fields?branch=develop)
+[![Documentation Status](https://readthedocs.org/projects/crypto-fields/badge/?version=latest)](https://readthedocs.org/projects/crypto-fields/?badge=latest)
 
 # crypto_fields
 model field-level encryption used in our Edc projects (Django)
