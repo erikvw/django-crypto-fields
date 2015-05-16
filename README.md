@@ -2,7 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/erikvw/django_crypto_fields/badge.svg?branch=master)](https://coveralls.io/r/erikvw/django_crypto_fields?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/django-crypto-fields/badge/?version=latest)](https://readthedocs.org/projects/django-crypto-fields/?badge=master)
 
-# crypto_fields
+# django-crypto-fields
 model field-level encryption used in our Edc project (Django)
 
 This module has been used in our Edc projects to handle field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Users accessing the data through the Edc can see PII. Users accessing the DB directly cannot.
