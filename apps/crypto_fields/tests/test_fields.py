@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from apps.test_app.models import TestModel
+from .models import TestModel
 
 from ..fields.base_field import BaseField
 

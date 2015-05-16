@@ -1,7 +1,8 @@
 from django.db import models
 
 from apps.edc.base.models import BaseModel
-from apps.crypto_fields.fields import EncryptedTextField, FirstnameField, IdentityField
+
+from ..fields import EncryptedTextField, FirstnameField, IdentityField
 
 
 class TestModel (BaseModel):
