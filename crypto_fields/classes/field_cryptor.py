@@ -5,11 +5,11 @@ from collections import OrderedDict
 
 from django.apps import apps
 
+from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError
+
 from .constants import (KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING,
                         HASH_ALGORITHM, HASH_ROUNDS)
 from .cryptor import Cryptor
-
-from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError
 
 
 class FieldCryptor(object):

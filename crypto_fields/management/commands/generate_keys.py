@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from apps.crypto_fields.classes.key_generator import KeyGenerator
+
+from ...classes.key_generator import KeyGenerator
 
 
 class Command(BaseCommand):

@@ -1,12 +1,13 @@
 import os
 import sys
 
+from copy import deepcopy
+
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 
 from .constants import KEY_FILENAMES, RSA_KEY_SIZE, KEY_PATH, KEY_PREFIX
-from copy import deepcopy
 
 
 class KeyGenerator(object):
