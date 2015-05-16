@@ -3,14 +3,7 @@
 [![Documentation Status](https://readthedocs.org/projects/crypto-fields/badge/?version=latest)](https://readthedocs.org/projects/crypto-fields/?badge=latest)
 
 # crypto_fields
-<<<<<<< HEAD
 model field-level encryption used in our Edc project (Django)
-
-see "develop" branch
-=======
-model field-level encryption used in our Edc projects (Django)
-
-The develop branch is where we are rewriting using pyCrypto.
 
 This module has been used in our Edc projects to handle field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Users accessing the data through the Edc can see PII. Users accessing the DB directly cannot.
 
@@ -23,5 +16,3 @@ To completely obscure the encrypted data, the "crypt" table may be dropped befor
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
 
 This module is intended to be used in a Django project.
-
->>>>>>> release/1.0
