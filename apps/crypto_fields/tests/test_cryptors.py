@@ -4,11 +4,11 @@ from django.db import transaction
 from django.test import TestCase
 from django.db.utils import IntegrityError
 
-from apps.test_app.models import TestModel
-
 from ..classes import Cryptor, FieldCryptor
 from ..classes.constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, KEY_FILENAMES
 from ..exceptions import EncryptionError, MalformedCiphertextError
+
+from .models import TestModel
 
 
 class TestCryptors(TestCase):

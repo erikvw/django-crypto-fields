@@ -21,4 +21,4 @@ class TestModel (BaseModel):
     objects = models.Manager()
 
     class Meta:
-        app_label = 'test_app'
+        app_label = 'crypto_fields'

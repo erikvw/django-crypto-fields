@@ -1,8 +1,8 @@
 from django.test import TestCase
 
-from .models import TestModel
-
 from ..fields.base_field import BaseField
+
+from .models import TestModel
 
 
 class TestCryptors(TestCase):
