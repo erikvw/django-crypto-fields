@@ -28,7 +28,7 @@ For example:
 History
 -------
 
-django-crypto-fields has been used in our audited research projects that use our "Edc" for data collection and management. Data collected in our Edc are considered "source documents". django-crypto-fields adds field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Authorized study personnel accessing the data through the application can see PII. Downstream data management staff and statisticians accessing the database directly cannot.
+_django-crypto-fields_ has been used in our audited research projects that use our "Edc" for data collection and management. Data collected in our Edc are considered "source documents". django-crypto-fields adds field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Authorized study personnel accessing the data through the application can see PII. Downstream data management staff and statisticians accessing the database directly cannot.
 
 Features
 --------
