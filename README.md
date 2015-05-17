@@ -12,7 +12,7 @@ For example:
 	from django.db import models
 	from django_crypto_fields.fields import EncryptedTextField, FirstnameField, IdentityField
 
-	class PatientModel (BaseModel):
+	class PatientModel (models.Model):
 
 	    first_name = FirstnameField(
 	        verbose_name="First Name")
