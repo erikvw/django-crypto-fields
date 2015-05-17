@@ -9,6 +9,7 @@ from ..constants import (KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING, HA
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError
 
 from .cryptor import Cryptor
+from .keys import KEYS
 
 
 class FieldCryptor(object):
@@ -46,7 +47,7 @@ class FieldCryptor(object):
         except AttributeError:
             pass
         try:
-            salt = self.cryptor.KEYS.get('salt').get(self.mode).get('private')
+            salt = KEYS['salt'][self.mode]['private']
         except AttributeError:
             raise EncryptionKeyError('Invalid mode for salt key. Got {}'.format(self.mode))
         dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext, salt, HASH_ROUNDS)
