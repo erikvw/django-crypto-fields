@@ -32,6 +32,6 @@ class Crypt (BaseModel):
         return (self.hash, self.algorithm, self.mode,)
 
     class Meta:
-        app_label = 'crypto_fields'
+        app_label = 'django_crypto_fields'
         verbose_name = 'Crypt'
         unique_together = (('hash', 'algorithm', 'mode'),)

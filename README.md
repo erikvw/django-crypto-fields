@@ -33,7 +33,7 @@ Add to INSTALLED_APPS:
 
 	INSTALLED_APPS = (
 		...
-	    'crypto_fields',
+	    'django_crypto_fields',
 	    ...
 	)
 
@@ -51,6 +51,9 @@ Run _migrate_ to create the _crypto_fields_crypt_ table:
 
     python manage.py migrate
 
+Generate encryption keys:
+
+	python manage.py generate_keys
 
 History
 -------

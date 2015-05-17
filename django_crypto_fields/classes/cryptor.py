@@ -75,33 +75,39 @@ class Cryptor(object):
 
     def load_keys(self):
         logger.info('/* Loading keys ...')
-        # load RSA
-        for mode, keys in KEY_FILENAMES['rsa'].items():
-            for key in keys:
-                key_file = KEY_FILENAMES['rsa'][mode][key]
-                with open(key_file, 'rb') as f:
-                    rsa_key = RSA.importKey(f.read())
-                    rsa_key = PKCS1_OAEP.new(rsa_key)
-                    self.KEYS['rsa'][mode][key] = rsa_key
-                    self.update_rsa_key_info(rsa_key, mode)
+        try:
+            # load RSA
+            for mode, keys in KEY_FILENAMES['rsa'].items():
+                for key in keys:
+                    key_file = KEY_FILENAMES['rsa'][mode][key]
+                    with open(key_file, 'rb') as f:
+                        rsa_key = RSA.importKey(f.read())
+                        rsa_key = PKCS1_OAEP.new(rsa_key)
+                        self.KEYS['rsa'][mode][key] = rsa_key
+                        self.update_rsa_key_info(rsa_key, mode)
+                    logger.info('(*) Loaded ' + key_file)
+            # decrypt and load AES
+            for mode in KEY_FILENAMES['aes']:
+                rsa_key = self.KEYS['rsa'][mode]['private']
+                key_file = KEY_FILENAMES['aes'][mode]['private']
+                with open(key_file, 'rb') as faes:
+                    aes_key = rsa_key.decrypt(faes.read())
+                self.KEYS['aes'][mode]['private'] = aes_key
                 logger.info('(*) Loaded ' + key_file)
-        # decrypt and load AES
-        for mode in KEY_FILENAMES['aes']:
-            rsa_key = self.KEYS['rsa'][mode]['private']
-            key_file = KEY_FILENAMES['aes'][mode]['private']
-            with open(key_file, 'rb') as faes:
-                aes_key = rsa_key.decrypt(faes.read())
-            self.KEYS['aes'][mode]['private'] = aes_key
-            logger.info('(*) Loaded ' + key_file)
-        # decrypt and load salt
-        for mode in KEY_FILENAMES['salt']:
-            rsa_key = self.KEYS['rsa'][mode]['private']
-            key_file = KEY_FILENAMES['salt'][mode]['private']
-            with open(key_file, 'rb') as fsalt:
-                salt = rsa_key.decrypt(fsalt.read())
-            self.KEYS['salt'][mode]['private'] = salt
-            logger.info('(*) Loaded ' + key_file)
-        logger.info('Done preloading keys. */')
+            # decrypt and load salt
+            for mode in KEY_FILENAMES['salt']:
+                rsa_key = self.KEYS['rsa'][mode]['private']
+                key_file = KEY_FILENAMES['salt'][mode]['private']
+                with open(key_file, 'rb') as fsalt:
+                    salt = rsa_key.decrypt(fsalt.read())
+                self.KEYS['salt'][mode]['private'] = salt
+                logger.info('(*) Loaded ' + key_file)
+            logger.info('Done preloading keys. */')
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                'Unable to find keys. Check the KEY_PATH or, '
+                'if you do not have any keys, run the \'generate_keys\' management command '
+                'and try again.')
 
     def test_rsa(self):
         """ Tests keys roundtrip"""
