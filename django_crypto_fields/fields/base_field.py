@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..classes import FieldCryptor
+from ..classes.keys import keys
 from ..constants import HASH_PREFIX, ENCODING
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
 
@@ -16,7 +17,7 @@ class BaseField(models.Field):
         self.field_cryptor = FieldCryptor(algorithm, mode)
         max_length = kwargs.get('max_length', None) or len(HASH_PREFIX) + self.field_cryptor.hash_size
         if algorithm == 'rsa':
-            max_message_length = self.field_cryptor.cryptor.rsa_key_info[mode]['max_message_length']
+            max_message_length = keys.rsa_key_info[mode]['max_message_length']
             if max_length > max_message_length:
                 raise EncryptionError(
                     '{} attribute \'max_length\' cannot exceed {} for RSA. Got {}. '

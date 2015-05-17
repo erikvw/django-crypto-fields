@@ -83,6 +83,12 @@ Disadvantages
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
 
 
+Troubleshooting
+---------------
+
+If you are adding _django-crypto_fields_ to an existing project, model loading can get in the way if you already added encrypted fields to a model. To get around this, try renaming the models.py (or module folder) before generating the keys. Once the keys are generated you can name the module back to models.   
+
+
 Contribute
 ----------
 

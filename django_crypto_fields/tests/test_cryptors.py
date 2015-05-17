@@ -7,6 +7,7 @@ from django.db.utils import IntegrityError
 from ..classes import Cryptor, FieldCryptor
 from ..constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, KEY_FILENAMES
 from ..exceptions import EncryptionError, MalformedCiphertextError
+from ..classes.keys import keys, KEYS
 
 from .models import TestModel
 
@@ -17,7 +18,7 @@ class TestCryptors(TestCase):
         """Assert successful RSA roundtrip."""
         cryptor = Cryptor()
         plaintext = 'erik is a pleeb!!'
-        for mode in cryptor.KEYS['rsa']:
+        for mode in KEYS['rsa']:
             ciphertext = cryptor.rsa_encrypt(plaintext, mode)
             self.assertEqual(plaintext, cryptor.rsa_decrypt(ciphertext, mode))
 
@@ -25,15 +26,15 @@ class TestCryptors(TestCase):
         """Assert successful AES roundtrip."""
         cryptor = Cryptor()
         plaintext = 'erik is a pleeb!!'
-        for mode in cryptor.KEYS['aes']:
+        for mode in KEYS['aes']:
             ciphertext = cryptor.aes_encrypt(plaintext, mode)
             self.assertEqual(plaintext, cryptor.aes_decrypt(ciphertext, mode))
 
     def test_encrypt_rsa_length(self):
         """Assert RSA raises EncryptionError if plaintext is too long."""
         cryptor = Cryptor()
-        for mode in cryptor.KEYS['rsa']:
-            max_length = cryptor.rsa_key_info[mode]['max_message_length']
+        for mode in KEYS['rsa']:
+            max_length = keys.rsa_key_info[mode]['max_message_length']
             plaintext = ''.join(['a' for i in range(0, max_length)])
             cryptor.rsa_encrypt(plaintext, mode)
             self.assertRaises(EncryptionError, cryptor.rsa_encrypt, plaintext + 'a', mode)
