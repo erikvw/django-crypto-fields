@@ -6,9 +6,8 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto.Util import number
 
+from ..constants import KEY_FILENAMES, ENCODING
 from ..exceptions import EncryptionError
-
-from .constants import KEY_FILENAMES, ENCODING
 
 logger = logging.getLogger(__name__)
 

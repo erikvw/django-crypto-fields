@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..classes import FieldCryptor
-from ..classes.constants import HASH_PREFIX, ENCODING
+from ..constants import HASH_PREFIX, ENCODING
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
 
 

@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.db.utils import IntegrityError
 
 from ..classes import Cryptor, FieldCryptor
-from ..classes.constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, KEY_FILENAMES
+from ..constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, KEY_FILENAMES
 from ..exceptions import EncryptionError, MalformedCiphertextError
 
 from .models import TestModel

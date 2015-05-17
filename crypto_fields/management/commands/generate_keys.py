@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from ...classes.key_generator import KeyGenerator
+from ...utils.key_generator import KeyGenerator
 
 
 class Command(BaseCommand):

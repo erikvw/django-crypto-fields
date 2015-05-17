@@ -13,7 +13,7 @@ CIPHER_PREFIX = 'enc2:::'
 CIPHER_BUFFER_SIZE = 10
 
 try:
-    KEY_PREFIX = settings.PROJECT_NUMBER
+    KEY_PREFIX = settings.KEY_PREFIX
 except (ImproperlyConfigured, AttributeError) as e:
     KEY_PREFIX = 'user'
 
