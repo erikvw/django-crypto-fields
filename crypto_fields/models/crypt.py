@@ -1,6 +1,6 @@
 from django.db import models
 
-from edc_base.base.models import BaseModel
+from ..edc.base.models import BaseModel
 
 
 class Crypt (BaseModel):

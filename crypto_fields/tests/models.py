@@ -1,6 +1,6 @@
 from django.db import models
 
-from edc_base.base.models import BaseModel
+from ..edc.base.models import BaseModel
 
 from ..fields import EncryptedTextField, FirstnameField, IdentityField
 
@@ -19,3 +19,6 @@ class TestModel (BaseModel):
         max_length=500)
 
     objects = models.Manager()
+
+    class Meta:
+        app_label = 'crypto_fields'
