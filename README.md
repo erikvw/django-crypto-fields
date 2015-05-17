@@ -5,7 +5,7 @@
 django-crypto-fields
 =====================
 
-Add encrypted fields classes to your Django models.
+Add encrypted field classes to your Django models.
 
 For example:
 
@@ -70,10 +70,12 @@ Features
 Advantages
 ----------
 
+- encryption keys are automatically created
 - unique constraint on encrypted fields: because the hash is stored in the model's db_table and not the secret, the unique=True parameter works as well as the django.form validation messages.    
 - de-identified dataset: the data analysis team should never need to see PII. They just want a de-identified dataset. A de-identified dataset is one where PII fields are encrypted and others not. With the RSA key removed, the dataset is effectively deidentified.
 - datasets from other systems with shared values, such as identity numbers, can be prepared for meta-analysis using the same keys and algorithms;
-- To completely obscure the encrypted data, the secret reference table may be dropped before releasing the database.
+- to completely obscure the encrypted data, the secret reference table may be dropped before releasing the database.
+- by default field classes exist for two sets of keys. You can customize KEY_FILENAMES to create as many sets as needed. With multiple sets of keys you have more control on who gets to see what.
 
 Disadvantages
 -------------
@@ -81,12 +83,6 @@ Disadvantages
 - Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from _django-crypto-fields_, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
 
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
-
-
-Troubleshooting
----------------
-
-If you are adding _django-crypto_fields_ to an existing project, model loading can get in the way if you already added encrypted fields to a model. To get around this, try renaming the models.py (or module folder) before generating the keys. Once the keys are generated you can name the module back to models.   
 
 
 Contribute
