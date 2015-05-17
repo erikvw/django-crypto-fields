@@ -14,6 +14,9 @@ KEYS = copy.deepcopy(KEY_FILENAMES)
 class Keys(object):
 
     def __init__(self):
+        """Loads all keys defined in KEY_FILENAMES into KEYS.
+
+        If keys do not exist they will be created."""
         self.loaded = False
         self.rsa_key_info = {}
         try:
@@ -24,7 +27,7 @@ class Keys(object):
             self.load_keys()
 
     def load_rsa_key(self, mode, key):
-        """Loads an RSA key."""
+        """Loads an RSA key into KEYS."""
         key_file = KEY_FILENAMES['rsa'][mode][key]
         with open(key_file, 'rb') as frsa:
             rsa_key = RSA.importKey(frsa.read())
@@ -34,7 +37,7 @@ class Keys(object):
         return key_file
 
     def load_aes_key(self, mode, key):
-        """Decrypts and loads an AES key."""
+        """Decrypts and loads an AES key into KEYS."""
         rsa_key = KEYS['rsa'][mode]['private']
         key_file = KEY_FILENAMES['aes'][mode]['private']
         with open(key_file, 'rb') as faes:
@@ -43,7 +46,7 @@ class Keys(object):
         return key_file
 
     def load_salt_key(self, mode, key):
-        """Decrypts and loads a salt key."""
+        """Decrypts and loads a salt key into KEYS."""
         rsa_key = KEYS['rsa'][mode]['private']
         key_file = KEY_FILENAMES['salt'][mode]['private']
         with open(key_file, 'rb') as fsalt:
@@ -52,6 +55,7 @@ class Keys(object):
         return key_file
 
     def load_keys(self):
+        """Loads all keys defined in KEY_FILENAMES."""
         sys.stdout.write('/* Loading keys ...\n')
         for mode, keys in KEY_FILENAMES['rsa'].items():
             for key in keys:
