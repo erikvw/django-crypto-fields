@@ -28,13 +28,13 @@ For example:
 History
 -------
 
-_django-crypto-fields_ has been used in our audited research projects that use our "Edc" for data collection and management. Data collected in our Edc are considered "source documents". django-crypto-fields adds field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Authorized study personnel accessing the data through the application can see PII. Downstream data management staff and statisticians accessing the database directly cannot.
+_django-crypto-fields_ has been used in our audited research projects that use our "Edc" for data collection and management. Data collected in our Edc are considered "source documents". _django-crypto-fields_ adds field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Authorized study personnel accessing the data through the application can see PII. Downstream data management staff and statisticians accessing the database directly cannot.
 
 Features
 --------
 
 - All values are stored as a pair of hash (hashlib.pbkdf2_hmac) and secret (rsa or aes);
-- A model using a django-crypto-fields field class stores the hash only;
+- A model using a _django-crypto-fields_ field class stores the hash only;
 - A separate table relates the hash to it's secret and is referenced internally by the field class;
 
 Advantages
@@ -48,7 +48,7 @@ Advantages
 Disadvantages
 -------------
 
-- Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from django-crypto-fields, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
+- Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from _django-crypto-fields_, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
 
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
 
