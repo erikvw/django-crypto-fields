@@ -24,6 +24,36 @@ For example:
 	    comment = EncryptedTextField(
 	        max_length=500)
 
+Installation
+------------
+
+    pip install django-encrypted-fields
+
+Add to INSTALLED_APPS:
+
+	INSTALLED_APPS = (
+		...
+	    'django_crypto_fields',
+	    ...
+	)
+
+Add KEY_PATH to the folder in settings:
+    
+    # folder where the encryption keys are stored
+    KEY_PATH = '/Volumes/secure_drive/keys')
+     
+Add KEY_PREFIX (optional, the default is "_user_"):
+
+	# optional filename prefix for encryption keys files:
+	KEY_PREFIX = 'bhp066'
+
+Run _migrate_ to create the _crypto_fields_crypt_ table:
+
+    python manage.py migrate
+
+Generate encryption keys:
+
+	python manage.py generate_keys
 
 History
 -------

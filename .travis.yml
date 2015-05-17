@@ -16,10 +16,10 @@ install:
   - pip install -q -r requirements.txt --use-mirrors
 
 before_script:
-  - flake8 crypto_fields
+  - flake8 django_crypto_fields
 
 script: 
-  - coverage run --source=crypto_fields manage.py test crypto_fields.tests
+  - coverage run --source=django_crypto_fields manage.py test django_crypto_fields.tests
 
 after_success:
   - coveralls
