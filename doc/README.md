@@ -1,11 +1,11 @@
 [![Build Status](https://travis-ci.org/erikvw/django-crypto-fields.svg?branch=master)](https://travis-ci.org/erikvw/django-crypto-fields)
 [![Coverage Status](https://coveralls.io/repos/erikvw/django-crypto-fields/badge.svg)](https://coveralls.io/r/erikvw/django-crypto-fields)
-[![Documentation Status](https://readthedocs.org/projects/django-crypto-fields/badge/?version=latest)](https://readthedocs.org/projects/django-crypto-fields/?badge=master)
+[![Documentation Status](https://readthedocs.org/projects/crypto-fields/badge/?version=latest)](https://readthedocs.org/projects/crypto-fields/?badge=latest)
 
 django-crypto-fields
 =====================
 
-Add encrypted fields classes to your Django models.
+Add encrypted field classes to your Django models.
 
 For example:
 
@@ -24,6 +24,36 @@ For example:
 	    comment = EncryptedTextField(
 	        max_length=500)
 
+Installation
+------------
+
+    pip install django-encrypted-fields
+
+Add to INSTALLED_APPS:
+
+	INSTALLED_APPS = (
+		...
+	    'django_crypto_fields',
+	    ...
+	)
+
+Add KEY_PATH to the folder in settings:
+    
+    # folder where the encryption keys are stored
+    KEY_PATH = '/Volumes/secure_drive/keys')
+     
+Add KEY_PREFIX (optional, the default is "_user_"):
+
+	# optional filename prefix for encryption keys files:
+	KEY_PREFIX = 'bhp066'
+
+Run _migrate_ to create the _crypto_fields_crypt_ table:
+
+    python manage.py migrate
+
+Generate encryption keys:
+
+	python manage.py generate_keys
 
 History
 -------
@@ -40,10 +70,12 @@ Features
 Advantages
 ----------
 
+- encryption keys are automatically created
 - unique constraint on encrypted fields: because the hash is stored in the model's db_table and not the secret, the unique=True parameter works as well as the django.form validation messages.    
 - de-identified dataset: the data analysis team should never need to see PII. They just want a de-identified dataset. A de-identified dataset is one where PII fields are encrypted and others not. With the RSA key removed, the dataset is effectively deidentified.
 - datasets from other systems with shared values, such as identity numbers, can be prepared for meta-analysis using the same keys and algorithms;
-- To completely obscure the encrypted data, the secret reference table may be dropped before releasing the database.
+- to completely obscure the encrypted data, the secret reference table may be dropped before releasing the database.
+- by default field classes exist for two sets of keys. You can customize KEY_FILENAMES to create as many sets as needed. With multiple sets of keys you have more control on who gets to see what.
 
 Disadvantages
 -------------

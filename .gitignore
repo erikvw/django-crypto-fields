@@ -4,6 +4,8 @@
 .pydevproject
 .settings
 .ropeproject
+.pypirc
+dist
 south.log
 *.bz2
 .DS_Store
@@ -12,3 +14,5 @@ htmlcov
 db.sqlite3
 *.key
 *.pem
+build
+django_crypto_fields.egg-info
