@@ -41,14 +41,14 @@ Advantages
 ----------
 
 - unique constraint on encrypted fields: because the hash is stored in the model's db_table and not the secret, the unique=True parameter works as well as the django.form validation messages.    
-- de-identified dataset: the data analysis team want a de-identified dataset; that is, where PII fields are encrypted and others not. With the RSA key removed, the encrypted fields in the dataset cannot be decrypted.   
-- Since the hash of a value is always the same and cannot be reversed, these field classes support unique constraints and all the django admin features work.
+- de-identified dataset: the data analysis team should never need to see PII. They just want a de-identified dataset. A de-identified dataset is one where PII fields are encrypted and others not. With the RSA key removed, the dataset is effectively deidentified.
+- datasets from other systems with shared values, such as identity numbers, can be prepared for meta-analysis using the same keys and algorithms;
 - To completely obscure the encrypted data, the secret reference table may be dropped before releasing the database.
 
 Disadvantages
 -------------
 
-Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from django-crypto-fields, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
+- Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from django-crypto-fields, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
 
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
 
