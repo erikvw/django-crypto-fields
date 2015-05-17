@@ -2,7 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/erikvw/django-crypto-fields/badge.svg)](https://coveralls.io/r/erikvw/django-crypto-fields)
 [![Documentation Status](https://readthedocs.org/projects/django-crypto-fields/badge/?version=latest)](https://readthedocs.org/projects/django-crypto-fields/?badge=master)
 
-$django-crypto-fields
+django-crypto-fields
 =====================
 
 Add encrypted fields classes to your Django models.
@@ -28,13 +28,13 @@ For example:
 History
 -------
 
-$project has been used in our audited research projects that use our "Edc" for data collection and management. Data collected in our Edc are considered "source documents". $project adds field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Users accessing the data through these models fields can see PII. Users accessing the DB directly cannot.
+django-crypto-fields has been used in our audited research projects that use our "Edc" for data collection and management. Data collected in our Edc are considered "source documents". django-crypto-fields adds field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Users accessing the data through these models fields can see PII. Users accessing the DB directly cannot.
 
 Features
 --------
 
 - All values are stored as a pair of hash (hashlib.pbkdf2_hmac) and secret (rsa or aes);
-- A model using a $project field class stores the hash only;
+- A model using a django-crypto-fields field class stores the hash only;
 - A separate table relates the hash to it's secret and is referenced internally by the field class;
 
 Advantages
@@ -48,7 +48,7 @@ Advantages
 Disadvantages
 -------------
 
-Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from $project, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
+Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from django-crypto-fields, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
 
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
 
@@ -56,8 +56,8 @@ Other encrypted field modules are available if you just want to use encrypted fi
 Contribute
 ----------
 
-- Issue Tracker: github.com/erikvw/$project/issues
-- Source Code: github.com/erikvw/$project
+- Issue Tracker: github.com/erikvw/django-crypto-fields/issues
+- Source Code: github.com/erikvw/django-crypto-fields
 
 License
 -------
