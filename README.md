@@ -63,3 +63,5 @@ License
 -------
 
 The project is licensed under the GPL license.
+=======
+This module is intended to be used in a Django project.
