@@ -20,7 +20,7 @@ except (ImproperlyConfigured, AttributeError) as e:
 try:
     KEY_PATH = settings.KEY_PATH
 except (ImproperlyConfigured, AttributeError) as e:
-    KEY_PATH = os.path.join(settings.BASE_DIR, 'django_crypto_fields/tests/keys')
+    KEY_PATH = os.path.join(settings.BASE_DIR, 'django_crypto_fields/tests')
     KEY_PREFIX = 'test'
     print('Warning! Not ready for production. {}. Setting KEY_PATH to {} for testing purposes.'.format(e, KEY_PATH))
 
