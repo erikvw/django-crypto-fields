@@ -2,6 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/erikvw/django-crypto-fields/badge.svg)](https://coveralls.io/r/erikvw/django-crypto-fields)
 [![Documentation Status](https://readthedocs.org/projects/django-crypto-fields/badge/?version=latest)](https://readthedocs.org/projects/django-crypto-fields/?badge=latest)
 [![PyPI version](https://badge.fury.io/py/django-crypto-fields.svg)](http://badge.fury.io/py/django-crypto-fields)
+[![Code Health](https://landscape.io/github/erikvw/django-crypto-fields/master/landscape.svg?style=flat)](https://landscape.io/github/erikvw/django-crypto-fields/master)
 
 django-crypto-fields
 =====================
