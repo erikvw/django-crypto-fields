@@ -14,3 +14,6 @@ class TestCryptors(TestCase):
         name, path, args, kwargs = fld_instance.deconstruct()
         new_instance = BaseField(*args, **kwargs)
         # self.assertEqual(fld_instance.max_length, new_instance.max_length)
+
+    def test_list_encrypted_fields(self):
+        self.assertEquals(len(TestModel.encrypted_fields()), 3)
