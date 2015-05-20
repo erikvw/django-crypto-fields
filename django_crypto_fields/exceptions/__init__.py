@@ -20,5 +20,9 @@ class EncryptionKeyError(Exception):
     pass
 
 
+class EncryptionLookupError(Exception):
+    pass
+
+
 class MalformedCiphertextError(Exception):
     pass

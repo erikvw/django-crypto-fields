@@ -143,20 +143,21 @@ class FieldCryptor(object):
             ValueError('Malformed ciphertext. Expected prefixes {}, {}'.format(HASH_PREFIX, CIPHER_PREFIX))
         try:
             if ciphertext[:len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
-                raise MalformedCiphertextError('Malformed ciphertext. Expected hash prefix {}'.format(HASH_PREFIX))
+                raise MalformedCiphertextError(
+                    'Malformed ciphertext. Expected hash prefix {}'.format(HASH_PREFIX))
             if (len(ciphertext.split(HASH_PREFIX.encode(ENCODING))[1].split(
                     CIPHER_PREFIX.encode(ENCODING))[0]) != self.hash_size):
-                raise MalformedCiphertextError('Malformed ciphertext. Expected hash size of {}.'.format(self.hash_size))
+                raise MalformedCiphertextError(
+                    'Malformed ciphertext. Expected hash size of {}.'.format(self.hash_size))
         except IndexError:
             MalformedCiphertextError('Malformed ciphertext.')
         return ciphertext
 
-    def get_prep_value(self, ciphertext, value):
-        """ Gets the hash from encrypted value for the DB """
-        if ciphertext != value:
-            self.update_cipher_model(ciphertext)
-        hashed_value = self.get_hash(ciphertext)
-        return HASH_PREFIX.encode(ENCODING) + hashed_value
+    def get_query_value(self, ciphertext):
+        """ Returns the prefix + hash as stored in the DB's table column.
+
+        Used by get_prep_value()"""
+        return ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[0]
 
     def get_hash(self, ciphertext):
         """Returns the hashed_value given a ciphertext or None."""
