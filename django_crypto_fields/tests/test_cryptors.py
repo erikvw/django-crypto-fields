@@ -208,18 +208,18 @@ class TestCryptors(TestCase):
 
     def test_model_with_encrypted_fields(self):
         """Asserts roundtrip via a model with encrypted fields."""
-        first_name = 'erik'
+        firstname = 'erik'
         identity = '123456789'
         comment = 'erik is a pleeb!!∂ƒ˜∫˙ç'
         test_model = TestModel.objects.create(
-            first_name=first_name,
+            firstname=firstname,
             identity=identity,
             comment=comment)
-        self.assertEqual(test_model.first_name, first_name)
+        self.assertEqual(test_model.firstname, firstname)
         self.assertEqual(test_model.identity, identity)
         self.assertEqual(test_model.comment, comment)
         test_model = TestModel.objects.get(identity=identity)
-        self.assertEqual(test_model.first_name, first_name)
+        self.assertEqual(test_model.firstname, firstname)
         self.assertEqual(test_model.identity, identity)
         self.assertEqual(test_model.comment, comment)
 
@@ -230,23 +230,23 @@ class TestCryptors(TestCase):
             verbose_name="Identity",
             unique=True)
         """
-        first_name = 'erik'
+        firstname = 'erik'
         identity = '123456789'
         comment = 'erik is a pleeb!!∂ƒ˜∫˙ç'
         TestModel.objects.create(
-            first_name=first_name,
+            firstname=firstname,
             identity=identity,
             comment=comment)
-        first_name2 = 'erik2'
+        firstname2 = 'erik2'
         comment2 = 'erik was a pleeb!!∂ƒ˜∫˙ç'
         with transaction.atomic():
             self.assertRaises(
                 IntegrityError,
                 TestModel.objects.create,
-                first_name=first_name2,
+                firstname=firstname2,
                 identity=identity,
                 comment=comment2)
         test_model = TestModel.objects.get(identity=identity)
-        self.assertEqual(test_model.first_name, first_name)
+        self.assertEqual(test_model.firstname, firstname)
         self.assertEqual(test_model.identity, identity)
         self.assertEqual(test_model.comment, comment)
