@@ -1,10 +1,13 @@
+import types
+
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..classes import FieldCryptor
 from ..classes.keys import keys
 from ..constants import HASH_PREFIX, ENCODING
-from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
+from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionLookupError
+from django_crypto_fields.constants import CIPHER_PREFIX
 
 
 class BaseField(models.Field):
@@ -55,58 +58,37 @@ class BaseField(models.Field):
             self.readonly = True  # did not decrypt
         return decrypted_value
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, *args):
         if value is None:
             return value
         return self.decrypt(value)
 
     def to_python(self, value):
-        if value is None:
+        if value is None or not isinstance(value, (str, bytes)):
             return value
-        return self.decrypt(value)
+        value = self.decrypt(value)
+        return super(BaseField, self).to_python(value)
 
-    def get_prep_value(self, value, encrypt=None):
-        """ Returns the hashed_value with prefix (or None) and, if needed, updates the cipher_model.
-
-        Keyword arguments:
-            encrypt -- if False, the value is returned as is (default True)
-        """
-        if value is None:
+    def get_prep_value(self, value):
+        """Returns the query value."""
+        value = super(BaseField, self).get_prep_value(value)
+        if value is None or not isinstance(value, (str, bytes)):
             return value
-        encrypt = True if encrypt is None else encrypt
-        if encrypt:
-            ciphertext = self.field_cryptor.encrypt(value)
-            if ciphertext != value:
-                self.field_cryptor.update_cipher_model(ciphertext)
-            value = HASH_PREFIX.encode(ENCODING) + self.field_cryptor.get_hash(ciphertext)
-        return value
+        ciphertext = self.field_cryptor.encrypt(value)
+        return self.field_cryptor.get_query_value(ciphertext)
 
     def get_prep_lookup(self, lookup_type, value):
-        """ Only decrypts the stored value to handle 'exact' and 'in'
-        but excepts 'icontains' as if it is 'exact' so that the admin
-        search fields work.
+        """Raises an exception for unsupported lookups.
 
-        Also, 'startswith' does not decrypt and may only be used to check for the hash_prefix.
-        All others are errors.
-        """
-        if lookup_type == 'exact' or lookup_type == 'icontains':
-            return self.get_prep_value(value)
-        elif lookup_type == 'isnull':
-            if type(value) != bool:
-                raise TypeError(('Value for lookup type \'{0}\' must be a boolean '
-                                 'for fields using encryption. Got {1}').format(lookup_type, value))
-            return self.get_prep_value(value, encrypt=False)
-        elif lookup_type == 'startswith':
-            # allow to test field value for the hash_prefix only, NO searching on the hash
-            if value != HASH_PREFIX:
-                raise TypeError(('Value for lookup type {0} may only be \'{1}\' for '
-                                 'fields using encryption.').format(lookup_type,
-                                                                    HASH_PREFIX))
-            return self.get_prep_value(value, encrypt=False)
-        elif lookup_type == 'in':
-            return [self.get_prep_value(v) for v in value]
-        else:
-            raise TypeError('Lookup type %r not supported.' % lookup_type)
+        Since the available value is the hash, only exact match lookup types are supported."""
+        if lookup_type in {
+            'startswith', 'istartswith', 'endswith', 'iendswith',
+            'contains', 'icontains', 'iexact'
+        }:
+            raise EncryptionLookupError(
+                'Unsupported lookup type for field class {}. Got \'{}\'.'.format(
+                    self.__class__.__name__, lookup_type))
+        return super(BaseField, self).get_prep_lookup(lookup_type, value)
 
     def get_internal_type(self):
         """This is a Charfield as we only ever store the hash, which is a \

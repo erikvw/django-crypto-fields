@@ -5,13 +5,14 @@ from django.db import models
 from ..edc.base.models import BaseModel
 
 from ..fields import EncryptedTextField, FirstnameField, IdentityField
-from ..mixins import CryptoMixin
+from ..mixins.crypto_mixin import CryptoMixin
 
 
 class TestModel (CryptoMixin, BaseModel):
 
     first_name = FirstnameField(
-        verbose_name="First Name")
+        verbose_name="First Name",
+        null=True)
 
     identity = IdentityField(
         verbose_name="Identity",
