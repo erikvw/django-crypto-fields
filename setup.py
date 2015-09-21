@@ -11,7 +11,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-crypto-fields',
-    version='0.1.4',
+    version='0.1.5',
     author=u'Erik van Widenfelt',
     author_email='ew2789@gmail.com',
     packages=find_packages(),
@@ -22,12 +22,6 @@ setup(
     long_description=README,
     zip_safe=False,
     keywords='django fields encryption security',
-    install_requires=[
-        'Django>=1.7',
-        'pycrypto>=2.6.1',
-        'django-extensions>=1.5.5',
-        'unipath>=1.1',
-    ],
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',

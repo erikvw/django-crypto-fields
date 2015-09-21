@@ -4,13 +4,17 @@ from django.db import models
 
 from ..edc.base.models import BaseModel
 
-from ..fields import EncryptedTextField, FirstnameField, IdentityField
+from ..fields import EncryptedTextField, FirstnameField, LastnameField, IdentityField
 from ..mixins.crypto_mixin import CryptoMixin
 
 
 class TestModel (CryptoMixin, BaseModel):
 
-    first_name = FirstnameField(
+    firstname = FirstnameField(
+        verbose_name="First Name",
+        null=True)
+
+    lastname = LastnameField(
         verbose_name="First Name",
         null=True)
 
@@ -29,3 +33,4 @@ class TestModel (CryptoMixin, BaseModel):
 
     class Meta:
         app_label = 'django_crypto_fields'
+        unique_together = ('firstname', 'lastname')

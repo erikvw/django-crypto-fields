@@ -1,3 +1,3 @@
 from .crypt import Crypt
 
-__all__ = [Crypt]
+__all__ = ['Crypt']

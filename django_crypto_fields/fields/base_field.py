@@ -1,13 +1,10 @@
-import types
-
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..classes import FieldCryptor
 from ..classes.keys import keys
-from ..constants import HASH_PREFIX, ENCODING
+from ..constants import HASH_PREFIX
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionLookupError
-from django_crypto_fields.constants import CIPHER_PREFIX
 
 
 class BaseField(models.Field):
@@ -94,3 +91,6 @@ class BaseField(models.Field):
         """This is a Charfield as we only ever store the hash, which is a \
         fixed length char. """
         return "BinaryField"
+
+    def mask(self, value, mask=None):
+        return self.field_cryptor.mask(value, mask)
