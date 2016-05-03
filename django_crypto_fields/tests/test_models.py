@@ -1,8 +1,8 @@
 from django.db.utils import IntegrityError
 from django.test import TestCase
 
-from ..fields.base_field import BaseField
-from ..exceptions import EncryptionLookupError
+from django_crypto_fields.fields.base_field import BaseField
+from django_crypto_fields.exceptions import EncryptionLookupError
 
 from .models import TestModel
 
@@ -12,13 +12,26 @@ class TestModels(TestCase):
     def test_encrypt_rsa(self):
         """Assert deconstruct."""
         test_model = TestModel()
-        fld_instance = test_model._meta.fields[-1:][0]
-        name, path, args, kwargs = fld_instance.deconstruct()
-        new_instance = BaseField(*args, **kwargs)
-        # self.assertEqual(fld_instance.max_length, new_instance.max_length)
+        for fld in test_model._meta.fields:
+            if isinstance(fld, BaseField):
+                name, path, args, kwargs = fld.deconstruct()
+                new = BaseField(fld.algorithm, fld.mode, *args, **kwargs)
+                self.assertEqual(fld.algorithm, new.algorithm)
+                self.assertEqual(fld.mode, new.mode)
 
     def test_list_encrypted_fields(self):
         self.assertEquals(len(TestModel.encrypted_fields()), 4)
+
+    def test_change(self):
+        test_model = TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
+        test_model.firstname = 'Erik2'
+        test_model.save()
+        TestModel.objects.get(firstname='Erik2')
+
+    def test_type(self):
+        TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
+        test_model = TestModel.objects.get(firstname='Erik1')
+        self.assertEqual(type(test_model.firstname), type('Erik1'))
 
     def test_blank(self):
         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
@@ -43,12 +56,10 @@ class TestModels(TestCase):
 
     def test_contains(self):
         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
-        # self.assertEqual(1, TestModel.objects.filter(firstname__contains='k1').count())
         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__contains='k1')
 
     def test_icontains(self):
         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
-        # self.assertEqual(1, TestModel.objects.filter(firstname__icontains='k1').count())
         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__icontains='k1')
 
     def test_in(self):
@@ -73,7 +84,6 @@ class TestModels(TestCase):
         TestModel.objects.create(firstname='Eriak2', identity='11111112', comment='no comment')
         TestModel.objects.create(firstname='Eriek3', identity='11111113', comment='no comment')
         TestModel.objects.create(firstname='Eriek4', identity='11111114', comment='no comment')
-        # self.assertEqual(2, TestModel.objects.filter(firstname__startswith='Eria').count())
         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__startswith='Eria')
 
     def test_endsswith(self):
@@ -81,5 +91,4 @@ class TestModels(TestCase):
         TestModel.objects.create(firstname='Eriak2', identity='11111112', comment='no comment')
         TestModel.objects.create(firstname='Eriek3', identity='11111113', comment='no comment')
         TestModel.objects.create(firstname='Eriek4', identity='11111114', comment='no comment')
-        # self.assertEqual(1, TestModel.objects.filter(firstname__endswith='ak2').count())
         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__endswith='ak2')

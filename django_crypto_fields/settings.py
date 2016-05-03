@@ -52,7 +52,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'django_crypto_fields.urls'
 
 TEMPLATES = [
     {
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'wsgi.application'
+WSGI_APPLICATION = 'django_crypto_fields.wsgi.application'
 
 
 # Database
@@ -102,3 +102,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+GIT_DIR = BASE_DIR.ancestor(1)
+KEY_PATH = os.path.join(BASE_DIR.ancestor(1), 'crypto_fields')

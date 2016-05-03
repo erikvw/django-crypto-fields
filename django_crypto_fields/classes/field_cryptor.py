@@ -88,7 +88,7 @@ class FieldCryptor(object):
         return ciphertext
 
     def decrypt(self, hash_with_prefix):
-        """Returns decrypted secret.
+        """Returns decrypted secret or None.
 
         Secret is retrieved from cipher_model using the hash.
 

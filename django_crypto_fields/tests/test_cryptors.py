@@ -4,10 +4,10 @@ from django.db import transaction
 from django.test import TestCase
 from django.db.utils import IntegrityError
 
-from ..classes import Cryptor, FieldCryptor
-from ..constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, KEY_FILENAMES
-from ..exceptions import EncryptionError, MalformedCiphertextError
-from ..classes.keys import keys, KEYS
+from django_crypto_fields.classes import Cryptor, FieldCryptor
+from django_crypto_fields.constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, KEY_FILENAMES
+from django_crypto_fields.exceptions import EncryptionError, MalformedCiphertextError
+from django_crypto_fields.classes.keys import keys, KEYS
 
 from .models import TestModel
 
@@ -211,6 +211,23 @@ class TestCryptors(TestCase):
         firstname = 'erik'
         identity = '123456789'
         comment = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        test_model = TestModel.objects.create(
+            firstname=firstname,
+            identity=identity,
+            comment=comment)
+        self.assertEqual(test_model.firstname, firstname)
+        self.assertEqual(test_model.identity, identity)
+        self.assertEqual(test_model.comment, comment)
+        test_model = TestModel.objects.get(identity=identity)
+        self.assertEqual(test_model.firstname, firstname)
+        self.assertEqual(test_model.identity, identity)
+        self.assertEqual(test_model.comment, comment)
+
+    def test_model_with_encrypted_fields_as_none(self):
+        """Asserts roundtrip via a model with encrypted fields."""
+        firstname = 'erik'
+        identity = '123456789'
+        comment = None
         test_model = TestModel.objects.create(
             firstname=firstname,
             identity=identity,

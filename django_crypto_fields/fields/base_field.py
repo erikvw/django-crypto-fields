@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-
+from django.forms import widgets
+from django.conf import settings
 from ..classes import FieldCryptor
 from ..classes.keys import keys
 from ..constants import HASH_PREFIX
@@ -11,49 +12,62 @@ class BaseField(models.Field):
 
     description = 'Field class that stores values as encrypted'
 
-    def __init__(self, *args, **kwargs):
-        algorithm = kwargs.get('algorithm', 'rsa')
-        mode = kwargs.get('mode', 'local')
-        self.field_cryptor = FieldCryptor(algorithm, mode)
-        max_length = kwargs.get('max_length', None) or len(HASH_PREFIX) + self.field_cryptor.hash_size
-        if algorithm == 'rsa':
-            max_message_length = keys.rsa_key_info[mode]['max_message_length']
-            if max_length > max_message_length:
+    def __init__(self, algorithm, mode, *args, **kwargs):
+        self.algorithm = algorithm or 'rsa'
+        self.mode = mode or 'local'
+        self.help_text = kwargs.get('help_text', '')
+        if not self.help_text.startswith(' (Encryption:'):
+            self.help_text = '{} (Encryption: {} {})'.format(
+                self.help_text.split(' (Encryption:')[0], algorithm.upper(), mode)
+        self.field_cryptor = FieldCryptor(self.algorithm, self.mode)
+        self.max_length = kwargs.get('max_length', None) or len(HASH_PREFIX) + self.field_cryptor.hash_size
+        if self.algorithm == 'rsa':
+            max_message_length = keys.rsa_key_info[self.mode]['max_message_length']
+            if self.max_length > max_message_length:
                 raise EncryptionError(
                     '{} attribute \'max_length\' cannot exceed {} for RSA. Got {}. '
                     'Try setting \'algorithm\' = \'aes\'.'.format(
-                        self.__class__.__name__, max_message_length, max_length))
-        try:
-            del kwargs['algorithm']
-        except KeyError:
-            pass
-        try:
-            del kwargs['mode']
-        except KeyError:
-            pass
-        kwargs['max_length'] = max_length
+                        self.__class__.__name__, max_message_length, self.max_length))
+        kwargs['max_length'] = self.max_length
+        kwargs['help_text'] = self.help_text
         super(BaseField, self).__init__(*args, **kwargs)
 
     def deconstruct(self):
         name, path, args, kwargs = super(BaseField, self).deconstruct()
-        del kwargs["max_length"]
+        kwargs['help_text'] = self.help_text
+        kwargs['max_length'] = self.max_length
         return name, path, args, kwargs
 
-    def to_string(self, value):
-        """ Users can override for non-string data types. """
-        return value
+    def formfield(self, **kwargs):
+        defaults = kwargs
+        try:
+            show_encrypted_values = settings.SHOW_CRYPTO_FORM_DATA
+        except AttributeError:
+            show_encrypted_values = True
+        if not show_encrypted_values:
+            defaults = {'disabled': True,
+                        'widget': widgets.PasswordInput}
+            defaults.update(kwargs)
+        return super(BaseField, self).formfield(**defaults)
 
     def decrypt(self, value):
-        if value is None:
-            return value
         decrypted_value = None
+        if value is None or value in ['', b'']:
+            return value
         try:
             decrypted_value = self.field_cryptor.decrypt(value)
+            if not decrypted_value:
+                self.readonly = True  # did not decrypt
+                decrypted_value = value
         except (CipherError, EncryptionError, MalformedCiphertextError) as e:
             raise ValidationError(e)
-        if decrypted_value == value:
-            self.readonly = True  # did not decrypt
         return decrypted_value
+
+    def encrypt(self, value):
+        if value is None or value in ['', b'']:
+            return None
+        encrypted_value = self.field_cryptor.encrypt(value)
+        return encrypted_value
 
     def from_db_value(self, value, *args):
         if value is None:
@@ -61,18 +75,18 @@ class BaseField(models.Field):
         return self.decrypt(value)
 
     def to_python(self, value):
-        if value is None or not isinstance(value, (str, bytes)):
+        if value is None:
             return value
-        value = self.decrypt(value)
-        return super(BaseField, self).to_python(value)
+        return self.decrypt(value)
 
     def get_prep_value(self, value):
-        """Returns the query value."""
-        value = super(BaseField, self).get_prep_value(value)
-        if value is None or not isinstance(value, (str, bytes)):
+        """Returns the encrypted value, including prefix, as the query value.
+
+        Note: partial matches do not work. See get_prep_lookup()."""
+        if value is None or value in ['']:
             return value
-        ciphertext = self.field_cryptor.encrypt(value)
-        return self.field_cryptor.get_query_value(ciphertext)
+        encrypted_value = self.encrypt(value)
+        return self.field_cryptor.get_query_value(encrypted_value)
 
     def get_prep_lookup(self, lookup_type, value):
         """Raises an exception for unsupported lookups.
@@ -83,14 +97,14 @@ class BaseField(models.Field):
             'contains', 'icontains', 'iexact'
         }:
             raise EncryptionLookupError(
-                'Unsupported lookup type for field class {}. Got \'{}\'.'.format(
+                'Lookup type not supported for field class {}. Got \'{}\'.'.format(
                     self.__class__.__name__, lookup_type))
         return super(BaseField, self).get_prep_lookup(lookup_type, value)
 
     def get_internal_type(self):
         """This is a Charfield as we only ever store the hash, which is a \
         fixed length char. """
-        return "BinaryField"
+        return "CharField"
 
     def mask(self, value, mask=None):
         return self.field_cryptor.mask(value, mask)

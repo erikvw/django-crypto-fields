@@ -1,13 +1,13 @@
 from django.db import models
 
-from ..edc.base.models import BaseModel
+from edc_base.model.models import BaseModel
 
 
 class Crypt (BaseModel):
 
     """ A secrets lookup model searchable by hash """
 
-    hash = models.BinaryField(
+    hash = models.CharField(
         verbose_name="Hash",
         max_length=128,
         db_index=True,

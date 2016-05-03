@@ -1,11 +1,10 @@
-from datetime import datetime
-
 from django.db import models
+from django.utils import timezone
 
-from ..edc.base.models import BaseModel
+from edc_base.model.models import BaseModel
 
-from ..fields import EncryptedTextField, FirstnameField, LastnameField, IdentityField
-from ..mixins.crypto_mixin import CryptoMixin
+from django_crypto_fields.fields import EncryptedTextField, FirstnameField, LastnameField, IdentityField
+from django_crypto_fields.mixins import CryptoMixin
 
 
 class TestModel (CryptoMixin, BaseModel):
@@ -15,7 +14,7 @@ class TestModel (CryptoMixin, BaseModel):
         null=True)
 
     lastname = LastnameField(
-        verbose_name="First Name",
+        verbose_name="Last Name",
         null=True)
 
     identity = IdentityField(
@@ -23,11 +22,11 @@ class TestModel (CryptoMixin, BaseModel):
         unique=True)
 
     comment = EncryptedTextField(
-        verbose_name="AES",
-        max_length=500)
+        max_length=500,
+        null=True)
 
     report_date = models.DateField(
-        default=datetime.today())
+        default=timezone.now)
 
     objects = models.Manager()
 

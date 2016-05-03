@@ -1,4 +1,4 @@
-from ..fields import BaseField
+from .fields import BaseField
 
 
 class CryptoMixin(object):
