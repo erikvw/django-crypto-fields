@@ -3,14 +3,19 @@ import os
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-
-RSA_KEY_SIZE = 2048
+AES = 'aes'
+CIPHER_BUFFER_SIZE = 10
+CIPHER_PREFIX = 'enc2:::'
 ENCODING = 'utf-8'
 HASH_ALGORITHM = 'sha256'
-HASH_ROUNDS = 100000
 HASH_PREFIX = 'enc1:::'
-CIPHER_PREFIX = 'enc2:::'
-CIPHER_BUFFER_SIZE = 10
+HASH_ROUNDS = 100000
+LOCAL_MODE = 'local'
+PRIVATE = 'private'
+PUBLIC = 'public'
+RSA = 'rsa'
+RSA_KEY_SIZE = 2048
+SALT = 'salt'
 
 try:
     KEY_PREFIX = settings.KEY_PREFIX

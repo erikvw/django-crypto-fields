@@ -4,10 +4,10 @@ import sys
 from builtins import FileNotFoundError
 
 from Crypto.Cipher import PKCS1_OAEP
-from Crypto.PublicKey import RSA
+from Crypto.PublicKey import RSA as RSA_PUBLIC_KEY
 from Crypto.Util import number
 
-from ..constants import KEY_FILENAMES, KEY_PATH, KEY_PREFIX
+from ..constants import RSA, PRIVATE, SALT, KEY_FILENAMES, KEY_PATH, KEY_PREFIX
 from ..utils import KeyGenerator
 
 KEYS = copy.deepcopy(KEY_FILENAMES)
@@ -30,43 +30,43 @@ class Keys(object):
 
     def load_rsa_key(self, mode, key):
         """Loads an RSA key into KEYS."""
-        key_file = KEY_FILENAMES['rsa'][mode][key]
+        key_file = KEY_FILENAMES[RSA][mode][key]
         with open(key_file, 'rb') as frsa:
-            rsa_key = RSA.importKey(frsa.read())
+            rsa_key = RSA_PUBLIC_KEY.importKey(frsa.read())
             rsa_key = PKCS1_OAEP.new(rsa_key)
-            KEYS['rsa'][mode][key] = rsa_key
+            KEYS[RSA][mode][key] = rsa_key
             self.update_rsa_key_info(rsa_key, mode)
         return key_file
 
     def load_aes_key(self, mode, key):
         """Decrypts and loads an AES key into KEYS."""
-        rsa_key = KEYS['rsa'][mode]['private']
-        key_file = KEY_FILENAMES['aes'][mode]['private']
+        rsa_key = KEYS[RSA][mode][PRIVATE]
+        key_file = KEY_FILENAMES['aes'][mode][PRIVATE]
         with open(key_file, 'rb') as faes:
             aes_key = rsa_key.decrypt(faes.read())
-        KEYS['aes'][mode]['private'] = aes_key
+        KEYS['aes'][mode][PRIVATE] = aes_key
         return key_file
 
     def load_salt_key(self, mode, key):
         """Decrypts and loads a salt key into KEYS."""
-        rsa_key = KEYS['rsa'][mode]['private']
-        key_file = KEY_FILENAMES['salt'][mode]['private']
+        rsa_key = KEYS[RSA][mode][PRIVATE]
+        key_file = KEY_FILENAMES[SALT][mode][PRIVATE]
         with open(key_file, 'rb') as fsalt:
             salt = rsa_key.decrypt(fsalt.read())
-        KEYS['salt'][mode]['private'] = salt
+        KEYS[SALT][mode][PRIVATE] = salt
         return key_file
 
     def load_keys(self):
         """Loads all keys defined in KEY_FILENAMES."""
         sys.stdout.write('/* Loading keys ...\n')
-        for mode, keys in KEY_FILENAMES['rsa'].items():
+        for mode, keys in KEY_FILENAMES[RSA].items():
             for key in keys:
                 key_file = self.load_rsa_key(mode, key)
                 sys.stdout.write('(*) Loaded {}\n'.format(key_file))
         for mode in KEY_FILENAMES['aes']:
             key_file = self.load_aes_key(mode, key)
             sys.stdout.write('(*) Loaded {}\n'.format(key_file))
-        for mode in KEY_FILENAMES['salt']:
+        for mode in KEY_FILENAMES[SALT]:
             key_file = self.load_salt_key(mode, key)
             sys.stdout.write('(*) Loaded {}\n'.format(key_file))
         sys.stdout.write('Done loading keys.\n')

@@ -1,9 +1,9 @@
 import sys
 
 from Crypto import Random
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES as AES_CIPHER
 
-from ..constants import KEY_FILENAMES, ENCODING
+from ..constants import RSA, AES, PRIVATE, PUBLIC, KEY_FILENAMES, ENCODING
 from ..exceptions import EncryptionError
 
 from .keys import KEYS
@@ -23,20 +23,20 @@ class Cryptor(object):
             plaintext = plaintext.encode(ENCODING)
         except AttributeError:
             pass
-        aes_key = KEYS['aes'][mode]['private']
-        iv = Random.new().read(AES.block_size)
-        cipher = AES.new(aes_key, AES.MODE_CFB, iv)
+        aes_key = KEYS[AES][mode][PRIVATE]
+        iv = Random.new().read(AES_CIPHER.block_size)
+        cipher = AES_CIPHER.new(aes_key, AES_CIPHER.MODE_CFB, iv)
         return iv + cipher.encrypt(plaintext)
 
     def aes_decrypt(self, ciphertext, mode):
-        aes_key = KEYS['aes'][mode]['private']
-        iv = ciphertext[:AES.block_size]
-        cipher = AES.new(aes_key, AES.MODE_CFB, iv)
-        plaintext = cipher.decrypt(ciphertext)[AES.block_size:]
+        aes_key = KEYS[AES][mode][PRIVATE]
+        iv = ciphertext[:AES_CIPHER.block_size]
+        cipher = AES_CIPHER.new(aes_key, AES_CIPHER.MODE_CFB, iv)
+        plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size:]
         return plaintext.decode(ENCODING)
 
     def rsa_encrypt(self, plaintext, mode):
-        rsa_key = KEYS['rsa'][mode]['public']
+        rsa_key = KEYS[RSA][mode][PUBLIC]
         try:
             plaintext = plaintext.encode(ENCODING)
         except AttributeError:
@@ -48,33 +48,33 @@ class Cryptor(object):
         return ciphertext
 
     def rsa_decrypt(self, ciphertext, mode):
-        rsa_key = KEYS['rsa'][mode]['private']
+        rsa_key = KEYS[RSA][mode][PRIVATE]
         plaintext = rsa_key.decrypt(ciphertext)
         return plaintext.decode(ENCODING)
 
     def test_rsa(self):
         """ Tests keys roundtrip"""
         plaintext = 'erik is a pleeb!'
-        for mode in KEY_FILENAMES['rsa']:
+        for mode in KEY_FILENAMES[RSA]:
             try:
-                rsa_key = KEYS['rsa'][mode]['public']
+                rsa_key = KEYS[RSA][mode][PUBLIC]
                 ciphertext = rsa_key.encrypt(plaintext.encode('utf_8'))
-                sys.stdout.write('(*) Passed encrypt: ' + KEY_FILENAMES['rsa'][mode]['public'])
+                sys.stdout.write('(*) Passed encrypt: ' + KEY_FILENAMES[RSA][mode][PUBLIC])
             except (AttributeError, TypeError) as e:
                 print('( ) Failed encrypt: {} public ({})'.format(mode, e))
             try:
-                rsa_key = KEYS['rsa'][mode]['private']
+                rsa_key = KEYS[RSA][mode][PRIVATE]
                 assert plaintext == rsa_key.decrypt(ciphertext).decode(ENCODING)
-                print('(*) Passed decrypt: ' + KEY_FILENAMES['rsa'][mode]['private'])
+                print('(*) Passed decrypt: ' + KEY_FILENAMES[RSA][mode][PRIVATE])
             except (AttributeError, TypeError) as e:
                 print('( ) Failed decrypt: {} private ({})'.format(mode, e))
 
     def test_aes(self):
         """ Tests keys roundtrip"""
         plaintext = 'erik is a pleeb!'
-        for mode in KEY_FILENAMES['aes']:
+        for mode in KEY_FILENAMES[AES]:
             ciphertext = self.aes_encrypt(plaintext, mode)
             assert plaintext != ciphertext
-            print('(*) Passed encrypt: ' + KEY_FILENAMES['aes'][mode]['private'])
+            print('(*) Passed encrypt: ' + KEY_FILENAMES[AES][mode][PRIVATE])
             assert plaintext == self.aes_decrypt(ciphertext, mode)
-            print('(*) Passed decrypt: ' + KEY_FILENAMES['aes'][mode]['private'])
+            print('(*) Passed decrypt: ' + KEY_FILENAMES[AES][mode][PRIVATE])

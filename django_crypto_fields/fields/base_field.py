@@ -1,11 +1,12 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import widgets
-from django.conf import settings
+
 from ..classes import FieldCryptor
 from ..classes.keys import keys
-from ..constants import HASH_PREFIX
-from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionLookupError
+from ..constants import HASH_PREFIX, RSA, LOCAL_MODE
+from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
 
 
 class BaseField(models.Field):
@@ -13,15 +14,15 @@ class BaseField(models.Field):
     description = 'Field class that stores values as encrypted'
 
     def __init__(self, algorithm, mode, *args, **kwargs):
-        self.algorithm = algorithm or 'rsa'
-        self.mode = mode or 'local'
+        self.algorithm = algorithm or RSA
+        self.mode = mode or LOCAL_MODE
         self.help_text = kwargs.get('help_text', '')
         if not self.help_text.startswith(' (Encryption:'):
             self.help_text = '{} (Encryption: {} {})'.format(
                 self.help_text.split(' (Encryption:')[0], algorithm.upper(), mode)
         self.field_cryptor = FieldCryptor(self.algorithm, self.mode)
         self.max_length = kwargs.get('max_length', None) or len(HASH_PREFIX) + self.field_cryptor.hash_size
-        if self.algorithm == 'rsa':
+        if self.algorithm == RSA:
             max_message_length = keys.rsa_key_info[self.mode]['max_message_length']
             if self.max_length > max_message_length:
                 raise EncryptionError(
@@ -89,17 +90,12 @@ class BaseField(models.Field):
         return self.field_cryptor.get_query_value(encrypted_value)
 
     def get_prep_lookup(self, lookup_type, value):
-        """Raises an exception for unsupported lookups.
+        """Convert the value to a hash with prefix and pass to super.
 
         Since the available value is the hash, only exact match lookup types are supported."""
-        if lookup_type in {
-            'startswith', 'istartswith', 'endswith', 'iendswith',
-            'contains', 'icontains', 'iexact'
-        }:
-            raise EncryptionLookupError(
-                'Lookup type not supported for field class {}. Got \'{}\'.'.format(
-                    self.__class__.__name__, lookup_type))
-        return super(BaseField, self).get_prep_lookup(lookup_type, value)
+        hash_with_prefix = HASH_PREFIX.encode() + self.field_cryptor.hash(value)
+        lookup_type = 'iexact'
+        return super(BaseField, self).get_prep_lookup(lookup_type, hash_with_prefix)
 
     def get_internal_type(self):
         """This is a Charfield as we only ever store the hash, which is a \

@@ -5,7 +5,9 @@ from collections import OrderedDict
 
 from django.apps import apps
 
-from ..constants import (KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING, HASH_ALGORITHM, HASH_ROUNDS)
+from ..constants import (
+    KEY_FILENAMES, HASH_PREFIX, CIPHER_PREFIX, ENCODING, HASH_ALGORITHM, HASH_ROUNDS,
+    PRIVATE, AES, RSA)
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError
 
 from .cryptor import Cryptor
@@ -47,7 +49,7 @@ class FieldCryptor(object):
         except AttributeError:
             pass
         try:
-            salt = KEYS['salt'][self.mode]['private']
+            salt = KEYS['salt'][self.mode][PRIVATE]
         except AttributeError:
             raise EncryptionKeyError('Invalid mode for salt key. Got {}'.format(self.mode))
         dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext, salt, HASH_ROUNDS)
@@ -71,9 +73,9 @@ class FieldCryptor(object):
                 pass
         else:
             try:
-                if self.algorithm == 'aes':
+                if self.algorithm == AES:
                     cipher = self.cryptor.aes_encrypt
-                elif self.algorithm == 'rsa':
+                elif self.algorithm == RSA:
                     cipher = self.cryptor.rsa_encrypt
                 else:
                     cipher = None
@@ -99,9 +101,9 @@ class FieldCryptor(object):
                 hashed_value = self.get_hash(hash_with_prefix)
                 secret = self.fetch_secret(hash_with_prefix)
                 if secret:
-                    if self.algorithm == 'aes':
+                    if self.algorithm == AES:
                         plaintext = self.cryptor.aes_decrypt(secret, self.mode)
-                    elif self.algorithm == 'rsa':
+                    elif self.algorithm == RSA:
                         plaintext = self.cryptor.rsa_decrypt(secret, self.mode)
                     else:
                         raise CipherError(
@@ -154,7 +156,8 @@ class FieldCryptor(object):
         return ciphertext
 
     def get_query_value(self, ciphertext):
-        """ Returns the prefix + hash as stored in the DB's table column.
+        """ Returns the prefix + hash as stored in the DB table column of
+        your model's "encrypted" field.
 
         Used by get_prep_value()"""
         return ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[0]
