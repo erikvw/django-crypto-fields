@@ -3,11 +3,12 @@ from datetime import datetime
 from django.db import transaction
 from django.test import TestCase
 from django.db.utils import IntegrityError
+from django.apps import apps
 
 from django_crypto_fields.classes import Cryptor, FieldCryptor
 from django_crypto_fields.constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, KEY_FILENAMES
 from django_crypto_fields.exceptions import EncryptionError, MalformedCiphertextError
-from django_crypto_fields.classes.keys import keys, KEYS
+from django_crypto_fields.classes.keys import KEYS
 
 from .models import TestModel
 
@@ -33,6 +34,7 @@ class TestCryptors(TestCase):
     def test_encrypt_rsa_length(self):
         """Assert RSA raises EncryptionError if plaintext is too long."""
         cryptor = Cryptor()
+        keys = apps.get_app_config('django_crypto_fields').keys()
         for mode in KEYS['rsa']:
             max_length = keys.rsa_key_info[mode]['max_message_length']
             plaintext = ''.join(['a' for i in range(0, max_length)])

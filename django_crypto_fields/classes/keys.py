@@ -18,7 +18,10 @@ class Keys(object):
     def __init__(self):
         """Loads all keys defined in KEY_FILENAMES into KEYS.
 
-        If keys do not exist they will be created."""
+        If keys do not exist they will be created.
+
+        Note: keys are imported through the AppConfig ready method.
+        """
         self.loaded = False
         self.rsa_key_info = {}
         try:
@@ -58,7 +61,7 @@ class Keys(object):
 
     def load_keys(self):
         """Loads all keys defined in KEY_FILENAMES."""
-        sys.stdout.write('/* Loading keys ...\n')
+        sys.stdout.write('Loading encryption keys ...\n')
         for mode, keys in KEY_FILENAMES[RSA].items():
             for key in keys:
                 key_file = self.load_rsa_key(mode, key)
@@ -80,5 +83,3 @@ class Keys(object):
         self.rsa_key_info[mode].update({'bytes': k})
         hLen = rsa_key._hashObj.digest_size
         self.rsa_key_info[mode].update({'max_message_length': k - (2 * hLen) - 2})
-
-keys = Keys()

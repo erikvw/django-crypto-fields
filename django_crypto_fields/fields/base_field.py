@@ -2,9 +2,9 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import widgets
+from django.apps import apps
 
 from ..classes import FieldCryptor
-from ..classes.keys import keys
 from ..constants import HASH_PREFIX, RSA, LOCAL_MODE
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
 
@@ -14,6 +14,7 @@ class BaseField(models.Field):
     description = 'Field class that stores values as encrypted'
 
     def __init__(self, algorithm, mode, *args, **kwargs):
+        keys = apps.get_app_config('django_crypto_fields').encryption_keys
         self.algorithm = algorithm or RSA
         self.mode = mode or LOCAL_MODE
         self.help_text = kwargs.get('help_text', '')

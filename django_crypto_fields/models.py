@@ -29,9 +29,8 @@ class Crypt (BaseModel):
     objects = models.Manager()
 
     def natural_key(self):
-        return (self.hash, self.algorithm, self.mode,)
+        return (self.hash, self.algorithm, self.mode)
 
     class Meta:
-        app_label = 'django_crypto_fields'
         verbose_name = 'Crypt'
         unique_together = (('hash', 'algorithm', 'mode'),)
