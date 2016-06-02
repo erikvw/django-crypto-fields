@@ -22,6 +22,9 @@ setup(
     long_description=README,
     zip_safe=False,
     keywords='django fields encryption security',
+    install_requires=[
+        'pycrypto',
+    ],
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
@@ -29,9 +32,7 @@ setup(
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        # 'Programming Language :: Python :: 3',
-        # 'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Security :: Cryptography',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
