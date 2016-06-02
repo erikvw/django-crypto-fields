@@ -11,17 +11,17 @@ class EncryptedDecimalField(BaseRsaField):
 
     def __init__(self, *args, **kwargs):
         # models.DecimalField(..., max_digits=5, decimal_places=2)
-        if 'max_digits' not in kwargs.keys():
+        if 'max_digits' not in kwargs:
             raise AttributeError('EncryptedDecimalField requires attribute \'max_digits\. Got none')
-        elif 'max_digits' in kwargs.keys():
+        elif 'max_digits' in kwargs:
             try:
                 int(kwargs.get('max_digits'))
             except:
                 raise AttributeError('EncryptedDecimalField attribute \'max_digits\ must be an '
                                      'integer. Got {0}'.format(kwargs.get('max_digits')))
-        if 'decimal_places' not in kwargs.keys():
+        if 'decimal_places' not in kwargs:
             raise AttributeError('EncryptedDecimalField requires attribute \'decimal_places\. Got none')
-        elif 'decimal_places' in kwargs.keys():
+        elif 'decimal_places' in kwargs:
             try:
                 int(kwargs.get('decimal_places'))
             except:
