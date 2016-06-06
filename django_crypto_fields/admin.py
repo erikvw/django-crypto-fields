@@ -7,18 +7,29 @@ class CryptoFieldsAdminSite(AdminSite):
     """
     For example:
         add to urls:
-            url(r'^call_manager/', call_manager_admin.urls),
+            url(r'^admin/', encryption_admin.urls),
         then:
-            >>> reverse('call_manager_admin:edc_call_manager_call_add')
-            '/call_manager/edc_call_manager/call/add/'
+            >>> reverse('encryption_admin:django_crypto_fields_crypt_add')
+            '/admin/django_crypto_fields/crypt/add/'
     """
     site_header = 'Data Encryption Administration'
     site_title = 'Data Encryption Administration'
     index_title = 'Data Encryption'
     site_url = '/crypto_fields/'
-encryption_admin = CryptoFieldsAdminSite(name='encryption_admin')
+crypto_fields_admin = CryptoFieldsAdminSite(name='encryption_admin')
 
 
-@admin.register(Crypt, site=encryption_admin)
+@admin.register(Crypt, site=crypto_fields_admin)
 class CryptAdmin(admin.ModelAdmin):
+
+    date_hierarchy = 'modified'
+
+    fields = sorted([field.name for field in Crypt._meta.fields])
+
+    readonly_fields = [field.name for field in Crypt._meta.fields]
+
+    list_display = ('algorithm', 'hash', 'modified', 'hostname_modified')
+
+    list_filter = ('algorithm', 'modified', 'hostname_modified')
+
     search_fields = ('hash', )

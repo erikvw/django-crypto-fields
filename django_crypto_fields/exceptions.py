@@ -1,3 +1,9 @@
+class DjangoCryptoFieldsLoadingError(Exception):
+    pass
+
+
+class DjangoCryptoFieldsKeysAlreadyLoaded(Exception):
+    pass
 
 
 class EncryptionError(Exception):

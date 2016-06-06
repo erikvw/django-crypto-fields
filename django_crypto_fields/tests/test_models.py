@@ -4,7 +4,7 @@ from django.test import TestCase
 from django_crypto_fields.fields.base_field import BaseField
 from django_crypto_fields.exceptions import EncryptionLookupError
 
-from .models import TestModel
+from example.models import TestModel
 
 
 class TestModels(TestCase):
@@ -52,7 +52,7 @@ class TestModels(TestCase):
     def test_iexact(self):
         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
         # self.assertEqual(1, TestModel.objects.filter(firstname__iexact='Erik1').count())
-        self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__iexact='Erik1')
+        self.assertEqual(1, TestModel.objects.filter(firstname__iexact='Erik1').count())
 
     def test_contains(self):
         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')

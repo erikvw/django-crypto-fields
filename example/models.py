@@ -31,5 +31,5 @@ class TestModel (CryptoMixin, BaseModel):
     objects = models.Manager()
 
     class Meta:
-        app_label = 'django_crypto_fields'
+        app_label = 'example'
         unique_together = ('firstname', 'lastname')

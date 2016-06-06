@@ -2,11 +2,12 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import widgets
-from django.apps import apps
+from django.apps import apps as django_apps
 
-from ..classes import FieldCryptor
 from ..constants import HASH_PREFIX, RSA, LOCAL_MODE
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
+from ..field_cryptor import FieldCryptor
+from django_crypto_fields.exceptions import EncryptionLookupError
 
 
 class BaseField(models.Field):
@@ -14,7 +15,7 @@ class BaseField(models.Field):
     description = 'Field class that stores values as encrypted'
 
     def __init__(self, algorithm, mode, *args, **kwargs):
-        keys = apps.get_app_config('django_crypto_fields').encryption_keys
+        self.keys = django_apps.get_app_config('django_crypto_fields').encryption_keys
         self.algorithm = algorithm or RSA
         self.mode = mode or LOCAL_MODE
         self.help_text = kwargs.get('help_text', '')
@@ -24,7 +25,7 @@ class BaseField(models.Field):
         self.field_cryptor = FieldCryptor(self.algorithm, self.mode)
         self.max_length = kwargs.get('max_length', None) or len(HASH_PREFIX) + self.field_cryptor.hash_size
         if self.algorithm == RSA:
-            max_message_length = keys.rsa_key_info[self.mode]['max_message_length']
+            max_message_length = self.keys.rsa_key_info[self.mode]['max_message_length']
             if self.max_length > max_message_length:
                 raise EncryptionError(
                     '{} attribute \'max_length\' cannot exceed {} for RSA. Got {}. '
@@ -65,38 +66,52 @@ class BaseField(models.Field):
             raise ValidationError(e)
         return decrypted_value
 
-    def encrypt(self, value):
-        if value is None or value in ['', b'']:
-            return None
-        encrypted_value = self.field_cryptor.encrypt(value)
-        return encrypted_value
-
     def from_db_value(self, value, *args):
-        if value is None:
+        if value is None or value in ['', b'']:
             return value
         return self.decrypt(value)
 
-    def to_python(self, value):
-        if value is None:
-            return value
-        return self.decrypt(value)
+#     def to_python(self, value):
+#         if value is None or value in ['', b'']:
+#             return value
+#         return self.decrypt(value)
 
     def get_prep_value(self, value):
-        """Returns the encrypted value, including prefix, as the query value.
+        """Returns the encrypted value, including prefix, as the query value (to query the db).
+
+        db is queried using the hash
 
         Note: partial matches do not work. See get_prep_lookup()."""
-        if value is None or value in ['']:
-            return value
-        encrypted_value = self.encrypt(value)
-        return self.field_cryptor.get_query_value(encrypted_value)
+        return self.field_cryptor.get_prep_value(value)
 
     def get_prep_lookup(self, lookup_type, value):
         """Convert the value to a hash with prefix and pass to super.
 
         Since the available value is the hash, only exact match lookup types are supported."""
-        hash_with_prefix = HASH_PREFIX.encode() + self.field_cryptor.hash(value)
-        lookup_type = 'iexact'
-        return super(BaseField, self).get_prep_lookup(lookup_type, hash_with_prefix)
+        if value is None or value in ['', b'']:
+            pass  # print('value={}'.format(value))
+        else:
+            supported_lookups = ['iexact', 'exact', 'in', 'isnull']
+            if lookup_type not in supported_lookups:
+                raise EncryptionLookupError(
+                    'Field type only supports supports \'{}\' lookups. Got \'{}\''.format(
+                        supported_lookups, lookup_type))
+            if lookup_type == 'isnull':
+                value = self.get_isnull_as_lookup(value)
+            elif lookup_type == 'in':
+                self.get_in_as_lookup(value)
+            else:
+                value = HASH_PREFIX.encode() + self.field_cryptor.hash(value)
+        return super(BaseField, self).get_prep_lookup(lookup_type, value)
+
+    def get_isnull_as_lookup(self, value):
+        return value
+
+    def get_in_as_lookup(self, values):
+        hashed_values = []
+        for value in values:
+            hashed_values.append(HASH_PREFIX.encode() + self.field_cryptor.hash(value))
+        return hashed_values
 
     def get_internal_type(self):
         """This is a Charfield as we only ever store the hash, which is a \
