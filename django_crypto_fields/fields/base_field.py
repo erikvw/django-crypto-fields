@@ -88,7 +88,8 @@ class BaseField(models.Field):
         """Convert the value to a hash with prefix and pass to super.
 
         Since the available value is the hash, only exact match lookup types are supported."""
-        if value is None or value in ['', b'']:
+        supported_lookups = ['iexact', 'exact', 'in', 'isnull']
+        if value is None or value in ['', b''] or lookup_type not in supported_lookups:
             pass  # print('value={}'.format(value))
         else:
             supported_lookups = ['iexact', 'exact', 'in', 'isnull']
