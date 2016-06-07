@@ -106,6 +106,10 @@ class FieldCryptor(object):
 
         hash_with_prefix = hash_prefix+hash."""
         plaintext = None
+        try:
+            hash_with_prefix = hash_with_prefix.encode(ENCODING)
+        except AttributeError:
+            pass
         if hash_with_prefix:
             if self.is_encrypted(hash_with_prefix, has_secret=False):
                 hashed_value = self.get_hash(hash_with_prefix)
@@ -177,6 +181,10 @@ class FieldCryptor(object):
 
     def get_hash(self, ciphertext):
         """Returns the hashed_value given a ciphertext or None."""
+        try:
+            ciphertext.encode(ENCODING)
+        except AttributeError:
+            pass
         return ciphertext[len(HASH_PREFIX):][:self.hash_size] or None
 
     def get_secret(self, ciphertext):
@@ -213,6 +221,10 @@ class FieldCryptor(object):
             is_encrypted = False
         else:
             is_encrypted = False
+            try:
+                value = value.encode(ENCODING)
+            except AttributeError:
+                pass
             if (value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING) and not
                     value[:len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING)):
                 value = self.verify_value(value, has_secret=False)

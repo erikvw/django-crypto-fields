@@ -8,6 +8,7 @@ from ..constants import HASH_PREFIX, RSA, LOCAL_MODE
 from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
 from ..field_cryptor import FieldCryptor
 from django_crypto_fields.exceptions import EncryptionLookupError
+from django_crypto_fields.constants import ENCODING
 
 
 class BaseField(models.Field):
@@ -23,7 +24,9 @@ class BaseField(models.Field):
             self.help_text = '{} (Encryption: {} {})'.format(
                 self.help_text.split(' (Encryption:')[0], algorithm.upper(), mode)
         self.field_cryptor = FieldCryptor(self.algorithm, self.mode)
-        self.max_length = kwargs.get('max_length', None) or len(HASH_PREFIX) + self.field_cryptor.hash_size
+        min_length = len(HASH_PREFIX) + self.field_cryptor.hash_size
+        max_length = kwargs.get('max_length', min_length)
+        self.max_length = min_length if max_length < min_length else max_length
         if self.algorithm == RSA:
             max_message_length = self.keys.rsa_key_info[self.mode]['max_message_length']
             if self.max_length > max_message_length:
@@ -102,7 +105,7 @@ class BaseField(models.Field):
             elif lookup_type == 'in':
                 self.get_in_as_lookup(value)
             else:
-                value = HASH_PREFIX.encode() + self.field_cryptor.hash(value)
+                value = HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value)
         return super(BaseField, self).get_prep_lookup(lookup_type, value)
 
     def get_isnull_as_lookup(self, value):
@@ -111,7 +114,7 @@ class BaseField(models.Field):
     def get_in_as_lookup(self, values):
         hashed_values = []
         for value in values:
-            hashed_values.append(HASH_PREFIX.encode() + self.field_cryptor.hash(value))
+            hashed_values.append(HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value))
         return hashed_values
 
     def get_internal_type(self):
