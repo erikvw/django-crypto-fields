@@ -31,6 +31,6 @@ class DjangoCryptoFieldsConfig(AppConfig):
                 sys.stdout.write('If this is your first time loading the project, '
                                  'new keys will be generated\n')
                 sys.stdout.write('and placed in the settings.KEY_PATH folder.\n')
-                keys.create_keys(self.keys.key_path, self.keys.key_prefix)
+                keys.create_keys()
             keys.load_keys()
             self.encryption_keys = keys
