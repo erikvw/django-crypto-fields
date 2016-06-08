@@ -177,7 +177,12 @@ class FieldCryptor(object):
         if value is None or value in ['', b'']:
             return value
         ciphertext = self.encrypt(value)
-        return ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[0]
+        value = ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[0]
+        try:
+            value.decode()
+        except AttributeError:
+            pass
+        return value  # returns into CharField
 
     def get_hash(self, ciphertext):
         """Returns the hashed_value given a ciphertext or None."""
