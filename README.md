@@ -18,11 +18,11 @@ For example:
 
 	    first_name = FirstnameField(
 	        verbose_name="First Name")
-	
+
 	    identity = IdentityField(
 	        verbose_name="Identity",
 	        unique=True)
-	
+
 	    comment = EncryptedTextField(
 	        max_length=500)
 
@@ -40,10 +40,10 @@ Add to INSTALLED_APPS:
 	)
 
 Add KEY_PATH to the folder in settings:
-    
+
     # folder where the encryption keys are stored
     KEY_PATH = '/Volumes/secure_drive/keys')
-     
+
 Add KEY_PREFIX (optional, the default is "_user_"):
 
 	# optional filename prefix for encryption keys files:
@@ -82,11 +82,15 @@ Advantages
 Disadvantages
 -------------
 
-- Limited support for lookup types. The "query value" is the hash not the decrypted secret, so Django lookups like ['startswith', 'istartswith', 'endswith', 'iendswith', 'contains', 'icontains', 'iexact'] are not supported. 
+- Limited support for lookup types. The "query value" is the hash not the decrypted secret, so Django lookups like ['startswith', 'istartswith', 'endswith', 'iendswith', 'contains', 'icontains', 'iexact'] are not supported.
 - Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from _django-crypto-fields_, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
 
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
 
+### Installation Issues
+`django-crypto-fields` requires `pycrypto`. If `pycrypto` has trouble installing try:
+
+	CFLAGS="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk -I/usr/local/include" LDFLAGS="-L/usr/local/lib" pip install pycrypto
 
 Contribute
 ----------

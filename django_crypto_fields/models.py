@@ -1,36 +1,11 @@
-from django.db import models
+from django_crypto_fields.crypt_model_mixin import CryptModelMixin
 
 from edc_base.model.models import BaseModel
 
 
-class Crypt (BaseModel):
-
-    """ A secrets lookup model searchable by hash """
-
-    hash = models.CharField(
-        verbose_name="Hash",
-        max_length=128,
-        db_index=True,
-        unique=True)
-
-    secret = models.BinaryField(
-        verbose_name="Secret")
-
-    algorithm = models.CharField(
-        max_length=25,
-        db_index=True,
-        null=True)
-
-    mode = models.CharField(
-        max_length=25,
-        db_index=True,
-        null=True)
-
-    objects = models.Manager()
-
-    def natural_key(self):
-        return (self.hash, self.algorithm, self.mode)
+class Crypt(CryptModelMixin, BaseModel):
 
     class Meta:
+        app_label = 'django_crypto_fields'
         verbose_name = 'Crypt'
         unique_together = (('hash', 'algorithm', 'mode'),)

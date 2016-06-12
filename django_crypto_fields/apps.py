@@ -9,15 +9,17 @@ class DjangoCryptoFieldsError(Exception):
     pass
 
 
-class DjangoCryptoFieldsConfig(AppConfig):
+class DjangoCryptoFieldsAppConfig(AppConfig):
     name = 'django_crypto_fields'
     verbose_name = "Data Encryption"
     encryption_keys = None
+    model = ('django_crypto_fields', 'crypt')
+    crypt_model_using = 'default'  # change if using more than one database and not 'default'.
 
     def __init__(self, app_label, model_name):
         """Placed here instead of `ready()`. For models to load correctly that use
         field classes from this module the keys need to be loaded before models."""
-        super(DjangoCryptoFieldsConfig, self).__init__(app_label, model_name)
+        super(DjangoCryptoFieldsAppConfig, self).__init__(app_label, model_name)
         from django_crypto_fields.keys import Keys
         keys = Keys()
         if not self.encryption_keys:
@@ -34,3 +36,8 @@ class DjangoCryptoFieldsConfig(AppConfig):
                 keys.create_keys()
             keys.load_keys()
             self.encryption_keys = keys
+
+
+class TestDjangoCryptoFieldsApp(DjangoCryptoFieldsAppConfig):
+    name = 'django_crypto_fields'
+    model = ('example', 'crypt')

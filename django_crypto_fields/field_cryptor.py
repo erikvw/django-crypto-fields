@@ -26,13 +26,15 @@ class FieldCryptor(object):
 
     """
     def __init__(self, algorithm, mode, keys=None):
+        self._using = None
         self._cipher_model = None
         self.cipher_buffer = OrderedDict()
         self.algorithm = algorithm
         self.mode = mode
+        app_config = django_apps.get_app_config('django_crypto_fields')
         try:
             # ignore "keys" parameter if Django is loaded
-            self.keys = django_apps.get_app_config('django_crypto_fields').encryption_keys
+            self.keys = app_config.encryption_keys
         except AppRegistryNotReady:
             self.keys = keys
         self.cryptor = Cryptor()
@@ -45,7 +47,7 @@ class FieldCryptor(object):
     def cipher_model(self):
         """Returns the cipher model and avoids issues with model loading and field classes."""
         if not self._cipher_model:
-            self._cipher_model = django_apps.get_model('django_crypto_fields', 'Crypt')
+            self._cipher_model = django_apps.get_model(*django_apps.get_app_config('django_crypto_fields').model)
         return self._cipher_model
 
     def hash(self, plaintext):
@@ -134,6 +136,13 @@ class FieldCryptor(object):
                         raise EncryptionError('Failed to decrypt. Malformed ciphertext')
         return plaintext
 
+    @property
+    def using(self):
+        if not self._using:
+            app_config = django_apps.get_app_config('django_crypto_fields')
+            self._using = app_config.crypt_model_using
+        return self._using
+
     def update_cipher_model(self, ciphertext):
         """ Updates cipher model (Crypt) and temporary buffer."""
         if self.verify_ciphertext(ciphertext):
@@ -141,10 +150,10 @@ class FieldCryptor(object):
             secret = self.get_secret(ciphertext)
             self.cipher_buffer.update({hashed_value: secret})
             try:
-                cipher_model = self.cipher_model.objects.get(hash=hashed_value)
+                cipher_model = self.cipher_model.objects.using(self.using).get(hash=hashed_value)
                 cipher_model.secret = secret
             except self.cipher_model.DoesNotExist:
-                self.cipher_model.objects.create(
+                self.cipher_model.objects.using(self.using).create(
                     hash=hashed_value,
                     secret=secret,
                     algorithm=self.algorithm,
@@ -205,8 +214,8 @@ class FieldCryptor(object):
         secret = self.cipher_buffer.get(hashed_value)
         if not secret:
             try:
-                cipher_model = self.cipher_model.objects.values('secret').get(hash=hashed_value)
-                secret = cipher_model.get('secret')
+                cipher_model = self.cipher_model.objects.using(self.using).values('secret').get(hash=hashed_value)
+                secret = cipher_model.using(self.using).get('secret')
                 self.cipher_buffer.update({hashed_value: secret})
             except self.cipher_model.DoesNotExist:
                 raise EncryptionError(
