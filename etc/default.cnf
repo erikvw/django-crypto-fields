@@ -1,0 +1,9 @@
+# my.cnf
+# Be sure to create the database with CHARACTER SET = utf8
+# e.g. create database edc CHARACTER SET utf8;
+[client]
+database = edc
+user = root
+password = cc3721b
+default-character-set = utf8
+init_command = 'SET default_storage_engine=INNODB;'

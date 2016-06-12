@@ -1,13 +1,17 @@
 from django.db import models
 
-from ..edc.base.models import BaseModel
+
+class CryptModelManager(models.Manager):
+
+    def get_by_natural_key(self, value_as_hash, algorithm, mode):
+        return self.get(hash=value_as_hash, algorithm=algorithm, mode=mode)
 
 
-class Crypt (BaseModel):
+class CryptModelMixin(models.Model):
 
     """ A secrets lookup model searchable by hash """
 
-    hash = models.BinaryField(
+    hash = models.CharField(
         verbose_name="Hash",
         max_length=128,
         db_index=True,
@@ -26,12 +30,12 @@ class Crypt (BaseModel):
         db_index=True,
         null=True)
 
-    objects = models.Manager()
+    objects = CryptModelManager()
 
     def natural_key(self):
-        return (self.hash, self.algorithm, self.mode,)
+        return (self.hash, self.algorithm, self.mode)
 
     class Meta:
-        app_label = 'django_crypto_fields'
+        abstract = True
         verbose_name = 'Crypt'
         unique_together = (('hash', 'algorithm', 'mode'),)

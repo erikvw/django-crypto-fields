@@ -1,6 +1,6 @@
 from django import template
 
-from ..classes import FieldCryptor
+from ..field_cryptor import FieldCryptor
 
 register = template.Library()
 
