@@ -54,13 +54,13 @@ class TestModels(TestCase):
         # self.assertEqual(1, TestModel.objects.filter(firstname__iexact='Erik1').count())
         self.assertEqual(1, TestModel.objects.filter(firstname__iexact='Erik1').count())
 
-    def test_contains(self):
-        TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
-        self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__contains='k1')
-
-    def test_icontains(self):
-        TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
-        self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__icontains='k1')
+#     def test_contains(self):
+#         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
+#         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__contains='k1')
+# 
+#     def test_icontains(self):
+#         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
+#         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__icontains='k1')
 
     def test_in(self):
         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='no comment')
@@ -79,16 +79,16 @@ class TestModels(TestCase):
         TestModel.objects.create(firstname='Erik2', lastname='vw', identity='11111112', comment='no comment')
         self.assertRaises(IntegrityError, TestModel.objects.create, firstname='Erik1', lastname='vw', identity='11111113', comment='no comment')
 
-    def test_startswith(self):
-        TestModel.objects.create(firstname='Eriak1', identity='11111111', comment='no comment')
-        TestModel.objects.create(firstname='Eriak2', identity='11111112', comment='no comment')
-        TestModel.objects.create(firstname='Eriek3', identity='11111113', comment='no comment')
-        TestModel.objects.create(firstname='Eriek4', identity='11111114', comment='no comment')
-        self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__startswith='Eria')
+#     def test_startswith(self):
+#         TestModel.objects.create(firstname='Eriak1', identity='11111111', comment='no comment')
+#         TestModel.objects.create(firstname='Eriak2', identity='11111112', comment='no comment')
+#         TestModel.objects.create(firstname='Eriek3', identity='11111113', comment='no comment')
+#         TestModel.objects.create(firstname='Eriek4', identity='11111114', comment='no comment')
+#         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__startswith='Eria')
 
-    def test_endsswith(self):
-        TestModel.objects.create(firstname='Eriak1', identity='11111111', comment='no comment')
-        TestModel.objects.create(firstname='Eriak2', identity='11111112', comment='no comment')
-        TestModel.objects.create(firstname='Eriek3', identity='11111113', comment='no comment')
-        TestModel.objects.create(firstname='Eriek4', identity='11111114', comment='no comment')
-        self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__endswith='ak2')
+#     def test_endsswith(self):
+#         TestModel.objects.create(firstname='Eriak1', identity='11111111', comment='no comment')
+#         TestModel.objects.create(firstname='Eriak2', identity='11111112', comment='no comment')
+#         TestModel.objects.create(firstname='Eriek3', identity='11111113', comment='no comment')
+#         TestModel.objects.create(firstname='Eriek4', identity='11111114', comment='no comment')
+#         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__endswith='ak2')
