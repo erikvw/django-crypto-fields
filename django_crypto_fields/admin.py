@@ -24,7 +24,7 @@ crypto_fields_admin = CryptoFieldsAdminSite(name='encryption_admin')
 
 
 @admin.register(Crypt, site=crypto_fields_admin)
-class CryptAdmin(admin.ModelAdmin):
+class CryptModelAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'modified'
 
