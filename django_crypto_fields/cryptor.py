@@ -1,3 +1,4 @@
+import binascii
 import sys
 
 from Crypto import Random
@@ -31,17 +32,25 @@ class Cryptor(object):
 
     def padded(self, plaintext, block_size):
         """Return string padded so length is a multiple of the block size.
-            * store length of padding in last two characters of plaintext.
+            * store length of padding the last hex value.
             * if padding is 0, pad as if padding is 16.
             * AES_CIPHER.MODE_CFB should not be used, but was used without padding
               in the past. Continue to skip padding for this mode.
         """
+        try:
+            plaintext = plaintext.encode(ENCODING)
+        except AttributeError:
+            pass
         if self.AES_ENCRYPTION_MODE == AES_CIPHER.MODE_CFB:
             padding_length = 0
         else:
             padding_length = (block_size - len(plaintext) % block_size) % block_size
             padding_length = padding_length or 16
-        return plaintext + b'\x00' * (padding_length - 2) + str(padding_length.zfill(2)).encode()
+        padded = plaintext + (b'\x00' * (padding_length - 1)) + binascii.a2b_hex(str(padding_length).zfill(2))
+        if len(padded) % block_size > 0:
+            raise EncryptionError('Padding error, got padded string not a multiple of {}. Got {}'.format(
+                block_size, len(padded) / block_size))
+        return padded
 
     def unpadded(self, plaintext, block_size):
         """Return original plaintext without padding.
@@ -49,13 +58,12 @@ class Cryptor(object):
         Length of padding is stored in last two characters of plaintext."""
         if self.AES_ENCRYPTION_MODE == AES_CIPHER.MODE_CFB:
             return plaintext
-        return plaintext[:-int(plaintext[-2:])]
+        padding_length = int(binascii.b2a_hex(plaintext[-1:]))
+        if not padding_length:
+            return plaintext[:-1]
+        return plaintext[:-padding_length]
 
     def aes_encrypt(self, plaintext, mode):
-        try:
-            plaintext = plaintext.encode(ENCODING)
-        except AttributeError:
-            pass
         attr = '_'.join([AES, mode, PRIVATE, 'key'])
         aes_key = getattr(self.keys, attr)
         iv = Random.new().read(AES_CIPHER.block_size)
@@ -69,7 +77,7 @@ class Cryptor(object):
         iv = ciphertext[:AES_CIPHER.block_size]
         cipher = AES_CIPHER.new(aes_key, self.AES_ENCRYPTION_MODE, iv)
         plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size:]
-        return self.unpadded(plaintext.decode(ENCODING), cipher.block_size)
+        return self.unpadded(plaintext, cipher.block_size).decode()
 
     def rsa_encrypt(self, plaintext, mode):
         attr = '_'.join([RSA, mode, PUBLIC, 'key'])
