@@ -4,6 +4,7 @@ from Crypto import Random
 from Crypto.Cipher import AES as AES_CIPHER
 
 from django.apps import apps as django_apps
+from django.conf import settings
 from django.core.exceptions import AppRegistryNotReady
 
 from .constants import RSA, AES, PRIVATE, PUBLIC, ENCODING, style
@@ -18,10 +19,37 @@ class Cryptor(object):
 
     def __init__(self, keys=None):
         try:
+            # do not use MODE_CFB, see comments in pycrypto.blockalgo.py
+            self.AES_ENCRYPTION_MODE = settings.AES_ENCRYPTION_MODE
+        except AttributeError:
+            self.AES_ENCRYPTION_MODE = AES_CIPHER.MODE_CBC
+        try:
             # ignore "keys" parameter if Django is loaded
             self.keys = django_apps.get_app_config('django_crypto_fields').encryption_keys
         except AppRegistryNotReady:
             self.keys = keys
+
+    def padded(self, plaintext, block_size):
+        """Return string padded so length is a multiple of the block size.
+            * store length of padding in last two characters of plaintext.
+            * if padding is 0, pad as if padding is 16.
+            * AES_CIPHER.MODE_CFB should not be used, but was used without padding
+              in the past. Continue to skip padding for this mode.
+        """
+        if self.AES_ENCRYPTION_MODE == AES_CIPHER.MODE_CFB:
+            padding_length = 0
+        else:
+            padding_length = (block_size - len(plaintext) % block_size) % block_size
+            padding_length = padding_length or 16
+        return plaintext + b'\x00' * (padding_length - 2) + str(padding_length.zfill(2)).encode()
+
+    def unpadded(self, plaintext, block_size):
+        """Return original plaintext without padding.
+
+        Length of padding is stored in last two characters of plaintext."""
+        if self.AES_ENCRYPTION_MODE == AES_CIPHER.MODE_CFB:
+            return plaintext
+        return plaintext[:-int(plaintext[-2:])]
 
     def aes_encrypt(self, plaintext, mode):
         try:
@@ -31,16 +59,17 @@ class Cryptor(object):
         attr = '_'.join([AES, mode, PRIVATE, 'key'])
         aes_key = getattr(self.keys, attr)
         iv = Random.new().read(AES_CIPHER.block_size)
-        cipher = AES_CIPHER.new(aes_key, AES_CIPHER.MODE_CFB, iv)
-        return iv + cipher.encrypt(plaintext)
+        cipher = AES_CIPHER.new(aes_key, self.AES_ENCRYPTION_MODE, iv)
+        padded_plaintext = self.padded(plaintext, cipher.block_size)
+        return iv + cipher.encrypt(padded_plaintext)
 
     def aes_decrypt(self, ciphertext, mode):
         attr = '_'.join([AES, mode, PRIVATE, 'key'])
         aes_key = getattr(self.keys, attr)
         iv = ciphertext[:AES_CIPHER.block_size]
-        cipher = AES_CIPHER.new(aes_key, AES_CIPHER.MODE_CFB, iv)
+        cipher = AES_CIPHER.new(aes_key, self.AES_ENCRYPTION_MODE, iv)
         plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size:]
-        return plaintext.decode(ENCODING)
+        return self.unpadded(plaintext.decode(ENCODING), cipher.block_size)
 
     def rsa_encrypt(self, plaintext, mode):
         attr = '_'.join([RSA, mode, PUBLIC, 'key'])
