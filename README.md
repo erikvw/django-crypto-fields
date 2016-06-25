@@ -29,13 +29,13 @@ For example:
 Installation
 ------------
 
-    pip install django-encrypted-fields
+    pip install git+https://github.com/erikvw/django-crypto-fields@develop#egg=django-crypto-fields
 
 Add to INSTALLED_APPS:
 
 	INSTALLED_APPS = (
 		...
-	    'django_crypto_fields',
+	    'django_crypto_fields.apps.DjangoCryptoFieldsAppConfig',
 	    ...
 	)
 
@@ -51,11 +51,11 @@ Add KEY_PREFIX (optional, the default is "_user_"):
 
 Run _migrate_ to create the _crypto_fields_crypt_ table:
 
-    python manage.py migrate
+    python manage.py migrate django_crypto_fields
 
 Generate encryption keys:
 
-	python manage.py generate_keys
+    python manage.py generate_keys
 
 History
 -------
