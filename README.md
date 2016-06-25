@@ -31,7 +31,11 @@ Installation
 
     pip install git+https://github.com/erikvw/django-crypto-fields@develop#egg=django-crypto-fields
 
-Add to INSTALLED_APPS:
+Macosx installation issue with `pycrypto`. `django-crypto-fields` requires `pycrypto`. If `pycrypto` has trouble installing try:
+
+    CFLAGS="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk -I/usr/local/include" LDFLAGS="-L/usr/local/lib" pip install pycrypto
+
+Once installed, add to INSTALLED_APPS:
 
 	INSTALLED_APPS = (
 		...
@@ -86,11 +90,6 @@ Disadvantages
 - Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from _django-crypto-fields_, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
 
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
-
-### Installation Issues
-`django-crypto-fields` requires `pycrypto`. If `pycrypto` has trouble installing try:
-
-	CFLAGS="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk -I/usr/local/include" LDFLAGS="-L/usr/local/lib" pip install pycrypto
 
 Contribute
 ----------
