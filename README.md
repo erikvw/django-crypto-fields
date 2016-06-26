@@ -57,6 +57,15 @@ Generate encryption keys:
 
 	python manage.py generate_keys
 
+
+Legacy Mode
+-----------
+
+As of version 0.1.7, the default AES encryption mode is CBC. To run in legacy mode (CFB) add to `settings.py`:
+
+    AES_ENCRYPTION_MODE = AES.MODE_CFB
+
+
 History
 -------
 

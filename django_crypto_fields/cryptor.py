@@ -18,12 +18,14 @@ class Cryptor(object):
     The PEM file names and paths are in KEY_FILENAMES. KEYS is a copy of this except the
     filenames are replaced with the actual keys."""
 
-    def __init__(self, keys=None):
-        try:
-            # do not use MODE_CFB, see comments in pycrypto.blockalgo.py
-            self.AES_ENCRYPTION_MODE = settings.AES_ENCRYPTION_MODE
-        except AttributeError:
-            self.AES_ENCRYPTION_MODE = AES_CIPHER.MODE_CBC
+    def __init__(self, keys=None, aes_encryption_mode=None):
+        self.aes_encryption_mode = aes_encryption_mode
+        if not self.aes_encryption_mode:
+            try:
+                # do not use MODE_CFB, see comments in pycrypto.blockalgo.py
+                self.aes_encryption_mode = settings.AES_ENCRYPTION_MODE
+            except AttributeError:
+                self.aes_encryption_mode = AES_CIPHER.MODE_CBC
         try:
             # ignore "keys" parameter if Django is loaded
             self.keys = django_apps.get_app_config('django_crypto_fields').encryption_keys
@@ -41,7 +43,7 @@ class Cryptor(object):
             plaintext = plaintext.encode(ENCODING)
         except AttributeError:
             pass
-        if self.AES_ENCRYPTION_MODE == AES_CIPHER.MODE_CFB:
+        if self.aes_encryption_mode == AES_CIPHER.MODE_CFB:
             padding_length = 0
         else:
             padding_length = (block_size - len(plaintext) % block_size) % block_size
@@ -56,7 +58,7 @@ class Cryptor(object):
         """Return original plaintext without padding.
 
         Length of padding is stored in last two characters of plaintext."""
-        if self.AES_ENCRYPTION_MODE == AES_CIPHER.MODE_CFB:
+        if self.aes_encryption_mode == AES_CIPHER.MODE_CFB:
             return plaintext
         padding_length = int(binascii.b2a_hex(plaintext[-1:]))
         if not padding_length:
@@ -64,38 +66,34 @@ class Cryptor(object):
         return plaintext[:-padding_length]
 
     def aes_encrypt(self, plaintext, mode):
-        attr = '_'.join([AES, mode, PRIVATE, 'key'])
-        aes_key = getattr(self.keys, attr)
+        aes_key = '_'.join([AES, mode, PRIVATE, 'key'])
         iv = Random.new().read(AES_CIPHER.block_size)
-        cipher = AES_CIPHER.new(aes_key, self.AES_ENCRYPTION_MODE, iv)
+        cipher = AES_CIPHER.new(getattr(self.keys, aes_key), self.aes_encryption_mode, iv)
         padded_plaintext = self.padded(plaintext, cipher.block_size)
         return iv + cipher.encrypt(padded_plaintext)
 
     def aes_decrypt(self, ciphertext, mode):
-        attr = '_'.join([AES, mode, PRIVATE, 'key'])
-        aes_key = getattr(self.keys, attr)
+        aes_key = '_'.join([AES, mode, PRIVATE, 'key'])
         iv = ciphertext[:AES_CIPHER.block_size]
-        cipher = AES_CIPHER.new(aes_key, self.AES_ENCRYPTION_MODE, iv)
+        cipher = AES_CIPHER.new(getattr(self.keys, aes_key), self.aes_encryption_mode, iv)
         plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size:]
         return self.unpadded(plaintext, cipher.block_size).decode()
 
     def rsa_encrypt(self, plaintext, mode):
-        attr = '_'.join([RSA, mode, PUBLIC, 'key'])
-        rsa_key = getattr(self.keys, attr)
+        rsa_key = '_'.join([RSA, mode, PUBLIC, 'key'])
         try:
             plaintext = plaintext.encode(ENCODING)
         except AttributeError:
             pass
         try:
-            ciphertext = rsa_key.encrypt(plaintext)
+            ciphertext = getattr(self.keys, rsa_key).encrypt(plaintext)
         except (ValueError, TypeError) as e:
             raise EncryptionError('RSA encryption failed for value. Got \'{}\''.format(e))
         return ciphertext
 
     def rsa_decrypt(self, ciphertext, mode):
-        attr = '_'.join([RSA, mode, PRIVATE, 'key'])
-        rsa_key = getattr(self.keys, attr)
-        plaintext = rsa_key.decrypt(ciphertext)
+        rsa_key = '_'.join([RSA, mode, PRIVATE, 'key'])
+        plaintext = getattr(self.keys, rsa_key).decrypt(ciphertext)
         return plaintext.decode(ENCODING)
 
     def test_rsa(self):
