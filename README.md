@@ -7,7 +7,7 @@
 django-crypto-fields
 =====================
 
-Add encrypted field classes to your Django models.
+Add encrypted field classes to your Django models where `unique=True` and `unique_together` attributes work as expected.
 
 For example:
 
