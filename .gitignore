@@ -13,7 +13,7 @@ south.log
 htmlcov
 .coverage
 db.sqlite3
-*.key
-*.pem
+# *.key
+# *.pem
 build
 django_crypto_fields.egg-info

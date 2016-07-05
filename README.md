@@ -29,13 +29,17 @@ For example:
 Installation
 ------------
 
-    pip install django-encrypted-fields
+    pip install git+https://github.com/erikvw/django-crypto-fields@develop#egg=django-crypto-fields
 
-Add to INSTALLED_APPS:
+Macosx installation issue with `pycrypto`. `django-crypto-fields` requires `pycrypto`. If `pycrypto` has trouble installing try:
+
+    CFLAGS="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk -I/usr/local/include" LDFLAGS="-L/usr/local/lib" pip install pycrypto
+
+Once installed, add to INSTALLED_APPS:
 
 	INSTALLED_APPS = (
 		...
-	    'django_crypto_fields',
+	    'django_crypto_fields.apps.DjangoCryptoFieldsAppConfig',
 	    ...
 	)
 
@@ -51,11 +55,20 @@ Add KEY_PREFIX (optional, the default is "_user_"):
 
 Run _migrate_ to create the _crypto_fields_crypt_ table:
 
-    python manage.py migrate
+    python manage.py migrate django_crypto_fields
 
 Generate encryption keys:
 
-	python manage.py generate_keys
+    python manage.py generate_keys
+
+
+Legacy Mode
+-----------
+
+As of version 0.1.7, the default AES encryption mode is CBC. To run in legacy mode (CFB) add to `settings.py`:
+
+    AES_ENCRYPTION_MODE = AES.MODE_CFB
+
 
 History
 -------
@@ -86,11 +99,6 @@ Disadvantages
 - Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from _django-crypto-fields_, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
 
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
-
-### Installation Issues
-`django-crypto-fields` requires `pycrypto`. If `pycrypto` has trouble installing try:
-
-	CFLAGS="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk -I/usr/local/include" LDFLAGS="-L/usr/local/lib" pip install pycrypto
 
 Contribute
 ----------

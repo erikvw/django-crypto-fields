@@ -30,6 +30,10 @@ class CryptModelMixin(models.Model):
         db_index=True,
         null=True)
 
+    cipher_mode = models.IntegerField(
+        null=True,
+        help_text='pycrypto AES cipher mode (e.g. MODE_CBC)')
+
     objects = CryptModelManager()
 
     def natural_key(self):

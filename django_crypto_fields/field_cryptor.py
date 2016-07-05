@@ -2,9 +2,11 @@ import binascii
 import hashlib
 
 from collections import OrderedDict
+from Crypto.Cipher import AES as AES_CIPHER
 
 from django.apps import apps as django_apps
 from django.core.exceptions import AppRegistryNotReady
+from django.conf import settings
 
 from .constants import (
     HASH_PREFIX, CIPHER_PREFIX, ENCODING, HASH_ALGORITHM, HASH_ROUNDS, AES, RSA,
@@ -25,19 +27,26 @@ class FieldCryptor(object):
     The secret is decrypted and returned to the user's model field object.
 
     """
-    def __init__(self, algorithm, mode, keys=None):
+    def __init__(self, algorithm, mode, keys=None, aes_encryption_mode=None):
         self._using = None
         self._cipher_model = None
         self.cipher_buffer = OrderedDict()
         self.algorithm = algorithm
         self.mode = mode
+        self.aes_encryption_mode = aes_encryption_mode
+        if not self.aes_encryption_mode:
+            try:
+                # do not use MODE_CFB, see comments in pycrypto.blockalgo.py
+                self.aes_encryption_mode = settings.AES_ENCRYPTION_MODE
+            except AttributeError:
+                self.aes_encryption_mode = AES_CIPHER.MODE_CBC
         app_config = django_apps.get_app_config('django_crypto_fields')
         try:
             # ignore "keys" parameter if Django is loaded
             self.keys = app_config.encryption_keys
         except AppRegistryNotReady:
             self.keys = keys
-        self.cryptor = Cryptor()
+        self.cryptor = Cryptor(aes_encryption_mode=self.aes_encryption_mode)
         self.hash_size = len(self.hash('Foo'))
 
     def __repr__(self):
@@ -157,6 +166,7 @@ class FieldCryptor(object):
                     hash=hashed_value,
                     secret=secret,
                     algorithm=self.algorithm,
+                    cipher_mode=self.aes_encryption_mode,
                     mode=self.mode)
 
     def verify_ciphertext(self, ciphertext):
@@ -214,8 +224,8 @@ class FieldCryptor(object):
         secret = self.cipher_buffer.get(hashed_value)
         if not secret:
             try:
-                cipher_model = self.cipher_model.objects.using(self.using).values('secret').get(hash=hashed_value)
-                secret = cipher_model.using(self.using).get('secret')
+                cipher = self.cipher_model.objects.using(self.using).values('secret').get(hash=hashed_value)
+                secret = cipher.get('secret')
                 self.cipher_buffer.update({hashed_value: secret})
             except self.cipher_model.DoesNotExist:
                 raise EncryptionError(

@@ -1,12 +1,15 @@
 import sys
 
+from Crypto.Cipher import AES
 from django.apps import AppConfig
-
 from django.core.management.color import color_style
+from django_crypto_fields.cryptor import Cryptor
 
 
 class DjangoCryptoFieldsError(Exception):
     pass
+
+style = color_style()
 
 
 class DjangoCryptoFieldsAppConfig(AppConfig):
@@ -23,7 +26,6 @@ class DjangoCryptoFieldsAppConfig(AppConfig):
         from django_crypto_fields.keys import Keys
         keys = Keys()
         if not self.encryption_keys:
-            style = color_style()
             sys.stdout.write('Loading {} ...\n'.format(self.verbose_name))
             if not keys.key_files_exist():
                 sys.stdout.write(style.NOTICE('Warning: {} failed to load encryption keys.\n'.format(
@@ -36,6 +38,14 @@ class DjangoCryptoFieldsAppConfig(AppConfig):
                 keys.create_keys()
             keys.load_keys()
             self.encryption_keys = keys
+
+    def ready(self):
+        cryptor = Cryptor()
+        if cryptor.aes_encryption_mode == AES.MODE_CFB:
+            sys.stdout.write(style.NOTICE(
+                'Warning: Encryption mode MODE_CFB should not be used. \n'
+                '         See django_crypto_fields.cryptor.py and comments \n'
+                '         in pycrypto.blockalgo.py.\n'))
 
 
 class TestDjangoCryptoFieldsApp(DjangoCryptoFieldsAppConfig):
