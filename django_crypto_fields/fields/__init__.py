@@ -9,6 +9,6 @@ from .identity_field import IdentityField
 from .lastname_field import LastnameField
 
 __all__ = [
-    'BaseField', 'EncryptedCharField', 'EncryptedDateField', 'EncryptedDecimalField',
+    'BaseField', 'EncryptedCharField', 'EncryptedDecimalField',
     'EncryptedIntegerField', 'EncryptedTextField', 'FirstnameField', 'LastnameField',
     'IdentityField']
