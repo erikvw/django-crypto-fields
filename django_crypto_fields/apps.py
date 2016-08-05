@@ -1,7 +1,7 @@
 import sys
 
 from Crypto.Cipher import AES
-from django.apps import AppConfig
+from django.apps import AppConfig as DjangoAppConfig
 from django.core.management.color import color_style
 from django_crypto_fields.cryptor import Cryptor
 
@@ -12,7 +12,7 @@ class DjangoCryptoFieldsError(Exception):
 style = color_style()
 
 
-class DjangoCryptoFieldsAppConfig(AppConfig):
+class AppConfig(DjangoAppConfig):
     name = 'django_crypto_fields'
     verbose_name = "Data Encryption"
     encryption_keys = None
@@ -22,7 +22,7 @@ class DjangoCryptoFieldsAppConfig(AppConfig):
     def __init__(self, app_label, model_name):
         """Placed here instead of `ready()`. For models to load correctly that use
         field classes from this module the keys need to be loaded before models."""
-        super(DjangoCryptoFieldsAppConfig, self).__init__(app_label, model_name)
+        super(AppConfig, self).__init__(app_label, model_name)
         from django_crypto_fields.keys import Keys
         keys = Keys()
         if not self.encryption_keys:
@@ -48,6 +48,6 @@ class DjangoCryptoFieldsAppConfig(AppConfig):
                 '         in pycrypto.blockalgo.py.\n'))
 
 
-class TestDjangoCryptoFieldsApp(DjangoCryptoFieldsAppConfig):
+class TestDjangoCryptoFieldsApp(AppConfig):
     name = 'django_crypto_fields'
     model = ('example', 'crypt')
