@@ -62,7 +62,7 @@ Generate encryption keys:
 Using a custom `Crypt` model
 ----------------------------
 
-To use a custom `Crypt` model, as is required is the `Crypt` model is used in data synchronization, declare it on the `AppConfig`. If you have an app `myapp` then you `apps.py` might look like this:
+To use a custom `Crypt` model, as is required if the `Crypt` model is used in data synchronization, declare a tuple to reference the model on the `AppConfig`. If you have an app `myapp` then you `apps.py` might look like this:
 
     from django.apps import AppConfig as DjangoAppConfig
     from django_crypto_fields.apps import AppConfig as DjangoCryptoFieldsAppConfigParent
@@ -82,6 +82,7 @@ And then change settings INSTALLED_APPS:
         'myapp.apps.AppConfig',
     )
         
+See also module `edc-sync`.
 
 Legacy Mode
 -----------
