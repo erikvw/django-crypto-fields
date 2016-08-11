@@ -38,6 +38,8 @@ class AppConfig(DjangoAppConfig):
                 keys.create_keys()
             keys.load_keys()
             self.encryption_keys = keys
+            sys.stdout.write(' * using model {}.\n'.format('.'.join(self.model)))
+            sys.stdout.write(' Done loading {}.\n'.format(self.verbose_name))
 
     def ready(self):
         cryptor = Cryptor()
