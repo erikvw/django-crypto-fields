@@ -46,8 +46,3 @@ class AppConfig(DjangoAppConfig):
                 'Warning: Encryption mode MODE_CFB should not be used. \n'
                 '         See django_crypto_fields.cryptor.py and comments \n'
                 '         in pycrypto.blockalgo.py.\n'))
-
-
-class TestDjangoCryptoFieldsApp(AppConfig):
-    name = 'django_crypto_fields'
-    model = ('example', 'crypt')

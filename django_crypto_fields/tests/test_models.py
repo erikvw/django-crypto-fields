@@ -2,7 +2,6 @@ from django.db.utils import IntegrityError
 from django.test import TestCase
 
 from django_crypto_fields.fields.base_field import BaseField
-from django_crypto_fields.exceptions import EncryptionLookupError
 
 from example.models import TestModel
 
@@ -14,7 +13,7 @@ class TestModels(TestCase):
         test_model = TestModel()
         for fld in test_model._meta.fields:
             if isinstance(fld, BaseField):
-                name, path, args, kwargs = fld.deconstruct()
+                _, _, args, kwargs = fld.deconstruct()
                 new = BaseField(fld.algorithm, fld.mode, *args, **kwargs)
                 self.assertEqual(fld.algorithm, new.algorithm)
                 self.assertEqual(fld.mode, new.mode)
@@ -57,7 +56,7 @@ class TestModels(TestCase):
 #     def test_contains(self):
 #         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
 #         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__contains='k1')
-# 
+#
 #     def test_icontains(self):
 #         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
 #         self.assertRaises(EncryptionLookupError, TestModel.objects.filter, firstname__icontains='k1')

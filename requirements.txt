@@ -1,6 +1,6 @@
 # see README if problems with pycrypto
 Django
-django_extensions==1.6.1
+django_extensions
 Unipath
 pycrypto
 mysqlclient
