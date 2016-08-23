@@ -32,6 +32,10 @@ Macosx installation issue with `pycrypto`. `django-crypto-fields` requires `pycr
 
     CFLAGS="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk -I/usr/local/include" LDFLAGS="-L/usr/local/lib" pip install pycrypto
 
+On Ubuntu first install:
+    
+    sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+
 Once installed, add to INSTALLED_APPS:
 
 	INSTALLED_APPS = (
