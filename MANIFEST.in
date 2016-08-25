@@ -1,2 +1,4 @@
 include AUTHORS CHANGES README.md LICENCE
 recursive-include docs *
+recursive-exclude example/*
+recursive-exclude etc/*

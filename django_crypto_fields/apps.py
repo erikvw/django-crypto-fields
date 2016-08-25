@@ -1,6 +1,7 @@
 import sys
 
 from Crypto.Cipher import AES
+from django.apps import apps as django_apps
 from django.apps import AppConfig as DjangoAppConfig
 from django.core.management.color import color_style
 from django_crypto_fields.cryptor import Cryptor
@@ -16,7 +17,7 @@ class AppConfig(DjangoAppConfig):
     name = 'django_crypto_fields'
     verbose_name = "Data Encryption"
     encryption_keys = None
-    model = ('django_crypto_fields', 'crypt')
+    app_label = 'django_crypto_fields'
     crypt_model_using = 'default'  # change if using more than one database and not 'default'.
 
     def __init__(self, app_label, model_name):
@@ -38,8 +39,9 @@ class AppConfig(DjangoAppConfig):
                 keys.create_keys()
             keys.load_keys()
             self.encryption_keys = keys
-            sys.stdout.write(' * using model {}.\n'.format('.'.join(self.model)))
+            sys.stdout.write(' * using model {}.{}.\n'.format(self.app_label, 'crypt'))
             sys.stdout.write(' Done loading {}.\n'.format(self.verbose_name))
+            sys.stdout.flush()
 
     def ready(self):
         cryptor = Cryptor()
@@ -48,3 +50,8 @@ class AppConfig(DjangoAppConfig):
                 'Warning: Encryption mode MODE_CFB should not be used. \n'
                 '         See django_crypto_fields.cryptor.py and comments \n'
                 '         in pycrypto.blockalgo.py.\n'))
+            sys.stdout.flush()
+
+    @property
+    def model(self):
+        return django_apps.get_model(self.app_label, 'crypt')

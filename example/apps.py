@@ -7,4 +7,4 @@ class AppConfig(DjangoAppConfig):
 
 
 class DjangoCryptoFieldsAppConfig(DjangoCryptoFieldsAppConfigParent):
-    model = ('example', 'crypt')
+    app_label = 'example'

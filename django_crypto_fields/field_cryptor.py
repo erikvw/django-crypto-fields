@@ -56,7 +56,7 @@ class FieldCryptor(object):
     def cipher_model(self):
         """Returns the cipher model and avoids issues with model loading and field classes."""
         if not self._cipher_model:
-            self._cipher_model = django_apps.get_model(*django_apps.get_app_config('django_crypto_fields').model)
+            self._cipher_model = django_apps.get_app_config('django_crypto_fields').model
         return self._cipher_model
 
     def hash(self, plaintext):

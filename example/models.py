@@ -12,6 +12,7 @@ from django_crypto_fields.crypt_model_mixin import CryptModelMixin
 class Crypt (CryptModelMixin, BaseUuidModel):
 
     class Meta:
+        app_label = 'example'
         verbose_name = 'Crypt'
         unique_together = (('hash', 'algorithm', 'mode'),)
 

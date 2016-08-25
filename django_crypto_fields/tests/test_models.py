@@ -48,10 +48,9 @@ class TestModels(TestCase):
         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
         self.assertEqual(1, TestModel.objects.filter(firstname__exact='Erik1').count())
 
-    def test_iexact(self):
-        TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
-        # self.assertEqual(1, TestModel.objects.filter(firstname__iexact='Erik1').count())
-        self.assertEqual(1, TestModel.objects.filter(firstname__iexact='Erik1').count())
+#     def test_iexact(self):
+#         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')
+#         # self.assertEqual(1, TestModel.objects.filter(firstname__iexact='Erik1').count())
 
 #     def test_contains(self):
 #         TestModel.objects.create(firstname='Erik1', identity='11111111', comment='')

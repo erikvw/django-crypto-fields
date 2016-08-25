@@ -61,7 +61,7 @@ class KeyPathMixin:
                     key_path = settings.BASE_DIR
                     sys.stdout.write(style.WARNING(
                         'Warning! Not ready for production. Setting KEY_PATH to {} '
-                        'for testing purposes.'.format(key_path)))
+                        'for testing purposes.\n'.format(key_path)))
                     self.using_test_keys = True
                 except (ImproperlyConfigured, AttributeError):
                     # your not in Django ...
