@@ -3,7 +3,7 @@ from django_crypto_fields.crypt_model_mixin import CryptModelMixin
 from edc_base.model.models import BaseUuidModel, BaseModel
 
 
-class Crypt(CryptModelMixin, BaseModel):
+class Crypt(CryptModelMixin, BaseUuidModel):
 
     class Meta:
         app_label = 'django_crypto_fields'
