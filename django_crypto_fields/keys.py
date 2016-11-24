@@ -67,7 +67,7 @@ class KeyPathMixin:
                     # your not in Django ...
                     # you should have passed a key_path to this setter
                     raise DjangoCryptoFieldsError('Cannot determine the key path.')
-        key_path = os.path.expanduser(key_path)
+        key_path = os.path.expanduser(str(key_path))
         if not os.path.exists(key_path):
             raise DjangoCryptoFieldsError('Invalid key path. Got {}'.format(key_path))
         self._key_path = key_path
