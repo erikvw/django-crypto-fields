@@ -36,6 +36,7 @@ class BaseField(models.Field):
                         self.__class__.__name__, max_message_length, self.max_length))
         kwargs['max_length'] = self.max_length
         kwargs['help_text'] = self.help_text
+        kwargs.setdefault('blank', True)
         super(BaseField, self).__init__(*args, **kwargs)
 
     def deconstruct(self):
