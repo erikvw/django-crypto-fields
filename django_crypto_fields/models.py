@@ -1,6 +1,6 @@
 from django_crypto_fields.crypt_model_mixin import CryptModelMixin
 
-from edc_base.model.models import BaseUuidModel, BaseModel
+from edc_base.model.models import BaseUuidModel
 
 
 class Crypt(CryptModelMixin, BaseUuidModel):
