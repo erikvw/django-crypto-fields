@@ -94,7 +94,7 @@ class BaseField(models.Field):
         Since the available value is the hash, only exact match lookup types are supported."""
         supported_lookups = ['iexact', 'exact', 'in', 'isnull']
         if value is None or value in ['', b''] or lookup_type not in supported_lookups:
-            pass  # print('value={}'.format(value))
+            pass
         else:
             supported_lookups = ['iexact', 'exact', 'in', 'isnull']
             if lookup_type not in supported_lookups:

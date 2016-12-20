@@ -176,7 +176,6 @@ class Keys(KeyPathMixin):
         try:
             key_file = self.key_filenames[AES][mode][key]
         except KeyError:
-            print(self.key_filenames.get(AES))
             raise
         with open(key_file, 'rb') as faes:
             aes_key = rsa_key.decrypt(faes.read())
