@@ -19,6 +19,8 @@ class CryptoFieldsAdminSite(AdminSite):
     site_title = 'Data Encryption Administration'
     index_title = 'Data Encryption'
     site_url = '/crypto_fields/'
+
+
 crypto_fields_admin = CryptoFieldsAdminSite(name='encryption_admin')
 
 
