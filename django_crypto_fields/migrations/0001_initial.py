@@ -5,8 +5,8 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import django_extensions.db.fields
 import django_revision.revision_field
-import edc_base.model.fields.hostname_modification_field
-import edc_base.model.fields.userfield
+import edc_base.model_fields.hostname_modification_field
+import edc_base.model_fields.userfield
 
 
 class Migration(migrations.Migration):
@@ -20,18 +20,29 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Crypt',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created')),
-                ('modified', django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified')),
-                ('user_created', edc_base.model.fields.userfield.UserField(editable=False, max_length=50, verbose_name='user created')),
-                ('user_modified', edc_base.model.fields.userfield.UserField(editable=False, max_length=50, verbose_name='user modified')),
-                ('hostname_created', models.CharField(default='mac2-2.local', editable=False, help_text='System field. (modified on create only)', max_length=50)),
-                ('hostname_modified', edc_base.model.fields.hostname_modification_field.HostnameModificationField(editable=False, help_text='System field. (modified on every save)', max_length=50)),
-                ('revision', django_revision.revision_field.RevisionField(blank=True, editable=False, help_text='System field. Git repository tag:branch:commit.', max_length=75, null=True, verbose_name='Revision')),
-                ('hash', models.CharField(db_index=True, max_length=128, unique=True, verbose_name='Hash')),
+                ('id', models.AutoField(
+                    auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('created', django_extensions.db.fields.CreationDateTimeField(
+                    auto_now_add=True, verbose_name='created')),
+                ('modified', django_extensions.db.fields.ModificationDateTimeField(
+                    auto_now=True, verbose_name='modified')),
+                ('user_created', edc_base.model_fields.userfield.UserField(
+                    editable=False, max_length=50, verbose_name='user created')),
+                ('user_modified', edc_base.model_fields.userfield.UserField(
+                    editable=False, max_length=50, verbose_name='user modified')),
+                ('hostname_created', models.CharField(default='mac2-2.local', editable=False,
+                                                      help_text='System field. (modified on create only)', max_length=50)),
+                ('hostname_modified', edc_base.model_fields.hostname_modification_field.HostnameModificationField(
+                    editable=False, help_text='System field. (modified on every save)', max_length=50)),
+                ('revision', django_revision.revision_field.RevisionField(blank=True, editable=False,
+                                                                          help_text='System field. Git repository tag:branch:commit.', max_length=75, null=True, verbose_name='Revision')),
+                ('hash', models.CharField(
+                    db_index=True, max_length=128, unique=True, verbose_name='Hash')),
                 ('secret', models.BinaryField(verbose_name='Secret')),
-                ('algorithm', models.CharField(db_index=True, max_length=25, null=True)),
-                ('mode', models.CharField(db_index=True, max_length=25, null=True)),
+                ('algorithm', models.CharField(
+                    db_index=True, max_length=25, null=True)),
+                ('mode', models.CharField(
+                    db_index=True, max_length=25, null=True)),
             ],
             options={
                 'verbose_name': 'Crypt',

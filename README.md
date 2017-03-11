@@ -1,8 +1,5 @@
 [![Build Status](https://travis-ci.org/erikvw/django-crypto-fields.svg?branch=master)](https://travis-ci.org/erikvw/django-crypto-fields)
 [![Coverage Status](https://coveralls.io/repos/erikvw/django-crypto-fields/badge.svg)](https://coveralls.io/r/erikvw/django-crypto-fields)
-[![Documentation Status](https://readthedocs.org/projects/django-crypto-fields/badge/?version=latest)](https://readthedocs.org/projects/django-crypto-fields/?badge=latest)
-[![PyPI version](https://badge.fury.io/py/django-crypto-fields.svg)](http://badge.fury.io/py/django-crypto-fields)
-[![Code Health](https://landscape.io/github/erikvw/django-crypto-fields/master/landscape.svg?style=flat)](https://landscape.io/github/erikvw/django-crypto-fields/master)
 
 django-crypto-fields
 =====================
@@ -35,11 +32,15 @@ Macosx installation issue with `pycrypto`. `django-crypto-fields` requires `pycr
 
     CFLAGS="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk -I/usr/local/include" LDFLAGS="-L/usr/local/lib" pip install pycrypto
 
+On Ubuntu first install:
+    
+    sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+
 Once installed, add to INSTALLED_APPS:
 
 	INSTALLED_APPS = (
 		...
-	    'django_crypto_fields.apps.DjangoCryptoFieldsAppConfig',
+	    'django_crypto_fields.apps.AppConfig',
 	    ...
 	)
 
@@ -61,6 +62,31 @@ Generate encryption keys:
 
     python manage.py generate_keys
 
+
+Using a custom `Crypt` model
+----------------------------
+
+To use a custom `Crypt` model, as is required if the `Crypt` model is used in data synchronization, declare a tuple to reference the model on the `AppConfig`. If you have an app `myapp` then you `apps.py` might look like this:
+
+    from django.apps import AppConfig as DjangoAppConfig
+    from django_crypto_fields.apps import AppConfig as DjangoCryptoFieldsAppConfigParent
+    
+    class AppConfig(DjangoAppConfig):
+        name = 'my_app'
+
+    class DjangoCryptoFieldsAppConfig(DjangoCryptoFieldsAppConfigParent):
+        model = ('example', 'crypt')
+    
+    
+And then change settings INSTALLED_APPS:
+
+    INSTALLED_APPS = (
+        ...
+        'myapp.apps.DjangoCryptoFieldsAppConfig',
+        'myapp.apps.AppConfig',
+    )
+        
+See also module `edc-sync`.
 
 Legacy Mode
 -----------

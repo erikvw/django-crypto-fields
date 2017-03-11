@@ -17,8 +17,12 @@ class CryptModelMixin(models.Model):
         db_index=True,
         unique=True)
 
+    # causes problems with Postgres!!
     secret = models.BinaryField(
         verbose_name="Secret")
+
+#     secret = models.TextField(
+#         verbose_name="Secret")
 
     algorithm = models.CharField(
         max_length=25,

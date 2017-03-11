@@ -39,8 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'example',
-    'django_crypto_fields.apps.TestDjangoCryptoFieldsApp',
+    'django_revision.apps.AppConfig',
+    'example.apps.DjangoCryptoFieldsAppConfig',
+    'example.apps.AppConfig',
 ]
 
 MIDDLEWARE_CLASSES = (

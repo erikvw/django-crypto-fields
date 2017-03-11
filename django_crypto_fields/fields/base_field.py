@@ -36,6 +36,7 @@ class BaseField(models.Field):
                         self.__class__.__name__, max_message_length, self.max_length))
         kwargs['max_length'] = self.max_length
         kwargs['help_text'] = self.help_text
+        kwargs.setdefault('blank', True)
         super(BaseField, self).__init__(*args, **kwargs)
 
     def deconstruct(self):
@@ -93,7 +94,7 @@ class BaseField(models.Field):
         Since the available value is the hash, only exact match lookup types are supported."""
         supported_lookups = ['iexact', 'exact', 'in', 'isnull']
         if value is None or value in ['', b''] or lookup_type not in supported_lookups:
-            pass  # print('value={}'.format(value))
+            pass
         else:
             supported_lookups = ['iexact', 'exact', 'in', 'isnull']
             if lookup_type not in supported_lookups:

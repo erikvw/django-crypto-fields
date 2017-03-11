@@ -11,22 +11,24 @@ from django.conf import settings
 from .constants import (
     HASH_PREFIX, CIPHER_PREFIX, ENCODING, HASH_ALGORITHM, HASH_ROUNDS, AES, RSA,
     SALT, PRIVATE)
-from .exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError
+from .exceptions import (
+    CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError)
 
 from .cryptor import Cryptor
 
 
 class FieldCryptor(object):
-    """ Base class for django field classes with encryption.
+    """Base class for django field classes with encryption.
 
     ciphertext = hash_prefix + hashed_value + cipher_prefix + secret
 
-    The plaintext is hashed and stored by the user's model field. The plaintext is
-    also encrypted and stored in the cipher model along with the hash. The user's
-    model field object looks up the secret in the cipher model using the hash.
-    The secret is decrypted and returned to the user's model field object.
-
+    The plaintext is hashed and stored by the user's model field.
+    The plaintext is also encrypted and stored in the cipher model
+    along with the hash. The user's model field object looks up
+    the secret in the cipher model using the hash. The secret is
+    decrypted and returned to the user's model field object.
     """
+
     def __init__(self, algorithm, mode, keys=None, aes_encryption_mode=None):
         self._using = None
         self._cipher_model = None
@@ -50,19 +52,24 @@ class FieldCryptor(object):
         self.hash_size = len(self.hash('Foo'))
 
     def __repr__(self):
-        return 'FieldCryptor(algorithm=\'{}\', mode=\'{}\')'.format(self.algorithm, self.mode)
+        return 'FieldCryptor(algorithm=\'{}\', mode=\'{}\')'.format(
+            self.algorithm, self.mode)
 
     @property
     def cipher_model(self):
-        """Returns the cipher model and avoids issues with model loading and field classes."""
+        """Returns the cipher model and avoids issues with model
+        loading and field classes.
+        """
         if not self._cipher_model:
-            self._cipher_model = django_apps.get_model(*django_apps.get_app_config('django_crypto_fields').model)
+            self._cipher_model = django_apps.get_app_config(
+                'django_crypto_fields').model
         return self._cipher_model
 
     def hash(self, plaintext):
         """Returns a hexified hash of a plaintext value (as bytes).
 
-        The hashed value is used as a signature of the "secret"."""
+        The hashed value is used as a signature of the "secret".
+        """
         try:
             plaintext = plaintext.encode(ENCODING)
         except AttributeError:
@@ -71,17 +78,23 @@ class FieldCryptor(object):
         try:
             salt = getattr(self.keys, attr)
         except AttributeError as e:
-            raise EncryptionKeyError('Invalid key. Got {}. {}'.format(attr, str(e)))
+            raise EncryptionKeyError(
+                'Invalid key. Got {}. {}'.format(attr, str(e)))
         dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext, salt, HASH_ROUNDS)
         return binascii.hexlify(dk)
 
     def encrypt(self, value, update=None):
-        """ Returns ciphertext as byte data using either an RSA or AES cipher.
+        """ Returns ciphertext as byte data using either an
+        RSA or AES cipher.
 
         * 'value' is either plaintext or ciphertext
-        * 'ciphertext' is a byte value of hash_prefix + hashed_value + cipher_prefix + secret.
-          For example: enc1:::234234ed234a24enc2::\x0e\xb9\xae\x13s\x8d\xe7O\xbb\r\x99.
-        * 'value' is not re-encrypted if already encrypted and properly formatted 'ciphertext'.
+        * 'ciphertext' is a byte value of hash_prefix
+          + hashed_value + cipher_prefix + secret.
+          For example:
+            enc1:::234234ed234a24enc2::\x0e\xb9\xae\x13s\x8d
+              \xe7O\xbb\r\x99.
+        * 'value' is not re-encrypted if already encrypted and properly
+          formatted 'ciphertext'.
         """
         try:
             ciphertext = value.encode(ENCODING)
@@ -99,15 +112,20 @@ class FieldCryptor(object):
                         cipher = self.cryptor.rsa_encrypt
                     else:
                         cipher = None
-                    ciphertext = (HASH_PREFIX.encode(ENCODING) + self.hash(value) +
-                                  CIPHER_PREFIX.encode(ENCODING) + cipher(value, self.mode))
+                    ciphertext = (HASH_PREFIX.encode(ENCODING)
+                                  + self.hash(value)
+                                  + CIPHER_PREFIX.encode(ENCODING)
+                                  + cipher(value, self.mode))
                     if update:
                         self.update_cipher_model(ciphertext)
                 except AttributeError as e:
                     raise CipherError(
-                        'Cannot determine cipher method. Unknown encryption algorithm. '
-                        'Valid options are {0}. Got {1} ({2})'.format(
-                            ', '.join(self.keys.key_filenames), self.algorithm, e))
+                        'Cannot determine cipher method. Unknown '
+                        'encryption algorithm. Valid options are {0}. '
+                        'Got {1} ({2})'.format(
+                            ', '.join(
+                                self.keys.key_filenames),
+                            self.algorithm, e))
         return ciphertext
 
     def decrypt(self, hash_with_prefix):
@@ -115,7 +133,8 @@ class FieldCryptor(object):
 
         Secret is retrieved from cipher_model using the hash.
 
-        hash_with_prefix = hash_prefix+hash."""
+        hash_with_prefix = hash_prefix+hash.
+        """
         plaintext = None
         try:
             hash_with_prefix = hash_with_prefix.encode(ENCODING)
@@ -142,7 +161,8 @@ class FieldCryptor(object):
                             'Failed to decrypt. Could not find "secret" '
                             ' for hash \'{0}\''.format(hashed_value))
                     else:
-                        raise EncryptionError('Failed to decrypt. Malformed ciphertext')
+                        raise EncryptionError(
+                            'Failed to decrypt. Malformed ciphertext')
         return plaintext
 
     @property
@@ -159,7 +179,8 @@ class FieldCryptor(object):
             secret = self.get_secret(ciphertext)
             self.cipher_buffer.update({hashed_value: secret})
             try:
-                cipher_model = self.cipher_model.objects.using(self.using).get(hash=hashed_value)
+                cipher_model = self.cipher_model.objects.using(
+                    self.using).get(hash=hashed_value)
                 cipher_model.secret = secret
             except self.cipher_model.DoesNotExist:
                 self.cipher_model.objects.using(self.using).create(
@@ -175,7 +196,8 @@ class FieldCryptor(object):
             ciphertext.split(HASH_PREFIX.encode(ENCODING))[1]
             ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
         except IndexError:
-            ValueError('Malformed ciphertext. Expected prefixes {}, {}'.format(HASH_PREFIX, CIPHER_PREFIX))
+            ValueError('Malformed ciphertext. Expected prefixes {}, {}'.format(
+                HASH_PREFIX, CIPHER_PREFIX))
         try:
             if ciphertext[:len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
                 raise MalformedCiphertextError(
@@ -224,7 +246,8 @@ class FieldCryptor(object):
         secret = self.cipher_buffer.get(hashed_value)
         if not secret:
             try:
-                cipher = self.cipher_model.objects.using(self.using).values('secret').get(hash=hashed_value)
+                cipher = self.cipher_model.objects.using(
+                    self.using).values('secret').get(hash=hashed_value)
                 secret = cipher.get('secret')
                 self.cipher_buffer.update({hashed_value: secret})
             except self.cipher_model.DoesNotExist:
@@ -276,7 +299,8 @@ class FieldCryptor(object):
             bytes_value = value
         if bytes_value is not None and bytes_value != b'':
             if bytes_value in [HASH_PREFIX.encode(ENCODING), CIPHER_PREFIX.encode(ENCODING)]:
-                raise MalformedCiphertextError('Expected a value, got just the encryption prefix.')
+                raise MalformedCiphertextError(
+                    'Expected a value, got just the encryption prefix.')
             self.verify_hash(bytes_value)
             if has_secret:
                 self.verify_secret(bytes_value)
@@ -295,7 +319,8 @@ class FieldCryptor(object):
         if not ciphertext[:len(hash_prefix)] == hash_prefix:
             raise MalformedCiphertextError(
                 'Ciphertext must start with {}. Got {}'.format(hash_prefix, ciphertext[:len(hash_prefix)]))
-        hash_value = ciphertext[len(hash_prefix):].split(CIPHER_PREFIX.encode(ENCODING))[0]
+        hash_value = ciphertext[len(hash_prefix):].split(
+            CIPHER_PREFIX.encode(ENCODING))[0]
         if len(hash_value) != self.hash_size:
             raise MalformedCiphertextError(
                 'Expected hash prefix to be followed by a hash. Got something else or nothing')

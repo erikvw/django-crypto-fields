@@ -61,13 +61,13 @@ class KeyPathMixin:
                     key_path = settings.BASE_DIR
                     sys.stdout.write(style.WARNING(
                         'Warning! Not ready for production. Setting KEY_PATH to {} '
-                        'for testing purposes.'.format(key_path)))
+                        'for testing purposes.\n'.format(key_path)))
                     self.using_test_keys = True
                 except (ImproperlyConfigured, AttributeError):
                     # your not in Django ...
                     # you should have passed a key_path to this setter
                     raise DjangoCryptoFieldsError('Cannot determine the key path.')
-        key_path = os.path.expanduser(key_path)
+        key_path = os.path.expanduser(str(key_path))
         if not os.path.exists(key_path):
             raise DjangoCryptoFieldsError('Invalid key path. Got {}'.format(key_path))
         self._key_path = key_path
@@ -176,7 +176,6 @@ class Keys(KeyPathMixin):
         try:
             key_file = self.key_filenames[AES][mode][key]
         except KeyError:
-            print(self.key_filenames.get(AES))
             raise
         with open(key_file, 'rb') as faes:
             aes_key = rsa_key.decrypt(faes.read())
