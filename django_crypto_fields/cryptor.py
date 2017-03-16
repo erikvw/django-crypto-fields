@@ -107,11 +107,15 @@ class Cryptor(object):
 
     def rsa_decrypt(self, ciphertext, mode):
         rsa_key = '_'.join([RSA, mode, PRIVATE, 'key'])
-        plaintext = getattr(self.keys, rsa_key).decrypt(ciphertext)
+        try:
+            plaintext = getattr(self.keys, rsa_key).decrypt(ciphertext)
+        except ValueError as e:
+            raise EncryptionError('{} Got {}.'.format(str(e), ciphertext))
         return plaintext.decode(ENCODING)
 
     def test_rsa(self):
-        """ Tests keys roundtrip"""
+        """ Tests keys roundtrip.
+        """
         plaintext = (
             'erik is a pleeb! ERIK IS A PLEEB 0123456789!@#$%^&*()'
             '_-+={[}]|\"\':;>.<,?/~`±§')

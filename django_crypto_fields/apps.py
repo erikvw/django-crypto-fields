@@ -3,8 +3,10 @@ import sys
 from Crypto.Cipher import AES
 from django.apps import apps as django_apps
 from django.apps import AppConfig as DjangoAppConfig
+from django.conf import settings
 from django.core.management.color import color_style
 from django_crypto_fields.cryptor import Cryptor
+from django_crypto_fields.exceptions import EncryptionError
 
 
 class DjangoCryptoFieldsError(Exception):
@@ -21,10 +23,15 @@ class AppConfig(DjangoAppConfig):
     app_label = 'django_crypto_fields'
     # change if using more than one database and not 'default'.
     crypt_model_using = 'default'
+    try:
+        auto_create_keys = settings.DEBUG and settings.AUTO_CREATE_KEYS
+    except AttributeError:
+        auto_create_keys = False
 
     def __init__(self, app_label, model_name):
         """Placed here instead of `ready()`. For models to load correctly that use
-        field classes from this module the keys need to be loaded before models."""
+        field classes from this module the keys need to be loaded before models.
+        """
         super(AppConfig, self).__init__(app_label, model_name)
         from django_crypto_fields.keys import Keys
         keys = Keys()
@@ -41,7 +48,10 @@ class AppConfig(DjangoAppConfig):
                                  'new keys will be generated\n')
                 sys.stdout.write(
                     'and placed in the settings.KEY_PATH folder.\n')
-                keys.create_keys()
+                if self.auto_create_keys:
+                    keys.create_keys()
+                else:
+                    raise EncryptionError('Encryption keys not found.')
             keys.load_keys()
             self.encryption_keys = keys
             sys.stdout.write(
