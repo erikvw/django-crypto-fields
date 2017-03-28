@@ -1,14 +1,17 @@
+import sys
+
+from django.apps import apps as django_apps
 from django.conf import settings
-from django.core.exceptions import ValidationError
+# from django.core.exceptions import ValidationError
+from django.core.management.color import color_style
 from django.db import models
 from django.forms import widgets
-from django.apps import apps as django_apps
 
-from ..constants import HASH_PREFIX, RSA, LOCAL_MODE
-from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError
+from ..constants import HASH_PREFIX, RSA, LOCAL_MODE, ENCODING
+from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionLookupError
 from ..field_cryptor import FieldCryptor
-from django_crypto_fields.exceptions import EncryptionLookupError
-from django_crypto_fields.constants import ENCODING
+
+style = color_style()
 
 
 class BaseField(models.Field):
@@ -16,7 +19,8 @@ class BaseField(models.Field):
     description = 'Field class that stores values as encrypted'
 
     def __init__(self, algorithm, mode, *args, **kwargs):
-        self.keys = django_apps.get_app_config('django_crypto_fields').encryption_keys
+        self.keys = django_apps.get_app_config(
+            'django_crypto_fields').encryption_keys
         self.algorithm = algorithm or RSA
         self.mode = mode or LOCAL_MODE
         self.help_text = kwargs.get('help_text', '')
@@ -28,7 +32,8 @@ class BaseField(models.Field):
         max_length = kwargs.get('max_length', min_length)
         self.max_length = min_length if max_length < min_length else max_length
         if self.algorithm == RSA:
-            max_message_length = self.keys.rsa_key_info[self.mode]['max_message_length']
+            max_message_length = self.keys.rsa_key_info[
+                self.mode]['max_message_length']
             if self.max_length > max_message_length:
                 raise EncryptionError(
                     '{} attribute \'max_length\' cannot exceed {} for RSA. Got {}. '
@@ -66,8 +71,22 @@ class BaseField(models.Field):
             if not decrypted_value:
                 self.readonly = True  # did not decrypt
                 decrypted_value = value
-        except (CipherError, EncryptionError, MalformedCiphertextError) as e:
-            raise ValidationError(e)
+        except CipherError as e:
+            sys.stdout.write(
+                style.ERROR('CipherError. Got {}\n'.format(str(e))))
+            sys.stdout.flush()
+            # raise ValidationError(e)
+        except EncryptionError as e:
+            sys.stdout.write(
+                style.ERROR('EncryptionError. Got {}\n'.format(str(e))))
+            sys.stdout.flush()
+            raise
+            # raise ValidationError(e)
+        except MalformedCiphertextError as e:
+            sys.stdout.write(
+                style.ERROR('MalformedCiphertextError. Got {}\n'.format(str(e))))
+            sys.stdout.flush()
+            # raise ValidationError(e)
         return decrypted_value
 
     def from_db_value(self, value, *args):
@@ -106,7 +125,8 @@ class BaseField(models.Field):
             elif lookup_type == 'in':
                 self.get_in_as_lookup(value)
             else:
-                value = HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value)
+                value = HASH_PREFIX.encode(
+                    ENCODING) + self.field_cryptor.hash(value)
         return super(BaseField, self).get_prep_lookup(lookup_type, value)
 
     def get_isnull_as_lookup(self, value):
@@ -115,7 +135,8 @@ class BaseField(models.Field):
     def get_in_as_lookup(self, values):
         hashed_values = []
         for value in values:
-            hashed_values.append(HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value))
+            hashed_values.append(
+                HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value))
         return hashed_values
 
     def get_internal_type(self):

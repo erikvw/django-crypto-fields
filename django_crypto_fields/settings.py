@@ -119,3 +119,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 GIT_DIR = BASE_DIR.ancestor(1)
 KEY_PATH = os.path.join(BASE_DIR.ancestor(1), 'crypto_fields')
+AUTO_CREATE_KEYS = DEBUG

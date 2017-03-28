@@ -5,7 +5,7 @@ from edc_base.model_mixins import BaseUuidModel
 
 class Crypt(CryptModelMixin, BaseUuidModel):
 
-    class Meta:
+    class Meta(CryptModelMixin.Meta):
         app_label = 'django_crypto_fields'
         verbose_name = 'Crypt'
         unique_together = (('hash', 'algorithm', 'mode'),)
