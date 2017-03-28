@@ -75,19 +75,17 @@ class BaseField(models.Field):
             sys.stdout.write(
                 style.ERROR('CipherError. Got {}\n'.format(str(e))))
             sys.stdout.flush()
-            pass
             # raise ValidationError(e)
         except EncryptionError as e:
             sys.stdout.write(
                 style.ERROR('EncryptionError. Got {}\n'.format(str(e))))
             sys.stdout.flush()
-            pass
+            raise
             # raise ValidationError(e)
         except MalformedCiphertextError as e:
             sys.stdout.write(
                 style.ERROR('MalformedCiphertextError. Got {}\n'.format(str(e))))
             sys.stdout.flush()
-            pass
             # raise ValidationError(e)
         return decrypted_value
 

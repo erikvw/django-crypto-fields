@@ -14,8 +14,7 @@ class CryptModelMixin(models.Model):
     hash = models.CharField(
         verbose_name="Hash",
         max_length=128,
-        db_index=True,
-        unique=True)
+        db_index=True)
 
     # causes problems with Postgres!!
     secret = models.BinaryField(
