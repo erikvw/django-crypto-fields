@@ -13,10 +13,10 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
-from unipath import Path
+from pathlib import PurePath
 
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -90,7 +90,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
-            'read_default_file': os.path.join(BASE_DIR.ancestor(1), 'etc', 'default.cnf'),
+            'read_default_file': os.path.join(BASE_DIR, 'etc', 'default.cnf'),
         },
         'HOST': '',
         'PORT': '',
@@ -117,6 +117,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-GIT_DIR = BASE_DIR.ancestor(1)
-KEY_PATH = os.path.join(BASE_DIR.ancestor(1), 'crypto_fields')
+GIT_DIR = str(PurePath(BASE_DIR).parent)
+KEY_PATH = os.path.join(str(PurePath(BASE_DIR).parent), 'crypto_fields')
 AUTO_CREATE_KEYS = DEBUG
