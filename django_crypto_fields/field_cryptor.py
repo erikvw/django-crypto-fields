@@ -1,7 +1,6 @@
 import binascii
 import hashlib
 
-from collections import OrderedDict
 from Crypto.Cipher import AES as AES_CIPHER
 
 from django.apps import apps as django_apps
