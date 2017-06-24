@@ -3,7 +3,8 @@ from django.utils import timezone
 
 from edc_base.model_mixins import BaseModel, BaseUuidModel
 
-from django_crypto_fields.fields import EncryptedTextField, FirstnameField, LastnameField, IdentityField
+from django_crypto_fields.fields import EncryptedTextField
+from django_crypto_fields.fields import FirstnameField, LastnameField, IdentityField
 from django_crypto_fields.mixins import CryptoMixin
 from django_crypto_fields.model_mixins import CryptModelMixin
 
