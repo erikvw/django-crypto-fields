@@ -8,7 +8,8 @@ from django.db import models
 from django.forms import widgets
 
 from ..constants import HASH_PREFIX, RSA, LOCAL_MODE, ENCODING
-from ..exceptions import CipherError, EncryptionError, MalformedCiphertextError, EncryptionLookupError
+from ..exceptions import CipherError, EncryptionError
+from ..exceptions import MalformedCiphertextError, EncryptionLookupError
 from ..field_cryptor import FieldCryptor
 
 style = color_style()
@@ -100,17 +101,21 @@ class BaseField(models.Field):
 #         return self.decrypt(value)
 
     def get_prep_value(self, value):
-        """Returns the encrypted value, including prefix, as the query value (to query the db).
+        """Returns the encrypted value, including prefix, as the
+        query value (to query the db).
 
         db is queried using the hash
 
-        Note: partial matches do not work. See get_prep_lookup()."""
+        Note: partial matches do not work. See get_prep_lookup().
+        """
         return self.field_cryptor.get_prep_value(value)
 
     def get_prep_lookup(self, lookup_type, value):
         """Convert the value to a hash with prefix and pass to super.
 
-        Since the available value is the hash, only exact match lookup types are supported."""
+        Since the available value is the hash, only exact match
+        lookup types are supported.
+        """
         supported_lookups = ['iexact', 'exact', 'in', 'isnull']
         if value is None or value in ['', b''] or lookup_type not in supported_lookups:
             pass
@@ -118,8 +123,8 @@ class BaseField(models.Field):
             supported_lookups = ['iexact', 'exact', 'in', 'isnull']
             if lookup_type not in supported_lookups:
                 raise EncryptionLookupError(
-                    'Field type only supports supports \'{}\' lookups. Got \'{}\''.format(
-                        supported_lookups, lookup_type))
+                    f'Field type only supports supports \'{supported_lookups}\' '
+                    f'lookups. Got \'{lookup_type}\'')
             if lookup_type == 'isnull':
                 value = self.get_isnull_as_lookup(value)
             elif lookup_type == 'in':
@@ -140,8 +145,9 @@ class BaseField(models.Field):
         return hashed_values
 
     def get_internal_type(self):
-        """This is a Charfield as we only ever store the hash, which is a \
-        fixed length char. """
+        """This is a Charfield as we only ever store the hash,
+        which is a fixed length char.
+        """
         return "CharField"
 
     def mask(self, value, mask=None):

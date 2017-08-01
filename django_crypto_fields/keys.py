@@ -66,10 +66,12 @@ class KeyPathMixin:
                 except (ImproperlyConfigured, AttributeError):
                     # your not in Django ...
                     # you should have passed a key_path to this setter
-                    raise DjangoCryptoFieldsError('Cannot determine the key path.')
+                    raise DjangoCryptoFieldsError(
+                        'Cannot determine the key path.')
         key_path = os.path.expanduser(str(key_path))
         if not os.path.exists(key_path):
-            raise DjangoCryptoFieldsError('Invalid key path. Got {}'.format(key_path))
+            raise DjangoCryptoFieldsError(
+                'Invalid key path. Got {}'.format(key_path))
         self._key_path = key_path
 
     @property
@@ -88,21 +90,29 @@ class KeyPathMixin:
         return {
             RSA: {
                 RESTRICTED_MODE: {
-                    PUBLIC: os.path.join(self.key_path, self.key_prefix + '-rsa-restricted-public.pem'),
-                    PRIVATE: os.path.join(self.key_path, self.key_prefix + '-rsa-restricted-private.pem')},
+                    PUBLIC: os.path.join(
+                        self.key_path, self.key_prefix + '-rsa-restricted-public.pem'),
+                    PRIVATE: os.path.join(
+                        self.key_path, self.key_prefix + '-rsa-restricted-private.pem')},
                 LOCAL_MODE: {
-                    PUBLIC: os.path.join(self.key_path, self.key_prefix + '-rsa-local-public.pem'),
-                    PRIVATE: os.path.join(self.key_path, self.key_prefix + '-rsa-local-private.pem')}},
+                    PUBLIC: os.path.join(
+                        self.key_path, self.key_prefix + '-rsa-local-public.pem'),
+                    PRIVATE: os.path.join(
+                        self.key_path, self.key_prefix + '-rsa-local-private.pem')}},
             AES: {
                 LOCAL_MODE: {
-                    PRIVATE: os.path.join(self.key_path, self.key_prefix + '-aes-local.key')},
+                    PRIVATE: os.path.join(
+                        self.key_path, self.key_prefix + '-aes-local.key')},
                 RESTRICTED_MODE: {
-                    PRIVATE: os.path.join(self.key_path, self.key_prefix + '-aes-restricted.key')}},
+                    PRIVATE: os.path.join(
+                        self.key_path, self.key_prefix + '-aes-restricted.key')}},
             SALT: {
                 LOCAL_MODE: {
-                    PRIVATE: os.path.join(self.key_path, self.key_prefix + '-salt-local.key')},
+                    PRIVATE: os.path.join(
+                        self.key_path, self.key_prefix + '-salt-local.key')},
                 RESTRICTED_MODE: {
-                    PRIVATE: os.path.join(self.key_path, self.key_prefix + '-salt-restricted.key')}},
+                    PRIVATE: os.path.join(
+                        self.key_path, self.key_prefix + '-salt-restricted.key')}},
         }
 
 
@@ -143,17 +153,21 @@ class Keys(KeyPathMixin):
             sys.stdout.write(' * loading keys from {}\n'.format(self.key_path))
             for mode, keys in self.key_filenames[RSA].items():
                 for key in keys:
-                    sys.stdout.write(' * loading {}.{}.{} ...\r'.format(RSA, mode, key))
+                    sys.stdout.write(
+                        ' * loading {}.{}.{} ...\r'.format(RSA, mode, key))
                     self.load_rsa_key(mode, key)
-                    sys.stdout.write(' * loading {}.{}.{} ... Done.\n'.format(RSA, mode, key))
+                    sys.stdout.write(
+                        ' * loading {}.{}.{} ... Done.\n'.format(RSA, mode, key))
             for mode in self.key_filenames[AES]:
                 sys.stdout.write(' * loading {}.{} ...\r'.format(AES, mode))
                 self.load_aes_key(mode)
-                sys.stdout.write(' * loading {}.{} ... Done.\n'.format(AES, mode))
+                sys.stdout.write(
+                    ' * loading {}.{} ... Done.\n'.format(AES, mode))
             for mode in self.key_filenames[SALT]:
                 sys.stdout.write(' * loading {}.{} ...\r'.format(SALT, mode))
                 self.load_salt_key(mode, key)
-                sys.stdout.write(' * loading {}.{} ... Done.\n'.format(SALT, mode))
+                sys.stdout.write(
+                    ' * loading {}.{} ... Done.\n'.format(SALT, mode))
             self.keys_are_ready = True
 
     def load_rsa_key(self, mode, key):
@@ -200,7 +214,8 @@ class Keys(KeyPathMixin):
         k = number.ceil_div(modBits, 8)
         self.rsa_key_info[mode].update({'bytes': k})
         hLen = rsa_key._hashObj.digest_size
-        self.rsa_key_info[mode].update({'max_message_length': k - (2 * hLen) - 2})
+        self.rsa_key_info[mode].update(
+            {'max_message_length': k - (2 * hLen) - 2})
 
     def create_rsa(self, mode=None):
         """Creates RSA keys."""
@@ -212,13 +227,16 @@ class Keys(KeyPathMixin):
             try:
                 with open(path, 'xb') as fpub:
                     fpub.write(pub.exportKey('PEM'))
-                sys.stdout.write(' - Created new RSA {0} key {1}\n'.format(mode, path))
+                sys.stdout.write(
+                    ' - Created new RSA {0} key {1}\n'.format(mode, path))
                 path = self.key_filenames.get(RSA).get(mode).get(PRIVATE)
                 with open(path, 'xb') as fpub:
                     fpub.write(key.exportKey('PEM'))
-                sys.stdout.write(' - Created new RSA {0} key {1}\n'.format(mode, path))
+                sys.stdout.write(
+                    ' - Created new RSA {0} key {1}\n'.format(mode, path))
             except FileExistsError as e:
-                raise DjangoCryptoFieldsError('RSA key already exists. Got {}'.format(str(e)))
+                raise DjangoCryptoFieldsError(
+                    'RSA key already exists. Got {}'.format(str(e)))
 
     def create_aes(self, mode=None):
         """Creates AES keys and RSA encrypts them."""
@@ -231,7 +249,8 @@ class Keys(KeyPathMixin):
             key_file = self.key_filenames.get(AES).get(mode).get(PRIVATE)
             with open(key_file, 'xb') as faes:
                 faes.write(rsa_key.encrypt(aes_key))
-            sys.stdout.write(' - Created new AES {0} key {1}\n'.format(mode, key_file))
+            sys.stdout.write(
+                ' - Created new AES {0} key {1}\n'.format(mode, key_file))
 
     def create_salt(self, mode=None):
         """Creates a salt and RSA encrypts it."""
@@ -244,4 +263,5 @@ class Keys(KeyPathMixin):
             key_file = self.key_filenames.get(SALT).get(mode).get(PRIVATE)
             with open(key_file, 'xb') as fsalt:
                 fsalt.write(rsa_key.encrypt(salt))
-            sys.stdout.write(' - Created new salt {0} key {1}\n'.format(mode, key_file))
+            sys.stdout.write(
+                ' - Created new salt {0} key {1}\n'.format(mode, key_file))

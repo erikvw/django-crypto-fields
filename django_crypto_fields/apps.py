@@ -29,23 +29,25 @@ class AppConfig(DjangoAppConfig):
         auto_create_keys = False
 
     def __init__(self, app_label, model_name):
-        """Placed here instead of `ready()`. For models to load correctly that use
-        field classes from this module the keys need to be loaded before models.
+        """Placed here instead of `ready()`. For models to
+        load correctly that use field classes from this module the keys
+        need to be loaded before models.
         """
         super(AppConfig, self).__init__(app_label, model_name)
         from django_crypto_fields.keys import Keys
         keys = Keys()
         if not self.encryption_keys:
-            sys.stdout.write('Loading {} ...\n'.format(self.verbose_name))
+            sys.stdout.write(f'Loading {self.verbose_name} ...\n')
             if not keys.key_files_exist():
-                sys.stdout.write(style.NOTICE('Warning: {} failed to load encryption keys.\n'.format(
-                    self.verbose_name)))
+                sys.stdout.write(style.NOTICE(
+                    f'Warning: {self.verbose_name} failed to load encryption keys.\n'))
                 sys.stdout.write(
                     'Confirm that settings.KEY_PATH points to the correct folder.\n')
                 sys.stdout.write(
                     'Loading the wrong encryption keys can corrupt sensitive data.\n')
-                sys.stdout.write('If this is your first time loading the project, '
-                                 'new keys will be generated\n')
+                sys.stdout.write(
+                    'If this is your first time loading the project, '
+                    'new keys will be generated\n')
                 sys.stdout.write(
                     'and placed in the settings.KEY_PATH folder.\n')
                 if self.auto_create_keys:
@@ -55,8 +57,8 @@ class AppConfig(DjangoAppConfig):
             keys.load_keys()
             self.encryption_keys = keys
             sys.stdout.write(
-                ' * using model {}.{}.\n'.format(self.app_label, 'crypt'))
-            sys.stdout.write(' Done loading {}.\n'.format(self.verbose_name))
+                f' * using model {self.app_label}.crypt.\n')
+            sys.stdout.write(f' Done loading {self.verbose_name}.\n')
             sys.stdout.flush()
 
     def ready(self):

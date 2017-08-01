@@ -7,11 +7,10 @@ from django.apps import apps as django_apps
 from django.core.exceptions import AppRegistryNotReady
 from django.conf import settings
 
-from .constants import (
-    HASH_PREFIX, CIPHER_PREFIX, ENCODING, HASH_ALGORITHM, HASH_ROUNDS, AES, RSA,
-    SALT, PRIVATE)
-from .exceptions import (
-    CipherError, EncryptionError, MalformedCiphertextError, EncryptionKeyError)
+from .constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, HASH_ALGORITHM
+from .constants import HASH_ROUNDS, AES, RSA, SALT, PRIVATE
+from .exceptions import CipherError, EncryptionError
+from .exceptions import MalformedCiphertextError, EncryptionKeyError
 
 from .cryptor import Cryptor
 
@@ -197,21 +196,24 @@ class FieldCryptor(object):
                     mode=self.mode)
 
     def verify_ciphertext(self, ciphertext):
-        """Returns ciphertext after verifying format prefix + hash + prefix + secret."""
+        """Returns ciphertext after verifying format prefix +
+        hash + prefix + secret.
+        """
         try:
             ciphertext.split(HASH_PREFIX.encode(ENCODING))[1]
             ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
         except IndexError:
-            ValueError('Malformed ciphertext. Expected prefixes {}, {}'.format(
-                HASH_PREFIX, CIPHER_PREFIX))
+            ValueError(
+                f'Malformed ciphertext. Expected prefixes '
+                f'{HASH_PREFIX}, {CIPHER_PREFIX}')
         try:
             if ciphertext[:len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
                 raise MalformedCiphertextError(
-                    'Malformed ciphertext. Expected hash prefix {}'.format(HASH_PREFIX))
+                    f'Malformed ciphertext. Expected hash prefix {HASH_PREFIX}')
             if (len(ciphertext.split(HASH_PREFIX.encode(ENCODING))[1].split(
                     CIPHER_PREFIX.encode(ENCODING))[0]) != self.hash_size):
                 raise MalformedCiphertextError(
-                    'Malformed ciphertext. Expected hash size of {}.'.format(self.hash_size))
+                    f'Malformed ciphertext. Expected hash size of {self.hash_size}.')
         except IndexError:
             MalformedCiphertextError('Malformed ciphertext.')
         return ciphertext
@@ -264,8 +266,8 @@ class FieldCryptor(object):
                     {hashed_value: secret})
             except self.cipher_model.DoesNotExist:
                 raise EncryptionError(
-                    'Failed to get secret for given {} {} hash. Got \'{}\''.format(
-                        self.algorithm, self.mode, hash_with_prefix))
+                    f'Failed to get secret for given {self.algorithm} '
+                    f'{self.mode} hash. Got \'{hash_with_prefix}\'')
         return secret
 
     def is_encrypted(self, value, has_secret=None):
@@ -296,14 +298,19 @@ class FieldCryptor(object):
         return is_encrypted
 
     def verify_value(self, value, has_secret=None):
-        """Encodes the value, validates its format, and returns it or raises an exception.
+        """Encodes the value, validates its format, and returns it
+        or raises an exception.
 
-        A value is either a value that can be encrypted or one that already is encrypted.
+        A value is either a value that can be encrypted or one that
+        already is encrypted.
 
         * A value cannot just be equal to HASH_PREFIX or CIPHER_PREFIX;
-        * A value prefixed with HASH_PREFIX must be followed by a valid hash (by length);
-        * A value prefixed with HASH_PREFIX + hashed_value + CIPHER_PREFIX must be followed by some text;
-        * A value prefix by CIPHER_PREFIX must be followed by some text;
+        * A value prefixed with HASH_PREFIX must be followed by a
+          valid hash (by length);
+        * A value prefixed with HASH_PREFIX + hashed_value +
+          CIPHER_PREFIX must be followed by some text;
+        * A value prefix by CIPHER_PREFIX must be followed by
+          some text;
         """
         has_secret = True if has_secret is None else has_secret
         try:
@@ -311,7 +318,8 @@ class FieldCryptor(object):
         except AttributeError:
             bytes_value = value
         if bytes_value is not None and bytes_value != b'':
-            if bytes_value in [HASH_PREFIX.encode(ENCODING), CIPHER_PREFIX.encode(ENCODING)]:
+            if (bytes_value in [
+                    HASH_PREFIX.encode(ENCODING), CIPHER_PREFIX.encode(ENCODING)]):
                 raise MalformedCiphertextError(
                     'Expected a value, got just the encryption prefix.')
             self.verify_hash(bytes_value)
@@ -320,7 +328,8 @@ class FieldCryptor(object):
         return value  # note, is original passed value
 
     def verify_hash(self, ciphertext):
-        """Verifies hash segment of ciphertext (bytes) and raises an exception if not OK.
+        """Verifies hash segment of ciphertext (bytes) and
+        raises an exception if not OK.
         """
         try:
             ciphertext = ciphertext.encode(ENCODING)
@@ -329,33 +338,39 @@ class FieldCryptor(object):
         hash_prefix = HASH_PREFIX.encode(ENCODING)
         if ciphertext == HASH_PREFIX.encode(ENCODING):
             raise MalformedCiphertextError(
-                'Ciphertext has not hash. Got {}'.format(ciphertext))
+                f'Ciphertext has not hash. Got {ciphertext}')
         if not ciphertext[:len(hash_prefix)] == hash_prefix:
             raise MalformedCiphertextError(
-                'Ciphertext must start with {}. Got {}'.format(hash_prefix, ciphertext[:len(hash_prefix)]))
+                f'Ciphertext must start with {hash_prefix}. '
+                f'Got {ciphertext[:len(hash_prefix)]}')
         hash_value = ciphertext[len(hash_prefix):].split(
             CIPHER_PREFIX.encode(ENCODING))[0]
         if len(hash_value) != self.hash_size:
             raise MalformedCiphertextError(
-                'Expected hash prefix to be followed by a hash. Got something else or nothing')
+                'Expected hash prefix to be followed by a hash. '
+                'Got something else or nothing')
         return True
 
     def verify_secret(self, ciphertext):
-        """Verifies secret segment of ciphertext and raises an exception if not OK.
+        """Verifies secret segment of ciphertext and raises an
+        exception if not OK.
         """
         if ciphertext[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
             try:
                 secret = ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
                 if len(secret) == 0:
                     raise MalformedCiphertextError(
-                        'Expected cipher prefix to be followed by a secret. Got nothing (1)')
+                        'Expected cipher prefix to be followed by a secret. '
+                        'Got nothing (1)')
             except IndexError:
                 raise MalformedCiphertextError(
-                    'Expected cipher prefix to be followed by a secret. Got nothing (2)')
+                    'Expected cipher prefix to be followed by a secret. '
+                    'Got nothing (2)')
         if (ciphertext[-1 * len(CIPHER_PREFIX):] == CIPHER_PREFIX.encode(ENCODING) and
                 len(ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]) == 0):
             raise MalformedCiphertextError(
-                'Expected cipher prefix to be followed by a secret. Got nothing (3)')
+                'Expected cipher prefix to be followed by a secret. '
+                'Got nothing (3)')
 
     def mask(self, value, mask=None):
         """ Returns 'mask' if value is encrypted.

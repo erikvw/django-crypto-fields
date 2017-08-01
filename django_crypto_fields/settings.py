@@ -16,8 +16,8 @@ import os
 from pathlib import PurePath
 
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+APP_NAME = 'django_crypto_fields'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_revision.apps.AppConfig',
+    'edc_device.apps.AppConfig',
     'example.apps.DjangoCryptoFieldsAppConfig',
     'example.apps.AppConfig',
 ]
@@ -85,7 +86,6 @@ WSGI_APPLICATION = 'django_crypto_fields.wsgi.application'
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -117,6 +117,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-GIT_DIR = str(PurePath(BASE_DIR).parent)
-KEY_PATH = os.path.join(str(PurePath(BASE_DIR).parent), 'crypto_fields')
+GIT_DIR = BASE_DIR
+KEY_PATH = os.path.join(BASE_DIR, 'crypto_fields')
 AUTO_CREATE_KEYS = DEBUG

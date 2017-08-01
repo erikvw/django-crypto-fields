@@ -9,7 +9,8 @@ class CryptModelManager(models.Manager):
 
 class CryptModelMixin(models.Model):
 
-    """ A secrets lookup model searchable by hash """
+    """ A secrets lookup model searchable by hash.
+    """
 
     hash = models.CharField(
         verbose_name="Hash",
@@ -44,5 +45,5 @@ class CryptModelMixin(models.Model):
 
     class Meta:
         abstract = True
-        verbose_name = 'Crypt'
         unique_together = (('hash', 'algorithm', 'mode'),)
+        indexes = [models.Index(fields=['hash', 'algorithm', 'mode'])]
