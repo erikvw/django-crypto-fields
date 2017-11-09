@@ -33,7 +33,7 @@ class AppConfig(DjangoAppConfig):
         load correctly that use field classes from this module the keys
         need to be loaded before models.
         """
-        super(AppConfig, self).__init__(app_label, model_name)
+        super().__init__(app_label, model_name)
         from django_crypto_fields.keys import Keys
         keys = Keys()
         if not self.encryption_keys:
