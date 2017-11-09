@@ -6,7 +6,6 @@ from Crypto import Random
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA as RSA_PUBLIC_KEY
 from Crypto.Util import number
-
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, AppRegistryNotReady
@@ -52,7 +51,8 @@ class KeyPathMixin:
 
     @key_path.setter
     def key_path(self, key_path=None):
-        """Set the key_path, if None, try to set from settings (default)."""
+        """Set the key_path, if None, try to set from settings (default).
+        """
         if not key_path:
             try:
                 key_path = settings.KEY_PATH
@@ -129,13 +129,14 @@ class Keys(KeyPathMixin):
     """
 
     def __init__(self, key_path=None, key_prefix=None):
-        super(Keys, self).__init__(key_path, key_prefix)
+        super().__init__(key_path, key_prefix)
         self._keys = copy.deepcopy(self.key_filenames)
         self.rsa_modes_supported = sorted([k for k in self._keys[RSA]])
         self.aes_modes_supported = sorted([k for k in self._keys[AES]])
 
     def create_keys(self):
-        """Generates RSA and AES keys as per `key_filenames`."""
+        """Generates RSA and AES keys as per `key_filenames`.
+        """
         sys.stdout.write(style.NOTICE('Generating new keys ...\n'))
         self.create_rsa()
         self.create_aes()
@@ -143,35 +144,37 @@ class Keys(KeyPathMixin):
         sys.stdout.write(style.SUCCESS('Done.\n'))
 
     def load_keys(self):
-        """Loads all keys defined in self.key_filenames."""
+        """Loads all keys defined in self.key_filenames.
+        """
         try:
             if django_apps.get_app_config('django_crypto_fields').encryption_keys:
                 raise DjangoCryptoFieldsKeysAlreadyLoaded()
         except (AppRegistryNotReady, AttributeError):
             pass
         if not self.keys_are_ready:
-            sys.stdout.write(' * loading keys from {}\n'.format(self.key_path))
+            sys.stdout.write(f' * loading keys from {self.key_path}\n')
             for mode, keys in self.key_filenames[RSA].items():
                 for key in keys:
                     sys.stdout.write(
-                        ' * loading {}.{}.{} ...\r'.format(RSA, mode, key))
+                        f' * loading {RSA}.{mode}.{key} ...\r')
                     self.load_rsa_key(mode, key)
                     sys.stdout.write(
-                        ' * loading {}.{}.{} ... Done.\n'.format(RSA, mode, key))
+                        f' * loading {RSA}.{mode}.{key} ... Done.\n')
             for mode in self.key_filenames[AES]:
-                sys.stdout.write(' * loading {}.{} ...\r'.format(AES, mode))
+                sys.stdout.write(f' * loading {AES}.{mode} ...\r')
                 self.load_aes_key(mode)
                 sys.stdout.write(
-                    ' * loading {}.{} ... Done.\n'.format(AES, mode))
+                    f' * loading {AES}.{mode} ... Done.\n')
             for mode in self.key_filenames[SALT]:
-                sys.stdout.write(' * loading {}.{} ...\r'.format(SALT, mode))
+                sys.stdout.write(f' * loading {SALT}.{mode} ...\r')
                 self.load_salt_key(mode, key)
                 sys.stdout.write(
-                    ' * loading {}.{} ... Done.\n'.format(SALT, mode))
+                    f' * loading {SALT}.{mode} ... Done.\n')
             self.keys_are_ready = True
 
     def load_rsa_key(self, mode, key):
-        """Loads an RSA key into _keys."""
+        """Loads an RSA key into _keys.
+        """
         key_file = self.key_filenames[RSA][mode][key]
         with open(key_file, 'rb') as frsa:
             rsa_key = RSA_PUBLIC_KEY.importKey(frsa.read())
@@ -184,7 +187,8 @@ class Keys(KeyPathMixin):
     def load_aes_key(self, mode):
         """Decrypts and loads an AES key into _keys.
 
-        Note: AES does not use a public key."""
+        Note: AES does not use a public key.
+        """
         key = PRIVATE
         rsa_key = self._keys[RSA][mode][key]
         try:
