@@ -3,10 +3,15 @@ import sys
 from Crypto import Random
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA as RSA_PUBLIC_KEY
-from django_crypto_fields.constants import style
+from django.conf import settings
 
-from .constants import RSA, AES, SALT, PRIVATE, PUBLIC, RSA_KEY_SIZE
-from .key_path_handler import KeyPathHandler
+from .constants import style, RSA, AES, SALT, PRIVATE, PUBLIC, RSA_KEY_SIZE
+from .key_files import KeyFiles
+
+try:
+    verbose_mode = settings.VERBOSE_MODE
+except AttributeError:
+    verbose_mode = True
 
 
 class DjangoCryptoFieldsKeyError(Exception):
@@ -19,25 +24,34 @@ class DjangoCryptoFieldsKeyAlreadyExist(Exception):
 
 class KeyCreator:
 
-    key_path_handler_cls = KeyPathHandler
+    """Creates new keys if key do not yet exist.
+    """
 
-    def __init__(self, key_path=None, key_prefix=None):
-        self.key_path_handler = self.key_path_handler_cls(
-            key_path=key_path, key_prefix=key_prefix)
-        self.key_path = self.key_path_handler.key_path
-        self.key_filenames = self.key_path_handler.key_filenames
+    key_files_cls = KeyFiles
+
+    def __init__(self, **kwargs):
+        self.verbose = verbose_mode
+        self.key_files = self.key_files_cls(**kwargs)
+        self.key_path = self.key_files.key_path
+        self.key_filenames = self.key_files.key_filenames
+        self.temp_path = self.key_files.temp_path
 
     def create_keys(self):
         """Generates RSA and AES keys as per `key_filenames`.
         """
-        if self.key_path_handler.key_files_exist:
+        if self.key_files.key_files_exist:
             raise DjangoCryptoFieldsKeyAlreadyExist(
                 f'Not creating new keys. Encryption keys already exist. See {self.key_path}.')
-        sys.stdout.write(style.NOTICE('Generating new keys ...\n'))
+        sys.stdout.write(style.WARNING(
+            '  * Generating new encryption keys ...\n'))
         self._create_rsa()
         self._create_aes()
         self._create_salt()
-        sys.stdout.write(style.SUCCESS('Done.\n'))
+        sys.stdout.write('    Done generating new encryption keys.\n')
+        sys.stdout.write(
+            f'    Your new encryption keys are in {self.key_path}.\n')
+        sys.stdout.write(style.ERROR(
+            f'    DON\'T FORGET TO BACKUP YOUR NEW KEYS!!\n'))
 
     def _create_rsa(self, mode=None):
         """Creates RSA keys.
@@ -50,13 +64,13 @@ class KeyCreator:
             try:
                 with open(path, 'xb') as fpub:
                     fpub.write(pub.exportKey('PEM'))
-                sys.stdout.write(
-                    ' - Created new RSA {0} key {1}\n'.format(mode, path))
+                if self.verbose:
+                    sys.stdout.write(f' - Created new RSA {mode} key {path}\n')
                 path = self.key_filenames.get(RSA).get(mode).get(PRIVATE)
                 with open(path, 'xb') as fpub:
                     fpub.write(key.exportKey('PEM'))
-                sys.stdout.write(
-                    ' - Created new RSA {0} key {1}\n'.format(mode, path))
+                if self.verbose:
+                    sys.stdout.write(f' - Created new RSA {mode} key {path}\n')
             except FileExistsError as e:
                 raise DjangoCryptoFieldsKeyError(
                     f'RSA key already exists. Got {e}')
@@ -73,8 +87,8 @@ class KeyCreator:
             key_file = self.key_filenames.get(AES).get(mode).get(PRIVATE)
             with open(key_file, 'xb') as faes:
                 faes.write(rsa_key.encrypt(aes_key))
-            sys.stdout.write(
-                ' - Created new AES {0} key {1}\n'.format(mode, key_file))
+            if self.verbose:
+                sys.stdout.write(f' - Created new AES {mode} key {key_file}\n')
 
     def _create_salt(self, mode=None):
         """Creates a salt and RSA encrypts it.
@@ -88,5 +102,6 @@ class KeyCreator:
             key_file = self.key_filenames.get(SALT).get(mode).get(PRIVATE)
             with open(key_file, 'xb') as fsalt:
                 fsalt.write(rsa_key.encrypt(salt))
-            sys.stdout.write(
-                ' - Created new salt {0} key {1}\n'.format(mode, key_file))
+            if self.verbose:
+                sys.stdout.write(
+                    f' - Created new salt {mode} key {key_file}\n')

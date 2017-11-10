@@ -140,6 +140,8 @@ GIT_DIR = BASE_DIR
 KEY_PATH = os.path.join(BASE_DIR, 'crypto_fields')
 AUTO_CREATE_KEYS = DEBUG
 
+VERBOSE_MODE = None
+
 if 'test' in sys.argv:
 
     class DisableMigrations:

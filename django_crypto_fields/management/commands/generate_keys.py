@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.management.color import color_style
 from django.core.management.base import BaseCommand, CommandError
 
-from ...default_key_path import default_key_path
+from django_crypto_fields.key_path import default_key_path
 from ...keys import Keys
 from django_crypto_fields.key_creator import KeyCreator
 

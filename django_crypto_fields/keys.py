@@ -9,7 +9,7 @@ from django.core.exceptions import AppRegistryNotReady
 from django_crypto_fields.exceptions import DjangoCryptoFieldsKeysAlreadyLoaded
 
 from .constants import RSA, AES, SALT, PRIVATE
-from .key_path_handler import KeyPathHandler
+from .key_files import KeyFiles
 
 
 class Keys:
@@ -23,14 +23,13 @@ class Keys:
 
     keys_are_ready = False
     rsa_key_info = {}
-    key_path_handler_cls = KeyPathHandler
+    key_files_cls = KeyFiles
 
-    def __init__(self, key_path=None, key_prefix=None):
-        key_path_handler = self.key_path_handler_cls(
-            key_path=key_path, key_prefix=key_prefix)
-        self.key_path = key_path_handler.key_path
-        self.key_filenames = key_path_handler.key_filenames
-        self._keys = copy.deepcopy(key_path_handler.key_filenames)
+    def __init__(self, **kwargs):
+        key_files = self.key_files_cls(**kwargs)
+        self.key_path = key_files.key_path
+        self.key_filenames = key_files.key_filenames
+        self._keys = copy.deepcopy(key_files.key_filenames)
         self.rsa_modes_supported = sorted([k for k in self._keys[RSA]])
         self.aes_modes_supported = sorted([k for k in self._keys[AES]])
 
@@ -39,7 +38,8 @@ class Keys:
         """
         try:
             if django_apps.get_app_config('django_crypto_fields').encryption_keys:
-                raise DjangoCryptoFieldsKeysAlreadyLoaded()
+                raise DjangoCryptoFieldsKeysAlreadyLoaded(
+                    'Encryption keys have already been loaded.')
         except (AppRegistryNotReady, AttributeError):
             pass
         if not self.keys_are_ready:
