@@ -1,30 +1,14 @@
 from django.apps import apps as django_apps
 from django.contrib import admin
-from django.contrib.admin import AdminSite
+
+from .admin_site import encryption_admin
 
 
-Crypt = django_apps.get_app_config('django_crypto_fields').model
+app_config = django_apps.get_app_config('django_crypto_fields')
+Crypt = django_apps.get_model(app_config.model)
 
 
-class CryptoFieldsAdminSite(AdminSite):
-    """
-    For example:
-        add to urls:
-            url(r'^admin/', encryption_admin.urls),
-        then:
-            >>> reverse('encryption_admin:django_crypto_fields_crypt_add')
-            '/admin/django_crypto_fields/crypt/add/'
-    """
-    site_header = 'Data Encryption Administration'
-    site_title = 'Data Encryption Administration'
-    index_title = 'Data Encryption'
-    site_url = '/crypto_fields/'
-
-
-crypto_fields_admin = CryptoFieldsAdminSite(name='encryption_admin')
-
-
-@admin.register(Crypt, site=crypto_fields_admin)
+@admin.register(Crypt, site=encryption_admin)
 class CryptModelAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'modified'

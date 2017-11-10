@@ -60,8 +60,8 @@ class FieldCryptor(object):
         loading and field classes.
         """
         if not self._cipher_model:
-            self._cipher_model = django_apps.get_app_config(
-                'django_crypto_fields').model
+            app_config = django_apps.get_app_config('django_crypto_fields')
+            self._cipher_model = django_apps.get_model(app_config.model)
         return self._cipher_model
 
     def hash(self, plaintext):

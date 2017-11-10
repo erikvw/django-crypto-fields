@@ -1,12 +1,15 @@
 import sys
 
 from Crypto.Cipher import AES
-from django.apps import apps as django_apps
 from django.apps import AppConfig as DjangoAppConfig
 from django.conf import settings
 from django.core.management.color import color_style
-from django_crypto_fields.cryptor import Cryptor
-from django_crypto_fields.exceptions import EncryptionError
+
+from .cryptor import Cryptor
+from .exceptions import EncryptionError
+from .key_path_handler import KeyPathHandler
+from .keys import Keys
+from .key_creator import KeyCreator
 
 
 class DjangoCryptoFieldsError(Exception):
@@ -21,6 +24,7 @@ class AppConfig(DjangoAppConfig):
     verbose_name = "Data Encryption"
     encryption_keys = None
     app_label = 'django_crypto_fields'
+    model = 'django_crypto_fields.crypt'
     # change if using more than one database and not 'default'.
     crypt_model_using = 'default'
     try:
@@ -34,11 +38,11 @@ class AppConfig(DjangoAppConfig):
         need to be loaded before models.
         """
         super().__init__(app_label, model_name)
-        from django_crypto_fields.keys import Keys
-        keys = Keys()
+
+        key_path_handler = KeyPathHandler()
         if not self.encryption_keys:
             sys.stdout.write(f'Loading {self.verbose_name} ...\n')
-            if not keys.key_files_exist():
+            if not key_path_handler.key_files_exist:
                 sys.stdout.write(style.NOTICE(
                     f'Warning: {self.verbose_name} failed to load encryption keys.\n'))
                 sys.stdout.write(
@@ -51,9 +55,14 @@ class AppConfig(DjangoAppConfig):
                 sys.stdout.write(
                     'and placed in the settings.KEY_PATH folder.\n')
                 if self.auto_create_keys:
-                    keys.create_keys()
+                    key_creator = KeyCreator()
+                    key_creator.create_keys()
                 else:
                     raise EncryptionError('Encryption keys not found.')
+            else:
+                sys.stdout.write(
+                    f' * found encryption keys in {key_path_handler.key_path}.\n')
+            keys = Keys()
             keys.load_keys()
             self.encryption_keys = keys
             sys.stdout.write(
@@ -70,6 +79,6 @@ class AppConfig(DjangoAppConfig):
                 '         in pycrypto.blockalgo.py.\n'))
             sys.stdout.flush()
 
-    @property
-    def model(self):
-        return django_apps.get_model(self.app_label, 'crypt')
+#     @property
+#     def model_cls(self):
+#         return django_apps.get_model(self.model)
