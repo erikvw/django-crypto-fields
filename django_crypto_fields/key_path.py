@@ -12,6 +12,10 @@ class DjangoCryptoFieldsKeyPathError(Exception):
     pass
 
 
+class DjangoCryptoFieldsKeyPathChangeError(Exception):
+    pass
+
+
 class KeyPath:
 
     """A class to set/determine the correct key_path.

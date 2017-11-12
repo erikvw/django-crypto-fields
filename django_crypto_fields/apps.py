@@ -1,7 +1,7 @@
 import sys
 
 from Crypto.Cipher import AES
-from django.apps import AppConfig as DjangoAppConfig
+from django.apps import AppConfig as DjangoAppConfig, apps as django_apps
 from django.conf import settings
 from django.core.management.color import color_style
 
@@ -10,6 +10,7 @@ from .exceptions import EncryptionError
 from .key_creator import KeyCreator
 from .key_files import KeyFiles
 from .keys import Keys
+from .key_path import DjangoCryptoFieldsKeyPathChangeError
 
 
 class DjangoCryptoFieldsError(Exception):
@@ -22,9 +23,11 @@ style = color_style()
 class AppConfig(DjangoAppConfig):
     name = 'django_crypto_fields'
     verbose_name = "Data Encryption"
-    encryption_keys = None
+    _keys = None
+    _key_path_validated = None
     app_label = 'django_crypto_fields'
     model = 'django_crypto_fields.crypt'
+    key_reference_model = 'django_crypto_fields.keyreference'
     # change if using more than one database and not 'default'.
     crypt_model_using = 'default'
     temp_path = None
@@ -41,7 +44,7 @@ class AppConfig(DjangoAppConfig):
         super().__init__(app_label, model_name)
 
         key_files = KeyFiles()
-        if not self.encryption_keys:
+        if not self._keys:
             sys.stdout.write(f'Loading {self.verbose_name} ...\n')
             if not key_files.key_files_exist:
                 sys.stdout.write(style.WARNING(
@@ -66,9 +69,8 @@ class AppConfig(DjangoAppConfig):
             else:
                 sys.stdout.write(
                     f' * found encryption keys in {key_files.key_path}.\n')
-            keys = Keys()
-            keys.load_keys()
-            self.encryption_keys = keys
+            self._keys = Keys()
+            self._keys.load_keys()
             sys.stdout.write(
                 f' * using model {self.app_label}.crypt.\n')
             sys.stdout.write(f' Done loading {self.verbose_name}.\n')
@@ -83,6 +85,35 @@ class AppConfig(DjangoAppConfig):
                 '         in pycrypto.blockalgo.py.\n'))
             sys.stdout.flush()
 
-#     @property
-#     def model_cls(self):
-#         return django_apps.get_model(self.model)
+    @property
+    def encryption_keys(self):
+        if not self._key_path_validated:
+            self._key_path_validated = self.key_path_validated
+        return self._keys
+
+    @property
+    def key_path_validated(self):
+        sys.stdout.write('Validating path for encryption keys ...\r')
+        if not [value for value in sys.argv if value in ['test', 'makemigrations', 'migrate']]:
+            model_cls = django_apps.get_model(self.key_reference_model)
+            key_path = self._keys.key_path
+            try:
+                obj = model_cls.objects.all()[0]
+            except IndexError:
+                model_cls.objects.create(key_path=key_path)
+            else:
+                if obj.key_path != key_path:
+                    sys.stdout.write(
+                        f'Validating path for encryption keys ... {style.ERROR("ERROR")}\n')
+                    raise DjangoCryptoFieldsKeyPathChangeError(style.ERROR(
+                        f'Key path changed since last startup! '
+                        f'Key path has been unexpectedly changed from '
+                        f'\'{obj.key_path}\'  to \'{key_path}\'. You must resolve '
+                        f'this before using the system. See {self.key_reference_model} '
+                        f'and settings.KEY_PATH'))
+            sys.stdout.write(
+                f'Validating path for encryption keys ... {style.SUCCESS("OK")}\n')
+        else:
+            sys.stdout.write(
+                f'Validating path for encryption keys ... {style.WARNING("SKIPPING")}\n')
+        return True
