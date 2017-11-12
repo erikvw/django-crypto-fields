@@ -33,7 +33,7 @@ class FieldCryptor(object):
         self.algorithm = algorithm
         self.mode = mode
         self.aes_encryption_mode = aes_encryption_mode
-        self.cipher_buffer_key = '{}_{}'.format(self.algorithm, self.mode)
+        self.cipher_buffer_key = f'{self.algorithm}_{self.mode}'
         self.cipher_buffer = {self.cipher_buffer_key: {}}
         if not self.aes_encryption_mode:
             try:
@@ -51,8 +51,7 @@ class FieldCryptor(object):
         self.hash_size = len(self.hash('Foo'))
 
     def __repr__(self):
-        return 'FieldCryptor(algorithm=\'{}\', mode=\'{}\')'.format(
-            self.algorithm, self.mode)
+        return f'FieldCryptor(algorithm=\'{self.algorithm}\', mode=\'{self.mode}\')'
 
     @property
     def cipher_model(self):
@@ -77,8 +76,7 @@ class FieldCryptor(object):
         try:
             salt = getattr(self.keys, attr)
         except AttributeError as e:
-            raise EncryptionKeyError(
-                'Invalid key. Got {}. {}'.format(attr, str(e)))
+            raise EncryptionKeyError(f'Invalid key. Got {attr}. {e}')
         dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext, salt, HASH_ROUNDS)
         return binascii.hexlify(dk)
 
@@ -158,7 +156,7 @@ class FieldCryptor(object):
                     if hashed_value:
                         raise EncryptionError(
                             'Failed to decrypt. Could not find "secret" '
-                            ' for hash \'{0}\''.format(hashed_value))
+                            f' for hash \'{hashed_value}\'')
                     else:
                         raise EncryptionError(
                             'Failed to decrypt. Malformed ciphertext')
