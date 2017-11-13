@@ -11,6 +11,7 @@ from .key_creator import KeyCreator
 from .key_files import KeyFiles
 from .keys import Keys
 from .key_path import DjangoCryptoFieldsKeyPathChangeError
+from django.core.exceptions import AppRegistryNotReady
 
 
 class DjangoCryptoFieldsError(Exception):
@@ -88,7 +89,10 @@ class AppConfig(DjangoAppConfig):
     @property
     def encryption_keys(self):
         if not self._key_path_validated:
-            self._key_path_validated = self.key_path_validated
+            try:
+                self._key_path_validated = self.key_path_validated
+            except (AppRegistryNotReady, TypeError):
+                pass
         return self._keys
 
     @property
