@@ -33,7 +33,8 @@ class AppConfig(DjangoAppConfig):
     crypt_model_using = 'default'
     temp_path = None
     try:
-        auto_create_keys = settings.DEBUG and settings.AUTO_CREATE_KEYS
+        auto_create_keys = 'test' in sys.argv or (
+            settings.DEBUG and settings.AUTO_CREATE_KEYS)
     except AttributeError:
         auto_create_keys = False
 
@@ -66,7 +67,12 @@ class AppConfig(DjangoAppConfig):
                     key_creator.create_keys()
                     self.temp_path = key_creator.temp_path
                 else:
-                    raise EncryptionError('Encryption keys not found.')
+                    raise EncryptionError(
+                        'Encryption keys not found. Not auto-creating. '
+                        f'settings.DEBUG={settings.DEBUG}, '
+                        f'settings.AUTO_CREATE_KEYS={self.auto_create_keys}. '
+                        f'For a production system, generate the production '
+                        f'encryption keys using the management command.')
             else:
                 sys.stdout.write(
                     f' * found encryption keys in {key_files.key_path}.\n')
