@@ -32,6 +32,9 @@ class AppConfig(DjangoAppConfig):
     # change if using more than one database and not 'default'.
     crypt_model_using = 'default'
     temp_path = None
+
+    temp_key_commands = ['test', 'makemigrations', 'migrate', 'check']
+
     try:
         auto_create_keys = 'test' in sys.argv or (
             settings.DEBUG and settings.AUTO_CREATE_KEYS)
@@ -44,8 +47,11 @@ class AppConfig(DjangoAppConfig):
         need to be loaded before models.
         """
         super().__init__(app_label, model_name)
+        self.is_temp_command = [
+            command for command in sys.argv if command in self.temp_key_commands]
 
-        key_files = KeyFiles()
+        key_files = KeyFiles(
+            use_temp_path=self.is_temp_command)
         if not self._keys:
             sys.stdout.write(f'Loading {self.verbose_name} ...\n')
             if not key_files.key_files_exist:
@@ -60,10 +66,11 @@ class AppConfig(DjangoAppConfig):
                     '  new keys will be generated\n')
                 sys.stdout.write(
                     '  and placed in the settings.KEY_PATH folder.\n')
-                if self.auto_create_keys:
+                if self.auto_create_keys or self.is_temp_command:
                     sys.stdout.write(style.SUCCESS(
                         f'  * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n'))
-                    key_creator = KeyCreator()
+                    key_creator = KeyCreator(
+                        use_temp_path=self.is_temp_command)
                     key_creator.create_keys()
                     self.temp_path = key_creator.temp_path
                 else:
@@ -76,7 +83,7 @@ class AppConfig(DjangoAppConfig):
             else:
                 sys.stdout.write(
                     f' * found encryption keys in {key_files.key_path}.\n')
-            self._keys = Keys()
+            self._keys = Keys(use_temp_path=self.is_temp_command)
             self._keys.load_keys()
             sys.stdout.write(
                 f' * using model {self.app_label}.crypt.\n')
@@ -104,7 +111,7 @@ class AppConfig(DjangoAppConfig):
     @property
     def key_path_validated(self):
         sys.stdout.write('Validating path for encryption keys ...\r')
-        if not [value for value in sys.argv if value in ['test', 'makemigrations', 'migrate']]:
+        if not self.is_temp_command:
             model_cls = django_apps.get_model(self.key_reference_model)
             key_path = self._keys.key_path
             try:

@@ -12,6 +12,10 @@ class DjangoCryptoFieldsKeyPathError(Exception):
     pass
 
 
+class DjangoCryptoFieldsKeyPathDoesNotExist(Exception):
+    pass
+
+
 class DjangoCryptoFieldsKeyPathChangeError(Exception):
     pass
 
@@ -28,12 +32,13 @@ class KeyPath:
     default_key_prefix = 'user'
     temp_key_path_for_tests = mkdtemp()
 
-    def __init__(self, key_path=None, key_prefix=None, force_key_path=None, persist_key_path=None):
+    def __init__(self, key_path=None, key_prefix=None, force_key_path=None,
+                 persist_key_path=None, use_temp_path=None):
         self.key_path = key_path
         self.key_prefix = key_prefix or self.default_key_prefix
         self.temp_path = None
 
-        if 'test' in sys.argv and not force_key_path:
+        if use_temp_path and not force_key_path:
             self.key_path = self.temp_key_path_for_tests
             self.temp_path = self.key_path
         else:
@@ -44,11 +49,13 @@ class KeyPath:
                     settings_key_path = self.non_production_path
                 self.key_path = (
                     self.non_production_path if settings.DEBUG else settings_key_path)
-                if self.key_path == self.non_production_path and not settings.DEBUG:
+                if (self.key_path == self.non_production_path) and not settings.DEBUG:
                     raise DjangoCryptoFieldsKeyPathError(
                         f'Invalid key path. Production systems must explicitly '
-                        f'set a path other than the non-production path (DEBUG={settings.DEBUG}). '
-                        f'Got \'{self.key_path}\'')
+                        f'set a path other than the non-production path [DEBUG={settings.DEBUG}, '
+                        f'KEY_PATH==\'{settings_key_path}\', '
+                        f'non-production path == \'{self.non_production_path}\']. '
+                        f'Got \'{self.key_path}\'.')
 
         if self.key_path == self.non_production_path:
             sys.stdout.write(style.WARNING(
@@ -61,8 +68,8 @@ class KeyPath:
 
         self.key_path = os.path.expanduser(str(self.key_path))
         if not os.path.exists(self.key_path):
-            raise DjangoCryptoFieldsKeyPathError(
-                f'Invalid key path. Got {self.key_path}')
+            raise DjangoCryptoFieldsKeyPathDoesNotExist(
+                f'Encryption key path does not exist. Got {self.key_path}')
         if persist_key_path:
             self.persist_key_path()
 
