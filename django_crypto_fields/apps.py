@@ -2,6 +2,7 @@ import sys
 
 from Crypto.Cipher import AES
 from django.apps import AppConfig as DjangoAppConfig, apps as django_apps
+from django.core.exceptions import AppRegistryNotReady
 from django.conf import settings
 from django.core.management.color import color_style
 
@@ -11,7 +12,6 @@ from .key_creator import KeyCreator
 from .key_files import KeyFiles
 from .keys import Keys
 from .key_path import DjangoCryptoFieldsKeyPathChangeError
-from django.core.exceptions import AppRegistryNotReady
 
 
 class DjangoCryptoFieldsError(Exception):
