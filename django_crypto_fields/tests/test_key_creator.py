@@ -36,13 +36,6 @@ class TestKeyCreator(TestCase):
         for file in key_files.files:
             os.remove(file)
 
-    @override_settings(DEBUG=True, AUTO_CREATE_KEYS=False)
-    def test_auto_create_keys_attr(self):
-        self.assertFalse(settings.AUTO_CREATE_KEYS)
-        self.assertTrue(settings.DEBUG)
-        app_config = django_apps.get_app_config('django_crypto_fields')
-        self.assertFalse(app_config.auto_create_keys)
-
     @override_settings(DEBUG=True)
     def test_creator_creates_tmp_keys_for_debug_true(self):
         app_config = django_apps.get_app_config('django_crypto_fields')
