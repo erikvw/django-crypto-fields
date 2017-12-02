@@ -46,6 +46,7 @@ class AppConfig(DjangoAppConfig):
         load correctly that use field classes from this module the keys
         need to be loaded before models.
         """
+        self.app_Loaded = False
         super().__init__(app_label, model_name)
         self.is_temp_command = [
             command for command in sys.argv if command in self.temp_key_commands]
@@ -91,13 +92,15 @@ class AppConfig(DjangoAppConfig):
             sys.stdout.flush()
 
     def ready(self):
-        cryptor = Cryptor()
-        if cryptor.aes_encryption_mode == AES.MODE_CFB:
-            sys.stdout.write(style.NOTICE(
-                'Warning: Encryption mode MODE_CFB should not be used. \n'
-                '         See django_crypto_fields.cryptor.py and comments \n'
-                '         in pycrypto.blockalgo.py.\n'))
-            sys.stdout.flush()
+        if not self.app_Loaded:
+            cryptor = Cryptor()
+            if cryptor.aes_encryption_mode == AES.MODE_CFB:
+                sys.stdout.write(style.NOTICE(
+                    'Warning: Encryption mode MODE_CFB should not be used. \n'
+                    '         See django_crypto_fields.cryptor.py and comments \n'
+                    '         in pycrypto.blockalgo.py.\n'))
+                sys.stdout.flush()
+            self.app_Loaded = True
 
     @property
     def encryption_keys(self):
