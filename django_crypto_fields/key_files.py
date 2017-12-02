@@ -1,7 +1,6 @@
 import os
 
 from .constants import RSA, AES, SALT, PRIVATE, PUBLIC, RESTRICTED_MODE, LOCAL_MODE
-from .key_path import KeyPath
 
 
 class KeyFiles:
@@ -17,14 +16,8 @@ class KeyFiles:
        - 1 salt restricted (RSA encrypted).
     """
 
-    key_path_cls = KeyPath
-
-    def __init__(self, **kwargs):
-        self.using_test_keys = False
-        key_path = self.key_path_cls(**kwargs)
-        self.key_path = key_path.key_path
-        self.key_prefix = key_path.key_prefix
-        self.temp_path = key_path.temp_path
+    def __init__(self, key_path=None):
+        self.key_path = key_path
 
     @property
     def key_filenames(self):
@@ -32,28 +25,28 @@ class KeyFiles:
             RSA: {
                 RESTRICTED_MODE: {
                     PUBLIC: os.path.join(
-                        self.key_path, self.key_prefix + '-rsa-restricted-public.pem'),
+                        self.key_path.path, self.key_path.key_prefix + '-rsa-restricted-public.pem'),
                     PRIVATE: os.path.join(
-                        self.key_path, self.key_prefix + '-rsa-restricted-private.pem')},
+                        self.key_path.path, self.key_path.key_prefix + '-rsa-restricted-private.pem')},
                 LOCAL_MODE: {
                     PUBLIC: os.path.join(
-                        self.key_path, self.key_prefix + '-rsa-local-public.pem'),
+                        self.key_path.path, self.key_path.key_prefix + '-rsa-local-public.pem'),
                     PRIVATE: os.path.join(
-                        self.key_path, self.key_prefix + '-rsa-local-private.pem')}},
+                        self.key_path.path, self.key_path.key_prefix + '-rsa-local-private.pem')}},
             AES: {
                 LOCAL_MODE: {
                     PRIVATE: os.path.join(
-                        self.key_path, self.key_prefix + '-aes-local.key')},
+                        self.key_path.path, self.key_path.key_prefix + '-aes-local.key')},
                 RESTRICTED_MODE: {
                     PRIVATE: os.path.join(
-                        self.key_path, self.key_prefix + '-aes-restricted.key')}},
+                        self.key_path.path, self.key_path.key_prefix + '-aes-restricted.key')}},
             SALT: {
                 LOCAL_MODE: {
                     PRIVATE: os.path.join(
-                        self.key_path, self.key_prefix + '-salt-local.key')},
+                        self.key_path.path, self.key_path.key_prefix + '-salt-local.key')},
                 RESTRICTED_MODE: {
                     PRIVATE: os.path.join(
-                        self.key_path, self.key_prefix + '-salt-restricted.key')}},
+                        self.key_path.path, self.key_path.key_prefix + '-salt-restricted.key')}},
         }
 
     @property

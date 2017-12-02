@@ -29,10 +29,10 @@ def persist_key_path(key_path=None, filename=None):
         with open(filename, 'w') as f:
             writer = csv.DictWriter(f, fieldnames=['path', 'date'])
             writer.writeheader()
-            writer.writerow(dict(path=key_path, date=get_utcnow()))
-        last_key_path = key_path
+            writer.writerow(dict(path=key_path.path, date=get_utcnow()))
+        last_key_path = key_path.path
 
-    if last_key_path != key_path:
+    if last_key_path != key_path.path:
         raise DjangoCryptoFieldsKeyPathChangeError(style.ERROR(
             f'Key path changed since last startup! You must resolve '
             f'this before using the system. Using the wrong keys will corrupt your data.'))

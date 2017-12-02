@@ -3,15 +3,8 @@ import sys
 from Crypto import Random
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA as RSA_PUBLIC_KEY
-from django.conf import settings
 
 from .constants import style, RSA, AES, SALT, PRIVATE, PUBLIC, RSA_KEY_SIZE
-from .key_files import KeyFiles
-
-try:
-    verbose_mode = settings.VERBOSE_MODE
-except AttributeError:
-    verbose_mode = True
 
 
 class DjangoCryptoFieldsKeyError(Exception):
@@ -27,14 +20,11 @@ class KeyCreator:
     """Creates new keys if key do not yet exist.
     """
 
-    key_files_cls = KeyFiles
-
-    def __init__(self, **kwargs):
+    def __init__(self, key_files=None, verbose_mode=None):
         self.verbose = verbose_mode
-        self.key_files = self.key_files_cls(**kwargs)
-        self.key_path = self.key_files.key_path
-        self.key_filenames = self.key_files.key_filenames
-        self.temp_path = self.key_files.temp_path
+        self.key_files = key_files
+        self.key_path = key_files.key_path
+        self.key_filenames = key_files.key_filenames
 
     def create_keys(self):
         """Generates RSA and AES keys as per `key_filenames`.

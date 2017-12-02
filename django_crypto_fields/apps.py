@@ -9,6 +9,8 @@ from .system_checks import key_path_check, aes_mode_check, encryption_keys_check
 from .key_creator import KeyCreator
 from .key_files import KeyFiles
 from .keys import Keys
+from django_crypto_fields.key_path import KeyPath
+from tempfile import mkdtemp
 
 
 class DjangoCryptoFieldsError(Exception):
@@ -29,51 +31,68 @@ class AppConfig(DjangoAppConfig):
     key_reference_model = 'django_crypto_fields.keyreference'
     # change if using more than one database and not 'default'.
     crypt_model_using = 'default'
-    temp_path = None
-    ignore_argv = ['test', 'makemigrations', 'migrate', 'check']
-
-    try:
-        auto_create_keys = 'test' in sys.argv or (
-            settings.DEBUG and settings.AUTO_CREATE_KEYS)
-    except AttributeError:
-        auto_create_keys = False
 
     def __init__(self, app_label, model_name):
         """Placed here instead of `ready()`. For models to
         load correctly that use field classes from this module the keys
         need to be loaded before models.
         """
-        sys.stdout.write(f'Loading {self.verbose_name} ...\n')
+        self.temp_path = mkdtemp()
+        self.key_files = None
+
+        if 'migrate' not in sys.argv and 'makemigrations' not in sys.argv:
+            sys.stdout.write(f'Loading {self.verbose_name} (init)...\n')
+            self.key_files = KeyFiles(key_path=self.key_path)
+            if not self._keys:
+                if not self.key_files.key_files_exist:
+                    if self.auto_create_keys:
+                        sys.stdout.write(style.SUCCESS(
+                            f' * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n'))
+                        key_creator = KeyCreator(
+                            key_files=self.key_files, verbose_mode=True)
+                        key_creator.create_keys()
+                    else:
+                        sys.stdout.write(style.WARNING(
+                            f' * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n'))
+                self._keys = Keys(key_path=self.key_path)
+                self._keys.load_keys()
         super().__init__(app_label, model_name)
-        key_files = KeyFiles()
-        if not self._keys:
-            if not key_files.key_files_exist:
-                if self.auto_create_keys or sys.argv in self.ignore_argv:
-                    sys.stdout.write(style.SUCCESS(
-                        f' * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n'))
-                    key_creator = KeyCreator(
-                        use_temp_path=self.is_temp_command)
-                    key_creator.create_keys()
-                    self.temp_path = key_creator.temp_path
-                else:
-                    sys.stdout.write(style.WARNING(
-                        f' * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n'))
-            self._keys = Keys(use_temp_path=self.temp_path)
-            self._keys.load_keys()
+        sys.stdout.write(f' Done loading {self.verbose_name} (init)...\n')
 
     def ready(self):
-        register(key_path_check)(['django_crypto_fields'])
-        register(encryption_keys_check)(
-            ['django_crypto_fields'],
-            auto_create_keys=self.auto_create_keys or sys.argv in self.ignore_argv)
-        register(aes_mode_check)(['django_crypto_fields'])
-        key_files = KeyFiles(use_temp_path=self.temp_path)
-        sys.stdout.write(
-            f' * found encryption keys in {key_files.key_path}.\n')
-        sys.stdout.write(
-            f' * using model {self.app_label}.crypt.\n')
-        sys.stdout.write(f' Done loading {self.verbose_name}.\n')
+        if 'migrate' not in sys.argv and 'makemigrations' not in sys.argv:
+            sys.stdout.write(f'Loading {self.verbose_name} ...\n')
+            if 'test' not in sys.argv:
+                register(key_path_check)(['django_crypto_fields'])
+            register(encryption_keys_check)(['django_crypto_fields'])
+            register(aes_mode_check)
+            sys.stdout.write(
+                f' * found encryption keys in {self.key_path}.\n')
+            sys.stdout.write(
+                f' * using model {self.app_label}.crypt.\n')
+            sys.stdout.write(f' Done loading {self.verbose_name}.\n')
+        else:
+            sys.stdout.write(f'Not loading {self.verbose_name}.\n')
 
     @property
     def encryption_keys(self):
         return self._keys
+
+    @property
+    def auto_create_keys(self):
+        if 'test' not in sys.argv:
+            auto_create_keys = False
+        else:
+            try:
+                auto_create_keys = settings.AUTO_CREATE_KEYS
+            except AttributeError:
+                auto_create_keys = settings.DEBUG
+        return auto_create_keys
+
+    @property
+    def key_path(self):
+        if 'test' in sys.argv:
+            key_path = KeyPath(path=self.temp_path)
+        else:
+            key_path = KeyPath()
+        return key_path
