@@ -43,7 +43,7 @@ class KeyCreator:
             raise DjangoCryptoFieldsKeyAlreadyExist(
                 f'Not creating new keys. Encryption keys already exist. See {self.key_path}.')
         sys.stdout.write(style.WARNING(
-            '  * Generating new encryption keys ...\n'))
+            ' * Generating new encryption keys ...\n'))
         self._create_rsa()
         self._create_aes()
         self._create_salt()
