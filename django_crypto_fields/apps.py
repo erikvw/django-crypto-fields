@@ -2,17 +2,16 @@ import sys
 
 from django.apps import AppConfig as DjangoAppConfig
 from django.conf import settings
-from django.core.management.color import color_style
 from django.core.checks import register
+from django.core.management.color import color_style
+from tempfile import mkdtemp
 
-from .system_checks import key_path_check, aes_mode_check, encryption_keys_check
 from .key_creator import KeyCreator
 from .key_files import KeyFiles
+from .key_path import KeyPath
 from .keys import Keys
-from django_crypto_fields.key_path import KeyPath,\
-    DjangoCryptoFieldsKeyPathChangeError
-from tempfile import mkdtemp
 from .persist_key_path import get_last_key_path
+from .system_checks import key_path_check, aes_mode_check, encryption_keys_check
 
 
 class DjangoCryptoFieldsError(Exception):
@@ -66,7 +65,7 @@ class AppConfig(DjangoAppConfig):
                 self._keys.load_keys()
             else:
                 raise DjangoCryptoFieldsKeysDoNotExist(
-                    f'Failed to find any encryption keys in path {settings.KEY_PATH}. '
+                    f'Failed to find any encryption keys in path {self.key_path}. '
                     'If this is your first time loading '
                     'the project, set settings.AUTO_CREATE_KEYS=True and restart.')
 
