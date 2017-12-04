@@ -1,5 +1,4 @@
 import os
-import sys
 
 from Crypto.Cipher import AES
 from collections import namedtuple
