@@ -1,3 +1,4 @@
+import os
 import sys
 
 from django.apps import AppConfig as DjangoAppConfig
@@ -56,6 +57,10 @@ class AppConfig(DjangoAppConfig):
         self.key_files = KeyFiles(key_path=self.key_path)
         if not self._keys and not self.key_files.key_files_exist:
             if self.auto_create_keys:
+                if not os.access(self.key_path, os.W_OK):
+                    raise DjangoCryptoFieldsError(
+                        'Cannot auto-create encryption keys. Folder is not writeable.'
+                        f'Got {self.key_path}')
                 sys.stdout.write(style.SUCCESS(
                     f' * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n'))
                 key_creator = KeyCreator(
@@ -67,7 +72,8 @@ class AppConfig(DjangoAppConfig):
                 raise DjangoCryptoFieldsKeysDoNotExist(
                     f'Failed to find any encryption keys in path {self.key_path}. '
                     'If this is your first time loading '
-                    'the project, set settings.AUTO_CREATE_KEYS=True and restart.')
+                    'the project, set settings.AUTO_CREATE_KEYS=True and restart. '
+                    'Make sure the folder is writeable.')
 
                 sys.stdout.write(style.WARNING(
                     f' * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n'))

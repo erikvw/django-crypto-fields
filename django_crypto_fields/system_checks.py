@@ -58,7 +58,9 @@ def encryption_keys_check(app_configs, **kwargs):
         error = error_configs.get('encryption_keys_check')
         error_msg = (
             'settings.AUTO_CREATE_KEYS may not be \'True\' when encryption keys exist.')
-        hint = 'Did you backup your keys? Perhaps you just created new keys, to continue, set AUTO_CREATE_KEYS=False and restart.'
+        hint = (
+            'Did you backup your keys? Perhaps you just created new keys, '
+            'to continue, set AUTO_CREATE_KEYS=False and restart.')
         check_failed = True
     if check_failed:
         errors.append(
