@@ -57,7 +57,7 @@ class AppConfig(DjangoAppConfig):
         self.key_files = KeyFiles(key_path=self.key_path)
         if not self._keys and not self.key_files.key_files_exist:
             if self.auto_create_keys:
-                if not os.access(self.key_path, os.W_OK):
+                if not os.access(self.key_path.path, os.W_OK):
                     raise DjangoCryptoFieldsError(
                         'Cannot auto-create encryption keys. Folder is not writeable.'
                         f'Got {self.key_path}')
