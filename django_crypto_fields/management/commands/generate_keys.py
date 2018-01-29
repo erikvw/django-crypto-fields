@@ -4,7 +4,9 @@ from django.conf import settings
 from django.core.management.color import color_style
 from django.core.management.base import BaseCommand, CommandError
 
+from django_crypto_fields.key_path import default_key_path
 from ...keys import Keys
+from django_crypto_fields.key_creator import KeyCreator
 
 
 class Command(BaseCommand):
@@ -16,15 +18,15 @@ class Command(BaseCommand):
         try:
             default_path = settings.KEY_PATH
         except AttributeError:
+            default_path = default_key_path
             sys.stdout(style.INFO(
-                f'setting.KEY_PATH not found. Using path=\'{settings.BASE_DIR}\''))
-            default_path = settings.BASE_DIR
+                f'setting.KEY_PATH not found. Using path=\'{default_path}\''))
         try:
             default_prefix = settings.KEY_PREFIX
         except AttributeError:
-            sys.stdout(style.INFO(
-                f'setting.KEY_PREFIX not found. Using prefix=\'{settings.BASE_DIR}\''))
             default_prefix = 'user'
+            sys.stdout(style.INFO(
+                f'setting.KEY_PREFIX not found. Using prefix=\'{default_prefix}\''))
 
         parser.add_argument(
             '--keypath',
@@ -40,6 +42,7 @@ class Command(BaseCommand):
             help=f'Set key prefix to something other than \'{default_prefix}\'')
 
     def handle(self, *args, **options):
+        key_creator = KeyCreator
         try:
             Keys.create_keys(
                 prefix=options['keyprefix'], path=options['keypath'])
