@@ -8,7 +8,8 @@ from django.core.checks import Critical, Error
 
 from .cryptor import Cryptor
 from .persist_key_path import persist_key_path
-from .persist_key_path import DjangoCryptoFieldsKeyPathChangeError, DjangoCryptoFieldsKeyPathError
+from .persist_key_path import DjangoCryptoFieldsKeyPathChangeError
+from .persist_key_path import DjangoCryptoFieldsKeyPathError
 
 err = namedtuple('Err', 'id cls')
 

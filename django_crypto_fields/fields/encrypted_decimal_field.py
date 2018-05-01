@@ -18,10 +18,10 @@ class EncryptedDecimalField(BaseRsaField):
         elif 'max_digits' in kwargs:
             try:
                 int(kwargs.get('max_digits'))
-            except:
-                raise AttributeError(
-                    'EncryptedDecimalField attribute \'max_digits\ must be an '
-                    'integer. Got {0}'.format(kwargs.get('max_digits')))
+            except (TypeError, ValueError):
+                raise ValueError(
+                    f'EncryptedDecimalField attribute \'max_digits\ must be an '
+                    f'integer. Got {kwargs.get("max_digits")}')
         if 'decimal_places' not in kwargs:
             raise AttributeError(
                 'EncryptedDecimalField requires attribute \'decimal_places\. '
@@ -29,11 +29,10 @@ class EncryptedDecimalField(BaseRsaField):
         elif 'decimal_places' in kwargs:
             try:
                 int(kwargs.get('decimal_places'))
-            except:
-                raise AttributeError(
-                    'EncryptedDecimalField attribute \'decimal_places\ must '
-                    'be an integer. Got {0}'.format(
-                        kwargs.get('decimal_places')))
+            except (TypeError, ValueError):
+                raise ValueError(
+                    f'EncryptedDecimalField attribute \'decimal_places\ must be an '
+                    f'integer. Got {kwargs.get("decimal_places")}')
         decimal_decimal_places = int(kwargs.get('decimal_places'))
         decimal_max_digits = int(kwargs.get('max_digits'))
         del kwargs['decimal_places']
