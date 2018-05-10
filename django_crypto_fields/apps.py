@@ -32,7 +32,6 @@ class AppConfig(DjangoAppConfig):
     _keys = None
     _key_path_validated = None
     app_label = 'django_crypto_fields'
-    model = 'django_crypto_fields.crypt'
     last_key_path_filename = 'django_crypto_fields'
     key_reference_model = 'django_crypto_fields.keyreference'
     # change if using more than one database and not 'default'.
@@ -48,11 +47,6 @@ class AppConfig(DjangoAppConfig):
         self.last_key_path = get_last_key_path(self.last_key_path_filename)
 
         sys.stdout.write(f'Loading {self.verbose_name} (init)...\n')
-
-#         if self.last_key_path and self.key_path != self.last_key_path:
-#             raise DjangoCryptoFieldsKeyPathChangeError(
-#                 f'settings.KEY_PATH does not match the path stored in '
-#                 f'{self.last_key_path_filename}.')
 
         self.key_files = KeyFiles(key_path=self.key_path)
         if not self._keys and not self.key_files.key_files_exist:

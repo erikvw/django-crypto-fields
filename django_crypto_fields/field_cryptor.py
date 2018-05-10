@@ -4,7 +4,7 @@ import hashlib
 from Crypto.Cipher import AES as AES_CIPHER
 
 from django.apps import apps as django_apps
-from django.core.exceptions import AppRegistryNotReady
+from django.core.exceptions import AppRegistryNotReady, ObjectDoesNotExist
 from django.conf import settings
 
 from .constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, HASH_ALGORITHM
@@ -27,9 +27,10 @@ class FieldCryptor(object):
     decrypted and returned to the user's model field object.
     """
 
+    crypt_model = 'django_crypto_fields.crypt'
+
     def __init__(self, algorithm, mode, keys=None, aes_encryption_mode=None):
         self._using = None
-        self._cipher_model = None
         self.algorithm = algorithm
         self.mode = mode
         self.aes_encryption_mode = aes_encryption_mode
@@ -54,14 +55,11 @@ class FieldCryptor(object):
         return f'FieldCryptor(algorithm=\'{self.algorithm}\', mode=\'{self.mode}\')'
 
     @property
-    def cipher_model(self):
+    def crypt_model_cls(self):
         """Returns the cipher model and avoids issues with model
         loading and field classes.
         """
-        if not self._cipher_model:
-            app_config = django_apps.get_app_config('django_crypto_fields')
-            self._cipher_model = django_apps.get_model(app_config.model)
-        return self._cipher_model
+        return django_apps.get_model(self.crypt_model)
 
     def hash(self, plaintext):
         """Returns a hexified hash of a plaintext value (as bytes).
@@ -114,7 +112,7 @@ class FieldCryptor(object):
                                   + CIPHER_PREFIX.encode(ENCODING)
                                   + cipher(value, self.mode))
                     if update:
-                        self.update_cipher_model(ciphertext)
+                        self.update_crypt(ciphertext)
                 except AttributeError as e:
                     raise CipherError(
                         'Cannot determine cipher method. Unknown '
@@ -128,7 +126,7 @@ class FieldCryptor(object):
     def decrypt(self, hash_with_prefix):
         """Returns decrypted secret or None.
 
-        Secret is retrieved from cipher_model using the hash.
+        Secret is retrieved from `Crypt` using the hash.
 
         hash_with_prefix = hash_prefix+hash.
         """
@@ -169,7 +167,7 @@ class FieldCryptor(object):
             self._using = app_config.crypt_model_using
         return self._using
 
-    def update_cipher_model(self, ciphertext):
+    def update_crypt(self, ciphertext):
         """ Updates cipher model (Crypt) and temporary buffer.
         """
         if self.verify_ciphertext(ciphertext):
@@ -178,15 +176,15 @@ class FieldCryptor(object):
             self.cipher_buffer[self.cipher_buffer_key].update(
                 {hashed_value: secret})
             try:
-                cipher_model = self.cipher_model.objects.using(
+                crypt = self.crypt_model_cls.objects.using(
                     self.using).get(
                         hash=hashed_value,
                         algorithm=self.algorithm,
                         mode=self.mode)
-                cipher_model.secret = secret
-                cipher_model.save()
-            except self.cipher_model.DoesNotExist:
-                self.cipher_model.objects.using(self.using).create(
+                crypt.secret = secret
+                crypt.save()
+            except ObjectDoesNotExist:
+                self.crypt_model_cls.objects.using(self.using).create(
                     hash=hashed_value,
                     secret=secret,
                     algorithm=self.algorithm,
@@ -254,7 +252,7 @@ class FieldCryptor(object):
         secret = self.cipher_buffer[self.cipher_buffer_key].get(hashed_value)
         if not secret:
             try:
-                cipher = self.cipher_model.objects.using(
+                cipher = self.crypt_model_cls.objects.using(
                     self.using).values('secret').get(
                         hash=hashed_value,
                         algorithm=self.algorithm,
@@ -262,7 +260,7 @@ class FieldCryptor(object):
                 secret = cipher.get('secret')
                 self.cipher_buffer[self.cipher_buffer_key].update(
                     {hashed_value: secret})
-            except self.cipher_model.DoesNotExist:
+            except ObjectDoesNotExist:
                 raise EncryptionError(
                     f'Failed to get secret for given {self.algorithm} '
                     f'{self.mode} hash. Got \'{hash_with_prefix}\'')

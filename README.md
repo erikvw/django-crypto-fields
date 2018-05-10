@@ -45,7 +45,8 @@ Once installed, add to INSTALLED_APPS:
 Add KEY_PATH to the folder in settings:
 
     # folder where the encryption keys are stored
-    KEY_PATH = '/Volumes/secure_drive/keys')
+    # Do not set for tests
+    KEY_PATH = '/etc/myproject/django_crypto_fields')
 
 Add KEY_PREFIX (optional, the default is "_user_"):
 
@@ -55,10 +56,6 @@ Add KEY_PREFIX (optional, the default is "_user_"):
 Run _migrate_ to create the _crypto_fields_crypt_ table:
 
     python manage.py migrate django_crypto_fields
-
-Generate encryption keys:
-
-    python manage.py generate_keys
 
 
 ## Encryption keys
