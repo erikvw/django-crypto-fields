@@ -64,30 +64,6 @@ Take care of the encryption keys!
 
 In your tests you can set `settings.DEBUG = True` and `settings.AUTO_CREATE_KEYS = True` so that keys are generated for your tests. Encryption keys to will not automatically generate on a production system (`DEBUG=False`). See `AppConfig.auto_create_keys`.
 
-## Using a custom `Crypt` model
-
-To use a custom `Crypt` model, as is required if the `Crypt` model is used in data synchronization, declare a tuple to reference the model on the `AppConfig`. If you have an app `myapp` then you `apps.py` might look like this:
-
-    from django.apps import AppConfig as DjangoAppConfig
-    from django_crypto_fields.apps import AppConfig as DjangoCryptoFieldsAppConfigParent
-    
-    class AppConfig(DjangoAppConfig):
-        name = 'my_app'
-
-    class DjangoCryptoFieldsAppConfig(DjangoCryptoFieldsAppConfigParent):
-        model = ('example', 'crypt')
-    
-    
-And then change settings INSTALLED_APPS:
-
-    INSTALLED_APPS = (
-        ...
-        'myapp.apps.DjangoCryptoFieldsAppConfig',
-        'myapp.apps.AppConfig',
-    )
-        
-See also module `edc-sync`.
-
 ## Legacy Mode
 
 As of version 0.1.7, the default AES encryption mode is CBC. To run in legacy mode (CFB) add to `settings.py`:
