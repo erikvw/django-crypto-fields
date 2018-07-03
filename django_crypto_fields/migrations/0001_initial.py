@@ -5,8 +5,8 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import django_extensions.db.fields
 import django_revision.revision_field
-import edc_base.model_fields.hostname_modification_field
-import edc_base.model_fields.userfield
+import edc_model_fields.fields.hostname_modification_field
+import edc_model_fields.fields.userfield
 
 
 class Migration(migrations.Migration):
@@ -26,13 +26,13 @@ class Migration(migrations.Migration):
                     auto_now_add=True, verbose_name='created')),
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(
                     auto_now=True, verbose_name='modified')),
-                ('user_created', edc_base.model_fields.userfield.UserField(
+                ('user_created', edc_model_fields.fields.userfield.UserField(
                     editable=False, max_length=50, verbose_name='user created')),
-                ('user_modified', edc_base.model_fields.userfield.UserField(
+                ('user_modified', edc_model_fields.fields.userfield.UserField(
                     editable=False, max_length=50, verbose_name='user modified')),
                 ('hostname_created', models.CharField(default='mac2-2.local', editable=False,
                                                       help_text='System field. (modified on create only)', max_length=50)),
-                ('hostname_modified', edc_base.model_fields.hostname_modification_field.HostnameModificationField(
+                ('hostname_modified', edc_model_fields.fields.hostname_modification_field.HostnameModificationField(
                     editable=False, help_text='System field. (modified on every save)', max_length=50)),
                 ('revision', django_revision.revision_field.RevisionField(blank=True, editable=False,
                                                                           help_text='System field. Git repository tag:branch:commit.', max_length=75, null=True, verbose_name='Revision')),

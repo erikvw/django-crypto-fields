@@ -3,9 +3,9 @@
 import _socket
 from django.db import migrations, models
 import django_revision.revision_field
-import edc_base.model_fields.hostname_modification_field
-import edc_base.model_fields.userfield
-import edc_base.model_fields.uuid_auto_field
+import edc_model_fields.fields.hostname_modification_field
+import edc_model_fields.fields.userfield
+import edc_model_fields.fields.uuid_auto_field
 import edc_base.utils
 
 
@@ -22,13 +22,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Crypt',
             fields=[
-                ('id', edc_base.model_fields.uuid_auto_field.UUIDAutoField(blank=True, editable=False, help_text='System auto field. UUID primary key.', primary_key=True, serialize=False)),
+                ('id', edc_model_fields.fields.uuid_auto_field.UUIDAutoField(blank=True, editable=False, help_text='System auto field. UUID primary key.', primary_key=True, serialize=False)),
                 ('created', models.DateTimeField(blank=True, default=edc_base.utils.get_utcnow)),
                 ('modified', models.DateTimeField(blank=True, default=edc_base.utils.get_utcnow)),
-                ('user_created', edc_base.model_fields.userfield.UserField(blank=True, max_length=50, verbose_name='user created')),
-                ('user_modified', edc_base.model_fields.userfield.UserField(blank=True, max_length=50, verbose_name='user modified')),
+                ('user_created', edc_model_fields.fields.userfield.UserField(blank=True, max_length=50, verbose_name='user created')),
+                ('user_modified', edc_model_fields.fields.userfield.UserField(blank=True, max_length=50, verbose_name='user modified')),
                 ('hostname_created', models.CharField(blank=True, default='mac2-2.local', help_text='System field. (modified on create only)', max_length=50)),
-                ('hostname_modified', edc_base.model_fields.hostname_modification_field.HostnameModificationField(blank=True, help_text='System field. (modified on every save)', max_length=50)),
+                ('hostname_modified', edc_model_fields.fields.hostname_modification_field.HostnameModificationField(blank=True, help_text='System field. (modified on every save)', max_length=50)),
                 ('revision', django_revision.revision_field.RevisionField(blank=True, editable=False, help_text='System field. Git repository tag:branch:commit.', max_length=75, null=True, verbose_name='Revision')),
                 ('hash', models.CharField(db_index=True, max_length=128, unique=True, verbose_name='Hash')),
                 ('secret', models.BinaryField(verbose_name='Secret')),
@@ -52,12 +52,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='crypt',
             name='user_created',
-            field=edc_base.model_fields.userfield.UserField(blank=True, help_text='Updated by admin.save_model', max_length=50, verbose_name='user created'),
+            field=edc_model_fields.fields.userfield.UserField(blank=True, help_text='Updated by admin.save_model', max_length=50, verbose_name='user created'),
         ),
         migrations.AlterField(
             model_name='crypt',
             name='user_modified',
-            field=edc_base.model_fields.userfield.UserField(blank=True, help_text='Updated by admin.save_model', max_length=50, verbose_name='user modified'),
+            field=edc_model_fields.fields.userfield.UserField(blank=True, help_text='Updated by admin.save_model', max_length=50, verbose_name='user modified'),
         ),
         migrations.AddField(
             model_name='crypt',
