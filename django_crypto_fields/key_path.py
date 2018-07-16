@@ -1,7 +1,9 @@
 import os
+import sys
 
 from django.conf import settings
 from django.core.management.color import color_style
+from tempfile import mkdtemp
 
 
 class DjangoCryptoFieldsKeyPathError(Exception):
@@ -34,26 +36,19 @@ class KeyPath:
 
     def __init__(self, path=None, key_prefix=None):
         self.key_prefix = key_prefix or self.default_key_prefix
-        if path:
-            self.path = self._is_valid(path)
+        if settings.DEBUG:
+            path = path or self.non_production_path
         else:
-            try:
-                self.path = self._is_valid(settings.KEY_PATH)
-            except AttributeError:
-                if settings.DEBUG:
-                    self.path = self._is_valid(self.non_production_path)
-            else:
-                if settings.DEBUG and self.path:
-                    raise DjangoCryptoFieldsKeyPathError(
-                        f'Invalid key path. settings.KEY_PATH may not be set if DEBUG=True.')
-            if not self.path:
-                raise DjangoCryptoFieldsKeyPathError(
-                    f'Invalid key path. Production systems must explicitly '
-                    f'set a path other than the default non-production path '
-                    f'[DEBUG={settings.DEBUG}, '
-                    f'KEY_PATH==\'{self.path}\', '
-                    f'non-production path == \'{self.non_production_path}\']. ')
-
+            path = path or settings.KEY_PATH
+        self.path = self._is_valid(path)
+        if not self.path:
+            raise DjangoCryptoFieldsKeyPathError(
+                f'Invalid key path. Production systems must explicitly '
+                f'set a path other than the default non-production path '
+                f'[DEBUG={settings.DEBUG}, '
+                f'KEY_PATH==\'{self.path}\', '
+                f'settings.KEY_PATH==\'{settings.KEY_PATH}\', '
+                f'non-production path == \'{self.non_production_path}\']. ')
         if self.path == self.non_production_path:
             self.using_test_keys = True
         if not self.path:
@@ -66,10 +61,11 @@ class KeyPath:
     def _is_valid(self, path):
         """Returns the path or raises.
         """
+        path = path or ''
         if not path or not os.path.exists(path):
             raise DjangoCryptoFieldsKeyPathDoesNotExist(
-                f'Key path \'{path}\' does not exist.')
-        elif not settings.DEBUG and path == self.non_production_path:
+                f'Key path does not exist. Got \'{path}\'')
+        elif settings.DEBUG is False and path == self.non_production_path:
             raise DjangoCryptoFieldsKeyPathError(
                 f'Invalid key path. Key path may not be the default '
                 f'non-production path if DEBUG=False. Got {self.non_production_path}')

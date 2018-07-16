@@ -43,6 +43,8 @@ class AppConfig(DjangoAppConfig):
         need to be loaded before models.
         """
         self.temp_path = mkdtemp()
+        self._key_path = KeyPath(
+            path=self.temp_path if 'test' in sys.argv else None)
         self.key_files = None
         self.last_key_path = get_last_key_path(self.last_key_path_filename)
 
@@ -107,8 +109,4 @@ class AppConfig(DjangoAppConfig):
 
     @property
     def key_path(self):
-        if 'test' in sys.argv:
-            key_path = KeyPath(path=self.temp_path)
-        else:
-            key_path = KeyPath()
-        return key_path
+        return self._key_path
