@@ -22,6 +22,8 @@ For example:
 	    comment = EncryptedTextField(
 	        max_length=500)
 
+>>> Important: this module has known problems with `postgres`.
+
 ## Installation
 
     pip install git+https://github.com/erikvw/django-crypto-fields@develop#egg=django-crypto-fields
