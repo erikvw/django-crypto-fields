@@ -1,25 +1,36 @@
 language: python
+
 python:
 - 3.6
+- 3.7
+
+dist: xenial
+
+sudo: true
+
 services:
 - mysql
+
 branches:
   only:
   - develop
+
 before_install:
 - sudo apt-get install python3-dev
+
 install:
 - pip install --upgrade pip
 - pip install -r requirements.txt
+- pip instal -e .
 - pip install flake8
 - pip install coveralls
+
 before_script:
 - flake8 django_crypto_fields
 - mysql -e 'create database edc character set utf8;'
+
 script:
 - coverage run --source=django_crypto_fields manage.py test
+
 after_success:
 - coveralls
-notifications:
-  slack:
-    secure: sWKtDrh479nPPVsjYCSKK7+DjSfZCa32AwKfEHkU5B2EaYJyugQp+y1xmo7d+kTHEY2g/IRzuJsCDU+m0jR9j+jWys84hGms8Wz6DUX6KWmkiqi6RwNe71lwA9uFaV8d5m0CTFUraZ182lKPv0zUjuMN0M1TzQ6hgSN5fRitNMpi8tLaml4OvhZhiD/dHJjv5j522vgCdfhsQmxDosk05qFO54ac13IRYjXpzs6OkHqOGxmfIxfIfFre8ghJ5A3UYsJJzayhXGh5lPMTRfhI0h41q+G3KZ3z2KTarXWf1Klmu2riuw4Dqzo3eQkCR9q/XatN434QCvTYvy9NBfHA8iOetOlB+ENT2RgVOSwZfe0Lwe9/rL6TwaTqv8ev6z1nGTfreZHvSSKbfc8iK6i0y9VblmTkkaW/jpgN5NWztmvGH6ZKOHla7SsMjBuA5K9p/P846LXmAkKbU+Q+NItzK533RIOEaXyS+8XizO8fik4qt1hpEX5wEvhMBqVRza6bAge8knYV/UP87cguWCAMIhpWBttEIcdTAVQvGhPsb/rn/igOKRYnDyMQIStR34HdAUzoEWUv3ye2FmQeWNtJ1+U8W3os4KlPJ/iIpsyR9Snrx42CuWTJ9TQV9wtRxYwiJFYshNJFudTPLABbNxVLIxSvDQdJunaxYn/7g16FTUk=
