@@ -156,7 +156,7 @@ class TestFieldCryptor(TestCase):
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext2))
             self.assertFalse(ciphertext1 == ciphertext2)
 
-    def test_rsa_update_cipher_model(self):
+    def test_rsa_update_crypt_model(self):
         """Asserts plaintext can be encrypted, saved to model,
         retrieved by hash, and decrypted.
         """
@@ -165,13 +165,13 @@ class TestFieldCryptor(TestCase):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         hashed_value = field_cryptor.hash(plaintext)
         ciphertext1 = field_cryptor.encrypt(plaintext, update=False)
-        field_cryptor.update_cipher_model(ciphertext1)
-        secret = field_cryptor.cipher_model.objects.get(
+        field_cryptor.update_crypt(ciphertext1)
+        secret = field_cryptor.crypt_model_cls.objects.get(
             hash=hashed_value).secret
         field_cryptor.fetch_secret(HASH_PREFIX.encode(ENCODING) + hashed_value)
         self.assertEquals(plaintext, cryptor.rsa_decrypt(secret, LOCAL_MODE))
 
-    def test_aes_update_cipher_model(self):
+    def test_aes_update_crypt_model(self):
         """Asserts plaintext can be encrypted, saved to model,
         retrieved by hash, and decrypted.
         """
@@ -180,8 +180,8 @@ class TestFieldCryptor(TestCase):
         field_cryptor = FieldCryptor(AES, LOCAL_MODE)
         hashed_value = field_cryptor.hash(plaintext)
         ciphertext1 = field_cryptor.encrypt(plaintext, update=False)
-        field_cryptor.update_cipher_model(ciphertext1)
-        secret = field_cryptor.cipher_model.objects.get(
+        field_cryptor.update_crypt(ciphertext1)
+        secret = field_cryptor.crypt_model_cls.objects.get(
             hash=hashed_value).secret
         field_cryptor.fetch_secret(HASH_PREFIX.encode(ENCODING) + hashed_value)
         self.assertEquals(plaintext, cryptor.aes_decrypt(secret, LOCAL_MODE))

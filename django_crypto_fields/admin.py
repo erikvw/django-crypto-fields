@@ -1,11 +1,7 @@
-from django.apps import apps as django_apps
 from django.contrib import admin
 
 from .admin_site import encryption_admin
-
-
-app_config = django_apps.get_app_config('django_crypto_fields')
-Crypt = django_apps.get_model(app_config.model)
+from .models import Crypt
 
 
 @admin.register(Crypt, site=encryption_admin)

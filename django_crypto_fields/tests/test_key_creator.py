@@ -11,10 +11,8 @@ from ..key_files import KeyFiles
 from ..key_path import DjangoCryptoFieldsKeyPathDoesNotExist
 from ..key_path import KeyPath, DjangoCryptoFieldsKeyPathError
 
-
-production_path_with_keys = os.path.join(settings.BASE_DIR, 'production_keys1')
-production_path_without_keys = os.path.join(
-    settings.BASE_DIR, 'production_keys2')
+production_path_with_keys = mkdtemp()
+production_path_without_keys = mkdtemp()
 
 
 class TestKeyCreator(TestCase):

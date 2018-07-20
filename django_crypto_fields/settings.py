@@ -87,6 +87,18 @@ DATABASES = {
 
 # DATABASES = {
 #     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'edc',
+#         'USER': 'postgres',
+#         'PASSWORD': 'postgres',
+#         'HOST': 'localhost',
+#         'PORT': '',
+#     }
+# }
+
+
+# DATABASES = {
+#     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
 #         'OPTIONS': {
 #             'read_default_file': os.path.join(BASE_DIR, 'etc', 'default.cnf'),
