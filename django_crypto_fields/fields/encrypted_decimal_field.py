@@ -10,7 +10,7 @@ class EncryptedDecimalField(BaseRsaField):
     description = "local-rsa encrypted field for 'IntegerField'"
 
     def __init__(self, *args, **kwargs):
-        # models.DecimalField(..., max_digits=5, decimal_places=2)
+
         if 'max_digits' not in kwargs:
             raise AttributeError(
                 'EncryptedDecimalField requires attribute \'max_digits\. '

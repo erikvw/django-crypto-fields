@@ -283,12 +283,12 @@ class FieldCryptor(object):
                 value = value.encode(ENCODING)
             except AttributeError:
                 pass
-            if (value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING) and not
-                    value[:len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING)):
+            if (value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING)
+                    and not value[:len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING)):
                 value = self.verify_value(value, has_secret=False)
                 is_encrypted = True
-            if (value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING) and
-                    value[:len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING)):
+            if (value[:len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING)
+                    and value[:len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING)):
                 value = self.verify_value(value, has_secret=True)
                 is_encrypted = True
         return is_encrypted
@@ -362,8 +362,8 @@ class FieldCryptor(object):
                 raise MalformedCiphertextError(
                     'Expected cipher prefix to be followed by a secret. '
                     'Got nothing (2)')
-        if (ciphertext[-1 * len(CIPHER_PREFIX):] == CIPHER_PREFIX.encode(ENCODING) and
-                len(ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]) == 0):
+        if (ciphertext[-1 * len(CIPHER_PREFIX):] == CIPHER_PREFIX.encode(ENCODING)
+                and len(ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]) == 0):
             raise MalformedCiphertextError(
                 'Expected cipher prefix to be followed by a secret. '
                 'Got nothing (3)')
