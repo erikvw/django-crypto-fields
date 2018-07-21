@@ -1,4 +1,4 @@
-include AUTHORS CHANGES README.rst LICENCE VERSION
+include AUTHORS CHANGES README.rst LICENSE VERSION
 recursive-include docs *
 recursive-exclude example/*
 recursive-exclude etc/*

@@ -20,7 +20,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     url='http://github/erikvw/django-crypto-fields',
-    license='GPL licence, see LICENCE',
+    license='GPL license, see LICENSE',
     description='Add encrypted field classes and more to your Django models.',
     long_description=README,
     zip_safe=False,
