@@ -74,7 +74,7 @@ In your tests you can set ``settings.DEBUG = True`` and ``settings.AUTO_CREATE_K
 History
 =======
 
-``django-crypto-fields`` has been used in our audited research projects that use our "Edc" for data collection and management. Data collected in our Edc are considered "source documents".``django-crypto-field`` adds field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Authorized study personnel accessing the data through the application can see PII. Downstream data management staff and statisticians accessing the database directly cannot.
+``django-crypto-fields`` has been used in our audited research projects that use our "Edc" for data collection and management. Data collected in our Edc are considered "source documents". ``django-crypto-field`` adds field level encryption for sensitive field values such as names, identifiers, dob, etc (PII). Authorized study personnel accessing the data through the application can see PII. Downstream data management staff and statisticians accessing the database directly cannot.
 
 Features
 ========
