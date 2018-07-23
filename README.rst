@@ -3,6 +3,8 @@
 django-crypto-fields
 --------------------
 
+Python 3.6, 3.7, MySQL, Django 2.0+
+
 Add encrypted field classes to your Django models where ``unique=True`` and ``unique_together`` attributes work as expected.
 
 For example:
@@ -48,14 +50,14 @@ Add KEY_PATH to the folder in settings:
     # Do not set for tests
     KEY_PATH = '/etc/myproject/django_crypto_fields')
 
-Add KEY_PREFIX (optional, the default is "_user_"):
+Add KEY_PREFIX (optional, the default is "user"):
 
 .. code-block:: python
 
 	# optional filename prefix for encryption keys files:
 	KEY_PREFIX = 'bhp066'
 
-Run _migrate_ to create the _crypto_fields_crypt_ table:
+Run ``migrate`` to create the ``django_crypto_fields.crypt`` table:
 
 .. code-block:: python
 
