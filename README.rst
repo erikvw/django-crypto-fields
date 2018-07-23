@@ -25,9 +25,10 @@ For example:
 	    comment = EncryptedTextField(
 	        max_length=500)
 
->>> Important: this module has known problems with `postgres`.
+.. important:: this module has known problems with `postgres`.
 
-## Installation
+Installation
+============
 
 add to INSTALLED_APPS:
 
