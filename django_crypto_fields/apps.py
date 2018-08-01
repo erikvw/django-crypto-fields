@@ -44,7 +44,7 @@ class AppConfig(DjangoAppConfig):
         """
         self.temp_path = mkdtemp()
         self._key_path = KeyPath(
-            path=self.temp_path if 'test' in sys.argv else None)
+            path=self.temp_path if 'test' in sys.argv and 'raven' not in sys.argv else None)
         self.key_files = None
         self.last_key_path = get_last_key_path(self.last_key_path_filename)
 
