@@ -1,4 +1,4 @@
-|pypi| |travis| |coverage|
+|pypi| |travis| |coverage| |downloads|
 
 django-crypto-fields
 --------------------
@@ -116,3 +116,6 @@ Contribute
     
 .. |coverage| image:: https://coveralls.io/repos/github/erikvw/django-crypto-fields/badge.svg?branch=develop
     :target: https://coveralls.io/github/erikvw/django-crypto-fields?branch=develop
+
+.. |downloads| image:: https://pepy.tech/badge/django-crypto-fields
+   :target: https://pepy.tech/project/django-crypto-fields

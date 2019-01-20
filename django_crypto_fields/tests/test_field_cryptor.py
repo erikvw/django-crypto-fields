@@ -63,7 +63,7 @@ class TestFieldCryptor(TestCase):
         with self.assertRaises(MalformedCiphertextError):
             try:
                 field_cryptor.verify_secret(value)
-            except:
+            except IndexError:
                 pass
             else:
                 raise MalformedCiphertextError
@@ -169,7 +169,7 @@ class TestFieldCryptor(TestCase):
         secret = field_cryptor.crypt_model_cls.objects.get(
             hash=hashed_value).secret
         field_cryptor.fetch_secret(HASH_PREFIX.encode(ENCODING) + hashed_value)
-        self.assertEquals(plaintext, cryptor.rsa_decrypt(secret, LOCAL_MODE))
+        self.assertEqual(plaintext, cryptor.rsa_decrypt(secret, LOCAL_MODE))
 
     def test_aes_update_crypt_model(self):
         """Asserts plaintext can be encrypted, saved to model,
@@ -184,7 +184,7 @@ class TestFieldCryptor(TestCase):
         secret = field_cryptor.crypt_model_cls.objects.get(
             hash=hashed_value).secret
         field_cryptor.fetch_secret(HASH_PREFIX.encode(ENCODING) + hashed_value)
-        self.assertEquals(plaintext, cryptor.aes_decrypt(secret, LOCAL_MODE))
+        self.assertEqual(plaintext, cryptor.aes_decrypt(secret, LOCAL_MODE))
 
     def test_get_secret(self):
         """Asserts secret is returned either as None or the secret.
@@ -198,7 +198,7 @@ class TestFieldCryptor(TestCase):
         plaintext = 'erik is a pleeb!!∂ƒ˜∫˙ç'
         ciphertext = field_cryptor.encrypt(plaintext)
         secret = field_cryptor.get_secret(ciphertext)
-        self.assertEquals(plaintext, cryptor.rsa_decrypt(secret, LOCAL_MODE))
+        self.assertEqual(plaintext, cryptor.rsa_decrypt(secret, LOCAL_MODE))
 
     def test_rsa_field_as_none(self):
         """Asserts RSA roundtrip on None.

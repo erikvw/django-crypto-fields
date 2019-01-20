@@ -61,7 +61,8 @@ class TestKeyCreator(TestCase):
     def test_create_keys_set_to_non_production_path_and_raises(self):
         self.assertRaises(DjangoCryptoFieldsKeyPathError, KeyPath)
 
-    @override_settings(DEBUG=False, KEY_PATH=os.path.join(settings.BASE_DIR, 'this_path_does_not_exist'))
+    @override_settings(DEBUG=False, KEY_PATH=os.path.join(
+        settings.BASE_DIR, 'this_path_does_not_exist'))
     def test_create_keys_set_to_production_path_and_raises(self):
         app_config = django_apps.get_app_config('django_crypto_fields')
         self.assertNotEqual(app_config.key_path.path,
