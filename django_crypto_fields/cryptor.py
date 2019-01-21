@@ -31,7 +31,8 @@ class Cryptor(object):
         try:
             # ignore "keys" parameter if Django is loaded
             self.keys = django_apps.get_app_config(
-                'django_crypto_fields').encryption_keys
+                "django_crypto_fields"
+            ).encryption_keys
         except AppRegistryNotReady:
             self.keys = keys
 
@@ -50,17 +51,18 @@ class Cryptor(object):
         if self.aes_encryption_mode == AES_CIPHER.MODE_CFB:
             padding_length = 0
         else:
-            padding_length = (block_size - len(plaintext) %
-                              block_size) % block_size
+            padding_length = (block_size - len(plaintext) % block_size) % block_size
             padding_length = padding_length or 16
-        padded = plaintext + \
-            (b'\x00' * (padding_length - 1)) + \
-            binascii.a2b_hex(str(padding_length).zfill(2))
+        padded = (
+            plaintext
+            + (b"\x00" * (padding_length - 1))
+            + binascii.a2b_hex(str(padding_length).zfill(2))
+        )
         if len(padded) % block_size > 0:
             raise EncryptionError(
-                'Padding error, got padded string not a multiple '
-                'of {}. Got {}'.format(
-                    block_size, len(padded) / block_size))
+                "Padding error, got padded string not a multiple "
+                "of {}. Got {}".format(block_size, len(padded) / block_size)
+            )
         return padded
 
     def unpadded(self, plaintext, block_size):
@@ -77,23 +79,25 @@ class Cryptor(object):
         return plaintext[:-padding_length]
 
     def aes_encrypt(self, plaintext, mode):
-        aes_key = '_'.join([AES, mode, PRIVATE, 'key'])
+        aes_key = "_".join([AES, mode, PRIVATE, "key"])
         iv = Random.new().read(AES_CIPHER.block_size)
         cipher = AES_CIPHER.new(
-            getattr(self.keys, aes_key), self.aes_encryption_mode, iv)
+            getattr(self.keys, aes_key), self.aes_encryption_mode, iv
+        )
         padded_plaintext = self.padded(plaintext, cipher.block_size)
         return iv + cipher.encrypt(padded_plaintext)
 
     def aes_decrypt(self, ciphertext, mode):
-        aes_key = '_'.join([AES, mode, PRIVATE, 'key'])
-        iv = ciphertext[:AES_CIPHER.block_size]
+        aes_key = "_".join([AES, mode, PRIVATE, "key"])
+        iv = ciphertext[: AES_CIPHER.block_size]
         cipher = AES_CIPHER.new(
-            getattr(self.keys, aes_key), self.aes_encryption_mode, iv)
-        plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size:]
+            getattr(self.keys, aes_key), self.aes_encryption_mode, iv
+        )
+        plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size :]
         return self.unpadded(plaintext, cipher.block_size).decode()
 
     def rsa_encrypt(self, plaintext, mode):
-        rsa_key = '_'.join([RSA, mode, PUBLIC, 'key'])
+        rsa_key = "_".join([RSA, mode, PUBLIC, "key"])
         try:
             plaintext = plaintext.encode(ENCODING)
         except AttributeError:
@@ -101,57 +105,74 @@ class Cryptor(object):
         try:
             ciphertext = getattr(self.keys, rsa_key).encrypt(plaintext)
         except (ValueError, TypeError) as e:
-            raise EncryptionError(
-                'RSA encryption failed for value. Got \'{}\''.format(e))
+            raise EncryptionError("RSA encryption failed for value. Got '{}'".format(e))
         return ciphertext
 
     def rsa_decrypt(self, ciphertext, mode):
-        rsa_key = '_'.join([RSA, mode, PRIVATE, 'key'])
+        rsa_key = "_".join([RSA, mode, PRIVATE, "key"])
         try:
             plaintext = getattr(self.keys, rsa_key).decrypt(ciphertext)
         except ValueError as e:
-            raise EncryptionError('{} Got {}.'.format(str(e), ciphertext))
+            raise EncryptionError("{} Got {}.".format(str(e), ciphertext))
         return plaintext.decode(ENCODING)
 
     def test_rsa(self):
         """ Tests keys roundtrip.
         """
         plaintext = (
-            'erik is a pleeb! ERIK IS A PLEEB 0123456789!@#$%^&*()'
-            '_-+={[}]|\"\':;>.<,?/~`±§')
+            "erik is a pleeb! ERIK IS A PLEEB 0123456789!@#$%^&*()"
+            "_-+={[}]|\"':;>.<,?/~`±§"
+        )
         for mode in self.keys.key_filenames.get(RSA):
             try:
                 ciphertext = self.rsa_encrypt(plaintext, mode)
                 sys.stdout.write(
-                    style.SUCCESS('(*) Passed encrypt: {}\n'.format(
-                        self.keys.key_filenames[RSA][mode][PUBLIC])))
+                    style.SUCCESS(
+                        "(*) Passed encrypt: {}\n".format(
+                            self.keys.key_filenames[RSA][mode][PUBLIC]
+                        )
+                    )
+                )
             except (AttributeError, TypeError) as e:
                 sys.stdout.write(
-                    style.ERROR(
-                        '( ) Failed encrypt: {} public ({})\n'.format(
-                            mode, e)))
+                    style.ERROR("( ) Failed encrypt: {} public ({})\n".format(mode, e))
+                )
             try:
                 assert plaintext == self.rsa_decrypt(ciphertext, mode)
                 sys.stdout.write(
-                    style.SUCCESS('(*) Passed decrypt: {}\n'.format(
-                        self.keys.key_filenames[RSA][mode][PRIVATE])))
+                    style.SUCCESS(
+                        "(*) Passed decrypt: {}\n".format(
+                            self.keys.key_filenames[RSA][mode][PRIVATE]
+                        )
+                    )
+                )
             except (AttributeError, TypeError) as e:
                 sys.stdout.write(
-                    style.ERROR(
-                        '( ) Failed decrypt: {} private ({})\n'.format(
-                            mode, e)))
+                    style.ERROR("( ) Failed decrypt: {} private ({})\n".format(mode, e))
+                )
 
     def test_aes(self):
         """ Tests keys roundtrip.
         """
         plaintext = (
-            'erik is a pleeb!\nERIK IS A PLEEB\n0123456789!@#$%^&*()_'
-            '-+={[}]|\"\':;>.<,?/~`±§\n')
+            "erik is a pleeb!\nERIK IS A PLEEB\n0123456789!@#$%^&*()_"
+            "-+={[}]|\"':;>.<,?/~`±§\n"
+        )
         for mode in self.keys.key_filenames[AES]:
             ciphertext = self.aes_encrypt(plaintext, mode)
             assert plaintext != ciphertext
-            sys.stdout.write(style.SUCCESS('(*) Passed encrypt: {}\n'.format(
-                self.keys.key_filenames[AES][mode][PRIVATE])))
+            sys.stdout.write(
+                style.SUCCESS(
+                    "(*) Passed encrypt: {}\n".format(
+                        self.keys.key_filenames[AES][mode][PRIVATE]
+                    )
+                )
+            )
             assert plaintext == self.aes_decrypt(ciphertext, mode)
-            sys.stdout.write(style.SUCCESS('(*) Passed decrypt: {}\n'.format(
-                self.keys.key_filenames[AES][mode][PRIVATE])))
+            sys.stdout.write(
+                style.SUCCESS(
+                    "(*) Passed decrypt: {}\n".format(
+                        self.keys.key_filenames[AES][mode][PRIVATE]
+                    )
+                )
+            )

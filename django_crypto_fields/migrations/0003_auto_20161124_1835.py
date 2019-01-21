@@ -8,14 +8,18 @@ import edc_model_fields.fields.uuid_auto_field
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('django_crypto_fields', '0002_crypt_cipher_mode'),
-    ]
+    dependencies = [("django_crypto_fields", "0002_crypt_cipher_mode")]
 
     operations = [
         migrations.AlterField(
-            model_name='crypt',
-            name='id',
-            field=edc_model_fields.fields.uuid_auto_field.UUIDAutoField(blank=True, editable=False, help_text='System auto field. UUID primary key.', primary_key=True, serialize=False),
-        ),
+            model_name="crypt",
+            name="id",
+            field=edc_model_fields.fields.uuid_auto_field.UUIDAutoField(
+                blank=True,
+                editable=False,
+                help_text="System auto field. UUID primary key.",
+                primary_key=True,
+                serialize=False,
+            ),
+        )
     ]

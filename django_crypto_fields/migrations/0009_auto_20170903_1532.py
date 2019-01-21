@@ -8,14 +8,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('django_crypto_fields', '0008_auto_20170624_1905'),
-    ]
+    dependencies = [("django_crypto_fields", "0008_auto_20170624_1905")]
 
     operations = [
         migrations.AlterField(
-            model_name='crypt',
-            name='hostname_created',
-            field=models.CharField(blank=True, default=_socket.gethostname, help_text='System field. (modified on create only)', max_length=60),
-        ),
+            model_name="crypt",
+            name="hostname_created",
+            field=models.CharField(
+                blank=True,
+                default=_socket.gethostname,
+                help_text="System field. (modified on create only)",
+                max_length=60,
+            ),
+        )
     ]
