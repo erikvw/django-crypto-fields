@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('django_crypto_fields', '0005_auto_20170106_1849'),
-    ]
+    dependencies = [("django_crypto_fields", "0005_auto_20170106_1849")]
 
     operations = [
         migrations.AlterField(
-            model_name='crypt',
-            name='hash',
-            field=models.CharField(db_index=True, max_length=128, verbose_name='Hash'),
-        ),
+            model_name="crypt",
+            name="hash",
+            field=models.CharField(db_index=True, max_length=128, verbose_name="Hash"),
+        )
     ]

@@ -21,17 +21,17 @@ class DjangoCryptoFieldsKeyPathChangeError(Exception):
 def get_last_key_path(filename=None):
 
     last_key_path = None
-    if 'test' not in sys.argv:
+    if "test" not in sys.argv:
         if not filename:
-            app_config = django_apps.get_app_config('django_crypto_fields')
+            app_config = django_apps.get_app_config("django_crypto_fields")
             filename = app_config.last_key_path_filename
 
         filepath = os.path.join(settings.ETC_DIR, filename)
         if os.path.exists(filepath):
-            with open(filepath, 'r') as f:
+            with open(filepath, "r") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    last_key_path = row.get('path')
+                    last_key_path = row.get("path")
                     break
     return last_key_path
 
@@ -41,16 +41,23 @@ def persist_key_path(key_path=None, filename=None):
     last_key_path = get_last_key_path(filename)
 
     if not last_key_path:
-        with open(filename, 'w') as f:
-            writer = csv.DictWriter(f, fieldnames=['path', 'date'])
+        with open(filename, "w") as f:
+            writer = csv.DictWriter(f, fieldnames=["path", "date"])
             writer.writeheader()
             writer.writerow(dict(path=key_path.path, date=get_utcnow()))
         last_key_path = key_path.path
     else:
         if not os.path.exists(last_key_path):
             raise DjangoCryptoFieldsKeyPathError(
-                style.ERROR(f'Invalid last key path. See {filename}. Got {last_key_path}'))
+                style.ERROR(
+                    f"Invalid last key path. See {filename}. Got {last_key_path}"
+                )
+            )
     if last_key_path != key_path.path:
-        raise DjangoCryptoFieldsKeyPathChangeError(style.ERROR(
-            f'Key path changed since last startup! You must resolve '
-            f'this before using the system. Using the wrong keys will corrupt your data.'))
+        raise DjangoCryptoFieldsKeyPathChangeError(
+            style.ERROR(
+                f"Key path changed since last startup! You must resolve "
+                f"this before using the system. Using the wrong keys will "
+                f"corrupt your data."
+            )
+        )

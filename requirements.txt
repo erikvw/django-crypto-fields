@@ -1,6 +1,5 @@
-# see README if problems with pycrypto
-git+https://github.com/clinicedc/edc-base@develop#egg=edc_base
-git+https://github.com/erikvw/django-revision@develop#egg=django-revision
-git+https://github.com/clinicedc/edc-device@develop#egg=edc-device
-git+https://github.com/clinicedc/edc-constants@develop#egg=edc-constants
-git+https://github.com/clinicedc/edc-model-fields@develop#egg=edc-model-fields
+django-revision
+edc-base
+edc-constants
+edc-device
+edc-model-fields

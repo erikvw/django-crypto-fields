@@ -7,23 +7,23 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('django_crypto_fields', '0007_auto_20170518_1233'),
-    ]
+    dependencies = [("django_crypto_fields", "0007_auto_20170518_1233")]
 
     operations = [
         migrations.AddField(
-            model_name='crypt',
-            name='device_created',
+            model_name="crypt",
+            name="device_created",
             field=models.CharField(blank=True, max_length=10),
         ),
         migrations.AddField(
-            model_name='crypt',
-            name='device_modified',
+            model_name="crypt",
+            name="device_modified",
             field=models.CharField(blank=True, max_length=10),
         ),
         migrations.AddIndex(
-            model_name='crypt',
-            index=models.Index(fields=['hash', 'algorithm', 'mode'], name='django_cryp_hash_76d13d_idx'),
+            model_name="crypt",
+            index=models.Index(
+                fields=["hash", "algorithm", "mode"], name="django_cryp_hash_76d13d_idx"
+            ),
         ),
     ]

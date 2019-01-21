@@ -1,6 +1,7 @@
 .pypirc
 etc/*
 .venv/*
+venv/*
 
 # Swap
 [._]*.s[a-v][a-z]

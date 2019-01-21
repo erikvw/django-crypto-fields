@@ -6,9 +6,9 @@ from Crypto.PublicKey import RSA as RSA_PUBLIC_KEY
 from Crypto.Util import number
 from django.apps import apps as django_apps
 from django.core.exceptions import AppRegistryNotReady
-from django_crypto_fields.exceptions import DjangoCryptoFieldsKeysAlreadyLoaded
 
 from .constants import RSA, AES, SALT, PRIVATE
+from .exceptions import DjangoCryptoFieldsKeysAlreadyLoaded
 from .key_files import KeyFiles
 
 
@@ -37,42 +37,39 @@ class Keys:
         """Loads all keys defined in self.key_filenames.
         """
         try:
-            if django_apps.get_app_config('django_crypto_fields').encryption_keys:
+            if django_apps.get_app_config("django_crypto_fields").encryption_keys:
                 raise DjangoCryptoFieldsKeysAlreadyLoaded(
-                    'Encryption keys have already been loaded.')
+                    "Encryption keys have already been loaded."
+                )
         except (AppRegistryNotReady, AttributeError):
             pass
         if not self.keys_are_ready:
-            sys.stdout.write(f' * loading keys from {self.key_path}\n')
+            sys.stdout.write(f" * loading keys from {self.key_path}\n")
             for mode, keys in self.key_filenames[RSA].items():
                 for key in keys:
-                    sys.stdout.write(
-                        f' * loading {RSA}.{mode}.{key} ...\r')
+                    sys.stdout.write(f" * loading {RSA}.{mode}.{key} ...\r")
                     self.load_rsa_key(mode, key)
-                    sys.stdout.write(
-                        f' * loading {RSA}.{mode}.{key} ... Done.\n')
+                    sys.stdout.write(f" * loading {RSA}.{mode}.{key} ... Done.\n")
             for mode in self.key_filenames[AES]:
-                sys.stdout.write(f' * loading {AES}.{mode} ...\r')
+                sys.stdout.write(f" * loading {AES}.{mode} ...\r")
                 self.load_aes_key(mode)
-                sys.stdout.write(
-                    f' * loading {AES}.{mode} ... Done.\n')
+                sys.stdout.write(f" * loading {AES}.{mode} ... Done.\n")
             for mode in self.key_filenames[SALT]:
-                sys.stdout.write(f' * loading {SALT}.{mode} ...\r')
+                sys.stdout.write(f" * loading {SALT}.{mode} ...\r")
                 self.load_salt_key(mode, key)
-                sys.stdout.write(
-                    f' * loading {SALT}.{mode} ... Done.\n')
+                sys.stdout.write(f" * loading {SALT}.{mode} ... Done.\n")
             self.keys_are_ready = True
 
     def load_rsa_key(self, mode, key):
         """Loads an RSA key into _keys.
         """
         key_file = self.key_filenames[RSA][mode][key]
-        with open(key_file, 'rb') as frsa:
+        with open(key_file, "rb") as frsa:
             rsa_key = RSA_PUBLIC_KEY.importKey(frsa.read())
             rsa_key = PKCS1_OAEP.new(rsa_key)
             self._keys[RSA][mode][key] = rsa_key
             self.update_rsa_key_info(rsa_key, mode)
-        setattr(self, RSA + '_' + mode + '_' + key + '_key', rsa_key)
+        setattr(self, RSA + "_" + mode + "_" + key + "_key", rsa_key)
         return key_file
 
     def load_aes_key(self, mode):
@@ -86,19 +83,19 @@ class Keys:
             key_file = self.key_filenames[AES][mode][key]
         except KeyError:
             raise
-        with open(key_file, 'rb') as faes:
+        with open(key_file, "rb") as faes:
             aes_key = rsa_key.decrypt(faes.read())
         self._keys[AES][mode][key] = aes_key
-        setattr(self, AES + '_' + mode + '_' + key + '_key', aes_key)
+        setattr(self, AES + "_" + mode + "_" + key + "_key", aes_key)
         return key_file
 
     def load_salt_key(self, mode, key):
         """Decrypts and loads a salt key into _keys.
         """
-        attr = SALT + '_' + mode + '_' + PRIVATE
+        attr = SALT + "_" + mode + "_" + PRIVATE
         rsa_key = self._keys[RSA][mode][PRIVATE]
         key_file = self.key_filenames[SALT][mode][PRIVATE]
-        with open(key_file, 'rb') as fsalt:
+        with open(key_file, "rb") as fsalt:
             salt = rsa_key.decrypt(fsalt.read())
             setattr(self, attr, salt)
         return key_file
@@ -107,9 +104,8 @@ class Keys:
         """Stores info about the RSA key.
         """
         modBits = number.size(rsa_key._key.n)
-        self.rsa_key_info[mode] = {'bits': modBits}
+        self.rsa_key_info[mode] = {"bits": modBits}
         k = number.ceil_div(modBits, 8)
-        self.rsa_key_info[mode].update({'bytes': k})
+        self.rsa_key_info[mode].update({"bytes": k})
         hLen = rsa_key._hashObj.digest_size
-        self.rsa_key_info[mode].update(
-            {'max_message_length': k - (2 * hLen) - 2})
+        self.rsa_key_info[mode].update({"max_message_length": k - (2 * hLen) - 2})
