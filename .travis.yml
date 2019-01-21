@@ -15,21 +15,20 @@ branches:
   only:
   - develop
 
-before_install:
+before_install:x
 - sudo apt-get install python3-dev
 
 install:
 - pip install --upgrade pip
 - pip install -r requirements.txt
 - pip install -e .
-- pip install flake8 "tox>=1.8" coveralls
+- pip install flake8 "tox>=1.8" coveralls tox-travis
 
 before_script:
 - flake8 django_crypto_fields
 - mysql -e 'create database edc character set utf8;'
 
-script:
-- tox
+script: tox
 # - coverage run --source=django_crypto_fields setup.py test
 
 after_success:
