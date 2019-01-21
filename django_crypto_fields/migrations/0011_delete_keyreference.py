@@ -5,12 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('django_crypto_fields', '0010_keyreference'),
-    ]
+    dependencies = [("django_crypto_fields", "0010_keyreference")]
 
-    operations = [
-        migrations.DeleteModel(
-            name='KeyReference',
-        ),
-    ]
+    operations = [migrations.DeleteModel(name="KeyReference")]

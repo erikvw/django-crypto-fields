@@ -47,4 +47,4 @@ release: dist
 
 format:
 	pip install -U black
-	black ambition_visit_schedule
+	black django_crypto_fields

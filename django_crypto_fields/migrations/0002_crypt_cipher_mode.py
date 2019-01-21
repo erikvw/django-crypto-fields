@@ -7,14 +7,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('django_crypto_fields', '0001_initial'),
-    ]
+    dependencies = [("django_crypto_fields", "0001_initial")]
 
     operations = [
         migrations.AddField(
-            model_name='crypt',
-            name='cipher_mode',
-            field=models.IntegerField(help_text='pycrypto AES cipher mode (e.g. MODE_CBC)', null=True),
-        ),
+            model_name="crypt",
+            name="cipher_mode",
+            field=models.IntegerField(
+                help_text="pycrypto AES cipher mode (e.g. MODE_CBC)", null=True
+            ),
+        )
     ]

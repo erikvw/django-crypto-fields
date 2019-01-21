@@ -12,34 +12,32 @@ from .models import TestModel
 
 
 class TestFieldCryptor(TestCase):
-
     def setUp(self):
         # self.keys = Keys()
-        app_config = django_apps.get_app_config('django_crypto_fields')
+        app_config = django_apps.get_app_config("django_crypto_fields")
         self.keys = app_config.encryption_keys
 
     def test_can_verify_hash_as_none(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = None
         self.assertRaises(TypeError, field_cryptor.verify_hash, value)
-        value = ''
-        self.assertRaises(MalformedCiphertextError,
-                          field_cryptor.verify_hash, value)
-        value = b''
-        self.assertRaises(MalformedCiphertextError,
-                          field_cryptor.verify_hash, value)
+        value = ""
+        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
+        value = b""
+        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
 
-    @tag('1')
+    @tag("1")
     def test_can_verify_hash_not_raises(self):
         """Assert does NOT raise on valid hash.
         """
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
-        value = HASH_PREFIX.encode(
-            ENCODING) + field_cryptor.hash('Mohammed Ali floats like a butterfly')
+        value = HASH_PREFIX.encode(ENCODING) + field_cryptor.hash(
+            "Mohammed Ali floats like a butterfly"
+        )
         try:
             field_cryptor.verify_hash(value)
         except MalformedCiphertextError:
-            self.fail('MalformedCiphertextError unexpectedly raised')
+            self.fail("MalformedCiphertextError unexpectedly raised")
         else:
             pass
 
@@ -47,53 +45,50 @@ class TestFieldCryptor(TestCase):
         """Assert does raises on invalid hash.
         """
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
-        value = 'erik'  # missing prefix
-        self.assertRaises(MalformedCiphertextError,
-                          field_cryptor.verify_hash, value)
-        value = HASH_PREFIX + 'blah'  # incorrect prefix
-        self.assertRaises(MalformedCiphertextError,
-                          field_cryptor.verify_hash, value)
+        value = "erik"  # missing prefix
+        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
+        value = HASH_PREFIX + "blah"  # incorrect prefix
+        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
         value = HASH_PREFIX  # no hash following prefix
-        self.assertRaises(MalformedCiphertextError,
-                          field_cryptor.verify_hash, value)
+        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
 
     def test_verify_with_secret(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
-        value = field_cryptor.encrypt('Mohammed Ali floats like a butterfly')
+        value = field_cryptor.encrypt("Mohammed Ali floats like a butterfly")
         self.assertTrue(field_cryptor.verify_secret(value))
 
     def test_raises_on_verify_without_secret(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
-        value = HASH_PREFIX.encode(
-            ENCODING) + field_cryptor.hash('Mohammed Ali floats like a butterfly')
-        self.assertRaises(MalformedCiphertextError,
-                          field_cryptor.verify_secret, value)
+        value = HASH_PREFIX.encode(ENCODING) + field_cryptor.hash(
+            "Mohammed Ali floats like a butterfly"
+        )
+        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_secret, value)
 
     def test_verify_is_encrypted(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
-        value = HASH_PREFIX.encode(
-            ENCODING) + field_cryptor.hash('Mohammed Ali floats like a butterfly')
+        value = HASH_PREFIX.encode(ENCODING) + field_cryptor.hash(
+            "Mohammed Ali floats like a butterfly"
+        )
         self.assertTrue(field_cryptor.is_encrypted(value))
 
     def test_verify_is_not_encrypted(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
-        value = 'Mohammed Ali floats like a butterfly'
+        value = "Mohammed Ali floats like a butterfly"
         self.assertFalse(field_cryptor.is_encrypted(value))
-        value = b'Mohammed Ali floats like a butterfly'
+        value = b"Mohammed Ali floats like a butterfly"
         self.assertFalse(field_cryptor.is_encrypted(value))
 
     def test_verify_value(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
-        value = 'Mohammed Ali floats like a butterfly'
-        self.assertRaises(MalformedCiphertextError,
-                          field_cryptor.verify_value, value)
-        value = field_cryptor.encrypt('Mohammed Ali floats like a butterfly')
+        value = "Mohammed Ali floats like a butterfly"
+        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_value, value)
+        value = field_cryptor.encrypt("Mohammed Ali floats like a butterfly")
         self.assertEqual(value, field_cryptor.verify_value(value))
 
     def test_rsa_field_encryption(self):
         """Assert successful RSA field roundtrip.
         """
-        plaintext = 'erik is a pleeb!!'
+        plaintext = "erik is a pleeb!!"
         for mode in self.keys.key_filenames[RSA]:
             field_cryptor = FieldCryptor(RSA, mode)
             ciphertext = field_cryptor.encrypt(plaintext)
@@ -102,7 +97,7 @@ class TestFieldCryptor(TestCase):
     def test_rsa_field_encryption_update_secret(self):
         """Assert successful AES field roundtrip for same value.
         """
-        plaintext = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         for mode in self.keys.key_filenames[RSA]:
             field_cryptor = FieldCryptor(RSA, mode)
             ciphertext1 = field_cryptor.encrypt(plaintext)
@@ -114,7 +109,7 @@ class TestFieldCryptor(TestCase):
     def test_aes_field_encryption(self):
         """Assert successful RSA field roundtrip.
         """
-        plaintext = 'erik is a pleeb!!'
+        plaintext = "erik is a pleeb!!"
         for mode in self.keys.key_filenames[AES]:
             field_cryptor = FieldCryptor(AES, mode)
             ciphertext = field_cryptor.encrypt(plaintext)
@@ -123,7 +118,7 @@ class TestFieldCryptor(TestCase):
     def test_rsa_field_encryption_encoded(self):
         """Assert successful RSA field roundtrip.
         """
-        plaintext = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         for mode in self.keys.key_filenames[RSA]:
             field_cryptor = FieldCryptor(RSA, mode)
             ciphertext = field_cryptor.encrypt(plaintext)
@@ -132,7 +127,7 @@ class TestFieldCryptor(TestCase):
     def test_aes_field_encryption_encoded(self):
         """Assert successful AES field roundtrip.
         """
-        plaintext = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         for mode in self.keys.key_filenames[AES]:
             field_cryptor = FieldCryptor(AES, mode)
             ciphertext = field_cryptor.encrypt(plaintext)
@@ -141,7 +136,7 @@ class TestFieldCryptor(TestCase):
     def test_aes_field_encryption_update_secret(self):
         """Assert successful AES field roundtrip for same value.
         """
-        plaintext = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         for mode in self.keys.key_filenames[AES]:
             field_cryptor = FieldCryptor(AES, mode)
             ciphertext1 = field_cryptor.encrypt(plaintext)
@@ -154,14 +149,13 @@ class TestFieldCryptor(TestCase):
         """Asserts plaintext can be encrypted, saved to model,
         retrieved by hash, and decrypted.
         """
-        plaintext = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         cryptor = Cryptor()
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         hashed_value = field_cryptor.hash(plaintext)
         ciphertext1 = field_cryptor.encrypt(plaintext, update=False)
         field_cryptor.update_crypt(ciphertext1)
-        secret = field_cryptor.crypt_model_cls.objects.get(
-            hash=hashed_value).secret
+        secret = field_cryptor.crypt_model_cls.objects.get(hash=hashed_value).secret
         field_cryptor.fetch_secret(HASH_PREFIX.encode(ENCODING) + hashed_value)
         self.assertEqual(plaintext, cryptor.rsa_decrypt(secret, LOCAL_MODE))
 
@@ -169,14 +163,13 @@ class TestFieldCryptor(TestCase):
         """Asserts plaintext can be encrypted, saved to model,
         retrieved by hash, and decrypted.
         """
-        plaintext = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         cryptor = Cryptor()
         field_cryptor = FieldCryptor(AES, LOCAL_MODE)
         hashed_value = field_cryptor.hash(plaintext)
         ciphertext1 = field_cryptor.encrypt(plaintext, update=False)
         field_cryptor.update_crypt(ciphertext1)
-        secret = field_cryptor.crypt_model_cls.objects.get(
-            hash=hashed_value).secret
+        secret = field_cryptor.crypt_model_cls.objects.get(hash=hashed_value).secret
         field_cryptor.fetch_secret(HASH_PREFIX.encode(ENCODING) + hashed_value)
         self.assertEqual(plaintext, cryptor.aes_decrypt(secret, LOCAL_MODE))
 
@@ -189,7 +182,7 @@ class TestFieldCryptor(TestCase):
         ciphertext = field_cryptor.encrypt(plaintext)
         secret = field_cryptor.get_secret(ciphertext)
         self.assertIsNone(secret)
-        plaintext = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         ciphertext = field_cryptor.encrypt(plaintext)
         secret = field_cryptor.get_secret(ciphertext)
         self.assertEqual(plaintext, cryptor.rsa_decrypt(secret, LOCAL_MODE))
@@ -213,13 +206,12 @@ class TestFieldCryptor(TestCase):
     def test_model_with_encrypted_fields(self):
         """Asserts roundtrip via a model with encrypted fields.
         """
-        firstname = 'erik'
-        identity = '123456789'
-        comment = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        firstname = "erik"
+        identity = "123456789"
+        comment = "erik is a pleeb!!∂ƒ˜∫˙ç"
         test_model = TestModel.objects.create(
-            firstname=firstname,
-            identity=identity,
-            comment=comment)
+            firstname=firstname, identity=identity, comment=comment
+        )
         self.assertEqual(test_model.firstname, firstname)
         self.assertEqual(test_model.identity, identity)
         self.assertEqual(test_model.comment, comment)
@@ -231,13 +223,12 @@ class TestFieldCryptor(TestCase):
     def test_model_with_encrypted_fields_as_none(self):
         """Asserts roundtrip via a model with encrypted fields.
         """
-        firstname = 'erik'
-        identity = '123456789'
+        firstname = "erik"
+        identity = "123456789"
         comment = None
         test_model = TestModel.objects.create(
-            firstname=firstname,
-            identity=identity,
-            comment=comment)
+            firstname=firstname, identity=identity, comment=comment
+        )
         self.assertEqual(test_model.firstname, firstname)
         self.assertEqual(test_model.identity, identity)
         self.assertEqual(test_model.comment, comment)
@@ -253,22 +244,22 @@ class TestFieldCryptor(TestCase):
             verbose_name="Identity",
             unique=True)
         """
-        firstname = 'erik'
-        identity = '123456789'
-        comment = 'erik is a pleeb!!∂ƒ˜∫˙ç'
+        firstname = "erik"
+        identity = "123456789"
+        comment = "erik is a pleeb!!∂ƒ˜∫˙ç"
         TestModel.objects.create(
-            firstname=firstname,
-            identity=identity,
-            comment=comment)
-        firstname2 = 'erik2'
-        comment2 = 'erik was a pleeb!!∂ƒ˜∫˙ç'
+            firstname=firstname, identity=identity, comment=comment
+        )
+        firstname2 = "erik2"
+        comment2 = "erik was a pleeb!!∂ƒ˜∫˙ç"
         with transaction.atomic():
             self.assertRaises(
                 IntegrityError,
                 TestModel.objects.create,
                 firstname=firstname2,
                 identity=identity,
-                comment=comment2)
+                comment=comment2,
+            )
         test_model = TestModel.objects.get(identity=identity)
         self.assertEqual(test_model.firstname, firstname)
         self.assertEqual(test_model.identity, identity)

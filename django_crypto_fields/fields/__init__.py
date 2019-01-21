@@ -1,5 +1,6 @@
 from .base_field import BaseField
 from .encrypted_char_field import EncryptedCharField
+
 # from .encrypted_date_field import EncryptedDateField
 from .encrypted_decimal_field import EncryptedDecimalField
 from .encrypted_integer_field import EncryptedIntegerField
@@ -9,6 +10,12 @@ from .identity_field import IdentityField
 from .lastname_field import LastnameField
 
 __all__ = [
-    'BaseField', 'EncryptedCharField', 'EncryptedDecimalField',
-    'EncryptedIntegerField', 'EncryptedTextField', 'FirstnameField', 'LastnameField',
-    'IdentityField']
+    "BaseField",
+    "EncryptedCharField",
+    "EncryptedDecimalField",
+    "EncryptedIntegerField",
+    "EncryptedTextField",
+    "FirstnameField",
+    "LastnameField",
+    "IdentityField",
+]
