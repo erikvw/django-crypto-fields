@@ -21,8 +21,8 @@ before_script:
 - flake8 django_crypto_fields
 - mysql -e 'create database edc character set utf8;'
 
-script: tox
-# - coverage run --source=django_crypto_fields setup.py test
+script:
+- coverage run --source=django_crypto_fields setup.py test
 
 after_success:
 - coveralls
