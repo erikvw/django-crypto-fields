@@ -367,6 +367,7 @@ class FieldCryptor(object):
             raise MalformedCiphertextError(
                 'Expected cipher prefix to be followed by a secret. '
                 'Got nothing (3)')
+        return True
 
     def mask(self, value, mask=None):
         """ Returns 'mask' if value is encrypted.

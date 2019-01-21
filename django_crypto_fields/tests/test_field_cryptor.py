@@ -60,13 +60,7 @@ class TestFieldCryptor(TestCase):
     def test_verify_with_secret(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = field_cryptor.encrypt('Mohammed Ali floats like a butterfly')
-        with self.assertRaises(MalformedCiphertextError):
-            try:
-                field_cryptor.verify_secret(value)
-            except IndexError:
-                pass
-            else:
-                raise MalformedCiphertextError
+        self.assertTrue(field_cryptor.verify_secret(value))
 
     def test_raises_on_verify_without_secret(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
