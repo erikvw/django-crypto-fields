@@ -11,9 +11,6 @@ sudo: true
 services:
 - mysql
 
-before_install:
-- sudo apt-get install python3-dev python3.6-dev
-
 install:
 - pip install --upgrade pip
 - pip install -r requirements.txt
