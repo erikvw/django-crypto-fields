@@ -1,4 +1,5 @@
 .pypirc
+xetc/*
 etc/*
 .venv/*
 venv/*
