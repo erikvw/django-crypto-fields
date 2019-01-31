@@ -11,3 +11,4 @@ omit =
     runtests.py
     .tox/*
     .eggs/*
+    /home/travis/virtualenv/*
