@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import django
 import logging
+import os
 import sys
 
 from django.conf import settings
@@ -85,6 +86,19 @@ DEFAULT_SETTINGS = dict(
 if not DEFAULT_SETTINGS.get('DEBUG'):
     DEFAULT_SETTINGS.update(KEY_PATH=join(
         DEFAULT_SETTINGS.get('BASE_DIR'), 'crypto_fields'))
+
+if os.environ.get("TRAVIS"):
+    DEFAULT_SETTINGS.update(
+        DATABASES={
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': 'edc',
+                'USER': 'travis',
+                'PASSWORD': '',
+                'HOST': 'localhost',
+                'PORT': '',
+            },
+        })
 
 
 def main():
