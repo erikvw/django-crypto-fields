@@ -31,7 +31,7 @@ setup(
     zip_safe=False,
     keywords='django fields encryption security',
     install_requires=[
-        'pycrypto',
+        'pycryptodome',
     ],
     classifiers=[
         'Environment :: Web Environment',
