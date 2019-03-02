@@ -3,7 +3,6 @@ import sys
 
 from Crypto import Random
 from Crypto.Cipher import AES as AES_CIPHER
-
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.exceptions import AppRegistryNotReady
