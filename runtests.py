@@ -30,7 +30,6 @@ installed_apps = [
     'django.contrib.staticfiles',
     'django_revision.apps.AppConfig',
     'edc_device.apps.AppConfig',
-
     f'{APP_NAME}.apps.AppConfig',
 ]
 
