@@ -1,19 +1,17 @@
 from django.apps import apps as django_apps
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.test import TestCase, tag
+from django.test import TestCase, tag  # noqa
 
 from ..constants import HASH_PREFIX, ENCODING, AES, RSA, LOCAL_MODE
 from ..cryptor import Cryptor
 from ..exceptions import MalformedCiphertextError
 from ..field_cryptor import FieldCryptor
-
 from .models import TestModel
 
 
 class TestFieldCryptor(TestCase):
     def setUp(self):
-        # self.keys = Keys()
         app_config = django_apps.get_app_config("django_crypto_fields")
         self.keys = app_config.encryption_keys
 
@@ -26,7 +24,6 @@ class TestFieldCryptor(TestCase):
         value = b""
         self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
 
-    @tag("1")
     def test_can_verify_hash_not_raises(self):
         """Assert does NOT raise on valid hash.
         """

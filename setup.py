@@ -48,7 +48,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Security :: Cryptography',
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.6",
     tests_require=tests_require,
     test_suite='runtests.main',
 )
