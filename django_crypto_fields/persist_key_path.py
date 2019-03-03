@@ -5,7 +5,7 @@ import sys
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.management.color import color_style
-from edc_base.utils import get_utcnow
+from edc_utils import get_utcnow
 
 style = color_style()
 

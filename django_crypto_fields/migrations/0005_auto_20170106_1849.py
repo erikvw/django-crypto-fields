@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import edc_model_fields.fields.hostname_modification_field
 import edc_model_fields.fields.userfield
-from edc_base.utils import get_utcnow
+from edc_utils import get_utcnow
 
 
 class Migration(migrations.Migration):

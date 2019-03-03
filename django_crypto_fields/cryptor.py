@@ -1,14 +1,12 @@
 import binascii
-import sys
 
 from Crypto import Random
 from Crypto.Cipher import AES as AES_CIPHER
-
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.exceptions import AppRegistryNotReady
 
-from .constants import RSA, AES, PRIVATE, PUBLIC, ENCODING, style
+from .constants import RSA, AES, PRIVATE, PUBLIC, ENCODING
 from .exceptions import EncryptionError
 
 
@@ -51,7 +49,8 @@ class Cryptor(object):
         if self.aes_encryption_mode == AES_CIPHER.MODE_CFB:
             padding_length = 0
         else:
-            padding_length = (block_size - len(plaintext) % block_size) % block_size
+            padding_length = (block_size - len(plaintext) %
+                              block_size) % block_size
             padding_length = padding_length or 16
         padded = (
             plaintext
@@ -59,10 +58,10 @@ class Cryptor(object):
             + binascii.a2b_hex(str(padding_length).zfill(2))
         )
         if len(padded) % block_size > 0:
+            multiple = len(padded) / block_size
             raise EncryptionError(
-                "Padding error, got padded string not a multiple "
-                "of {}. Got {}".format(block_size, len(padded) / block_size)
-            )
+                f"Padding error, got padded string not a multiple "
+                f"of {block_size}. Got {multiple}")
         return padded
 
     def unpadded(self, plaintext, block_size):
@@ -93,7 +92,7 @@ class Cryptor(object):
         cipher = AES_CIPHER.new(
             getattr(self.keys, aes_key), self.aes_encryption_mode, iv
         )
-        plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size :]
+        plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size:]
         return self.unpadded(plaintext, cipher.block_size).decode()
 
     def rsa_encrypt(self, plaintext, mode):
@@ -105,7 +104,8 @@ class Cryptor(object):
         try:
             ciphertext = getattr(self.keys, rsa_key).encrypt(plaintext)
         except (ValueError, TypeError) as e:
-            raise EncryptionError("RSA encryption failed for value. Got '{}'".format(e))
+            raise EncryptionError(
+                f"RSA encryption failed for value. Got '{e}'")
         return ciphertext
 
     def rsa_decrypt(self, ciphertext, mode):
@@ -113,66 +113,5 @@ class Cryptor(object):
         try:
             plaintext = getattr(self.keys, rsa_key).decrypt(ciphertext)
         except ValueError as e:
-            raise EncryptionError("{} Got {}.".format(str(e), ciphertext))
+            raise EncryptionError(f"{e} Got {ciphertext}.")
         return plaintext.decode(ENCODING)
-
-    def test_rsa(self):
-        """ Tests keys roundtrip.
-        """
-        plaintext = (
-            "erik is a pleeb! ERIK IS A PLEEB 0123456789!@#$%^&*()"
-            "_-+={[}]|\"':;>.<,?/~`±§"
-        )
-        for mode in self.keys.key_filenames.get(RSA):
-            try:
-                ciphertext = self.rsa_encrypt(plaintext, mode)
-                sys.stdout.write(
-                    style.SUCCESS(
-                        "(*) Passed encrypt: {}\n".format(
-                            self.keys.key_filenames[RSA][mode][PUBLIC]
-                        )
-                    )
-                )
-            except (AttributeError, TypeError) as e:
-                sys.stdout.write(
-                    style.ERROR("( ) Failed encrypt: {} public ({})\n".format(mode, e))
-                )
-            try:
-                assert plaintext == self.rsa_decrypt(ciphertext, mode)
-                sys.stdout.write(
-                    style.SUCCESS(
-                        "(*) Passed decrypt: {}\n".format(
-                            self.keys.key_filenames[RSA][mode][PRIVATE]
-                        )
-                    )
-                )
-            except (AttributeError, TypeError) as e:
-                sys.stdout.write(
-                    style.ERROR("( ) Failed decrypt: {} private ({})\n".format(mode, e))
-                )
-
-    def test_aes(self):
-        """ Tests keys roundtrip.
-        """
-        plaintext = (
-            "erik is a pleeb!\nERIK IS A PLEEB\n0123456789!@#$%^&*()_"
-            "-+={[}]|\"':;>.<,?/~`±§\n"
-        )
-        for mode in self.keys.key_filenames[AES]:
-            ciphertext = self.aes_encrypt(plaintext, mode)
-            assert plaintext != ciphertext
-            sys.stdout.write(
-                style.SUCCESS(
-                    "(*) Passed encrypt: {}\n".format(
-                        self.keys.key_filenames[AES][mode][PRIVATE]
-                    )
-                )
-            )
-            assert plaintext == self.aes_decrypt(ciphertext, mode)
-            sys.stdout.write(
-                style.SUCCESS(
-                    "(*) Passed decrypt: {}\n".format(
-                        self.keys.key_filenames[AES][mode][PRIVATE]
-                    )
-                )
-            )
