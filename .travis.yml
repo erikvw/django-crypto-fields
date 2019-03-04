@@ -13,16 +13,27 @@ services:
 
 install:
 - pip install --upgrade pip
-- pip install -r requirements.txt
-- pip install -e .
-- pip install flake8 "tox>=1.8" coveralls tox-travis
+- pip install flake8 coverage codecov tox-travis
 
 before_script:
 - flake8 django_crypto_fields
 - mysql -e 'create database edc character set utf8;'
 
 script:
-- coverage run --source=django_crypto_fields setup.py test
+- coverage run -m tox
 
 after_success:
-- coveralls
+- codecov
+
+matrix:
+  include:
+    - python: 3.6
+      env: TOXENV=py36-django21
+    - python: 3.6
+      env: TOXENV=py36-django22
+    - python: 3.7
+      env: TOXENV=py37-django21
+    - python: 3.7
+      env: TOXENV=py37-django22
+;    - python: 3.7
+;      env: TOXENV=py37-djangotrunk

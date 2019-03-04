@@ -1,10 +1,10 @@
 from django.db import models
 from django.utils import timezone
-from edc_base.model_mixins import BaseModel
+from edc_model.models import BaseModel
 
 from ..fields import EncryptedTextField
 from ..fields import FirstnameField, LastnameField, IdentityField
-from ..mixins import CryptoMixin
+from ..model_mixins import CryptoMixin
 
 
 class TestModel(CryptoMixin, BaseModel):

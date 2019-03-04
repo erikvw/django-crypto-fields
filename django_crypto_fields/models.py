@@ -1,5 +1,5 @@
 from django.db import models
-from edc_base.model_mixins import BaseUuidModel
+from django_audit_fields.models import AuditUuidModelMixin
 
 
 class CryptModelManager(models.Manager):
@@ -7,7 +7,7 @@ class CryptModelManager(models.Manager):
         return self.get(hash=value_as_hash, algorithm=algorithm, mode=mode)
 
 
-class Crypt(BaseUuidModel):
+class Crypt(AuditUuidModelMixin, models.Model):
 
     """ A secrets lookup model searchable by hash.
     """

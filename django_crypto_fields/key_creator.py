@@ -3,8 +3,12 @@ import sys
 from Crypto import Random
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA as RSA_PUBLIC_KEY
+from django.core.management.color import color_style
 
-from .constants import style, RSA, AES, SALT, PRIVATE, PUBLIC, RSA_KEY_SIZE
+from .constants import RSA, AES, SALT, PRIVATE, PUBLIC, RSA_KEY_SIZE
+
+
+style = color_style()
 
 
 class DjangoCryptoFieldsKeyError(Exception):

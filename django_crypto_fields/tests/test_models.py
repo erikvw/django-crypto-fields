@@ -1,5 +1,5 @@
 from django.db.utils import IntegrityError
-from django.test import TestCase, tag
+from django.test import TestCase, tag  # noqa
 
 from ..fields.base_field import BaseField
 from .models import TestModel
