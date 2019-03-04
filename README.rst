@@ -5,6 +5,8 @@ django-crypto-fields
 
 Python 3.6, 3.7, MySQL, Django 2.0+
 
+Uses ``pycryptodome``
+
 Add encrypted field classes to your Django models where ``unique=True`` and ``unique_together`` attributes work as expected.
 
 For example:
