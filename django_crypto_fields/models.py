@@ -7,7 +7,7 @@ class CryptModelManager(models.Manager):
         return self.get(hash=value_as_hash, algorithm=algorithm, mode=mode)
 
 
-class CryptModelMixin(models.Model):
+class Crypt(AuditUuidModelMixin, models.Model):
 
     """ A secrets lookup model searchable by hash.
     """
@@ -37,17 +37,3 @@ class CryptModelMixin(models.Model):
         verbose_name = "Crypt"
         unique_together = (("hash", "algorithm", "mode"),)
         indexes = [models.Index(fields=["hash", "algorithm", "mode"])]
-
-
-try:
-    from edc_device.model_mixins import DeviceModelMixin
-except ImportError:
-
-    class Crypt(CryptModelMixin, AuditUuidModelMixin, models.Model):
-        pass
-
-
-else:
-
-    class Crypt(CryptModelMixin, DeviceModelMixin, AuditUuidModelMixin, models.Model):
-        pass

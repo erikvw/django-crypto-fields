@@ -13,8 +13,10 @@ class TestCryptor(TestCase):
         self.keys = app_config.encryption_keys
 
     def test_mode_support(self):
-        self.assertEqual(self.keys.rsa_modes_supported, [LOCAL_MODE, RESTRICTED_MODE])
-        self.assertEqual(self.keys.aes_modes_supported, [LOCAL_MODE, RESTRICTED_MODE])
+        self.assertEqual(self.keys.rsa_modes_supported,
+                         [LOCAL_MODE, RESTRICTED_MODE])
+        self.assertEqual(self.keys.aes_modes_supported,
+                         [LOCAL_MODE, RESTRICTED_MODE])
 
     def test_encrypt_rsa(self):
         """Assert successful RSA roundtrip.
@@ -60,11 +62,14 @@ class TestCryptor(TestCase):
         """
         cryptor = Cryptor()
         plaintext = 1
-        self.assertRaises(EncryptionError, cryptor.rsa_encrypt, plaintext, LOCAL_MODE)
+        self.assertRaises(EncryptionError, cryptor.rsa_encrypt,
+                          plaintext, LOCAL_MODE)
         plaintext = 1.0
-        self.assertRaises(EncryptionError, cryptor.rsa_encrypt, plaintext, LOCAL_MODE)
+        self.assertRaises(EncryptionError, cryptor.rsa_encrypt,
+                          plaintext, LOCAL_MODE)
         plaintext = datetime.today()
-        self.assertRaises(EncryptionError, cryptor.rsa_encrypt, plaintext, LOCAL_MODE)
+        self.assertRaises(EncryptionError, cryptor.rsa_encrypt,
+                          plaintext, LOCAL_MODE)
 
     def test_no_re_encrypt(self):
         """Assert raise error if attempting to encrypt a cipher.
@@ -72,7 +77,8 @@ class TestCryptor(TestCase):
         cryptor = Cryptor()
         plaintext = "erik is a pleeb!!"
         ciphertext1 = cryptor.rsa_encrypt(plaintext, LOCAL_MODE)
-        self.assertRaises(EncryptionError, cryptor.rsa_encrypt, ciphertext1, LOCAL_MODE)
+        self.assertRaises(EncryptionError, cryptor.rsa_encrypt,
+                          ciphertext1, LOCAL_MODE)
 
     def test_rsa_roundtrip(self):
         cryptor = Cryptor()

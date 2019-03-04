@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_audit_fields.apps.AppConfig",
     "django_revision.apps.AppConfig",
     "edc_device.apps.AppConfig",
     "django_crypto_fields.apps.AppConfig",
