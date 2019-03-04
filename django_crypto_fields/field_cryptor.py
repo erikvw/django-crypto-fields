@@ -6,6 +6,7 @@ from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.exceptions import AppRegistryNotReady, ObjectDoesNotExist
 
+from . import get_crypt_model
 from .constants import HASH_PREFIX, CIPHER_PREFIX, ENCODING, HASH_ALGORITHM
 from .constants import HASH_ROUNDS, AES, RSA, SALT, PRIVATE
 from .exceptions import CipherError, EncryptionError
@@ -58,7 +59,7 @@ class FieldCryptor(object):
         """Returns the cipher model and avoids issues with model
         loading and field classes.
         """
-        return django_apps.get_model(self.crypt_model)
+        return get_crypt_model()
 
     def hash(self, plaintext):
         """Returns a hexified hash of a plaintext value (as bytes).
