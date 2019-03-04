@@ -33,7 +33,6 @@ setup(
     install_requires=[
         'pycryptodome',
         'django_audit_fields',
-        'edc-model',
         'edc-utils',
     ],
     classifiers=[

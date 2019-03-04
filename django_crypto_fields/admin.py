@@ -1,7 +1,9 @@
 from django.contrib import admin
 
+from . import get_crypt_model
 from .admin_site import encryption_admin
-from .models import Crypt
+
+Crypt = get_crypt_model()
 
 
 @admin.register(Crypt, site=encryption_admin)

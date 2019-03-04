@@ -1,0 +1,7 @@
+
+2019-03-03
+----------
+
+- switch from pycrypto to pycryotpdome
+- import audit fields from django-audit-fields instead of edc-base/edc-model
+- 

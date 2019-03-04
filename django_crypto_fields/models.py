@@ -1,6 +1,21 @@
 from django.db import models
 from django_audit_fields.models import AuditUuidModelMixin
 
+from .fields import BaseField
+
+
+class CryptoMixin(models.Model):
+    """Model mixin for a user model that need to list it's
+    encrypted fields.
+    """
+
+    @classmethod
+    def encrypted_fields(cls):
+        return [fld.name for fld in cls._meta.fields if isinstance(fld, BaseField)]
+
+    class Meta:
+        abstract = True
+
 
 class CryptModelManager(models.Manager):
     def get_by_natural_key(self, value_as_hash, algorithm, mode):
