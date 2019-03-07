@@ -1,4 +1,4 @@
-django-revision
+django-revision==0.1.18
 edc-base
 edc-constants
 edc-device
