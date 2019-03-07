@@ -2,4 +2,4 @@ django-revision==0.1.18
 edc-base==0.3.8
 edc-constants==0.2.10
 edc-device==0.2.14
-edc-model-fields
+edc-model-fields==0.1.6
