@@ -4,7 +4,7 @@ from edc_model.models import BaseModel
 
 from ..fields import EncryptedTextField
 from ..fields import FirstnameField, LastnameField, IdentityField
-from ..model_mixins import CryptoMixin
+from ..models import CryptoMixin
 
 
 class TestModel(CryptoMixin, BaseModel):
