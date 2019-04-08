@@ -1,4 +1,4 @@
-|pypi| |travis| |coverage| |downloads|
+|pypi| |travis| |codecov| |downloads| |maintainability| |black|
 
 django-crypto-fields
 --------------------
@@ -109,15 +109,23 @@ Contribute
 - Issue Tracker: github.com/erikvw/django-crypto-fields/issues
 - Source Code: github.com/erikvw/django-crypto-fields
 
-
 .. |pypi| image:: https://img.shields.io/pypi/v/django-crypto-fields.svg
     :target: https://pypi.python.org/pypi/django-crypto-fields
     
 .. |travis| image:: https://travis-ci.org/erikvw/django-crypto-fields.svg?branch=develop
     :target: https://travis-ci.org/erikvw/django-crypto-fields
     
-.. |coverage| image:: https://coveralls.io/repos/github/erikvw/django-crypto-fields/badge.svg?branch=develop
-    :target: https://coveralls.io/github/erikvw/django-crypto-fields?branch=develop
+.. |codecov| image:: https://codecov.io/gh/erikvw/django-crypto-fields/branch/develop/graph/badge.svg
+  :target: https://codecov.io/gh/erikvw/django-crypto-fields
 
 .. |downloads| image:: https://pepy.tech/badge/django-crypto-fields
    :target: https://pepy.tech/project/django-crypto-fields
+
+.. |maintainability| image:: https://api.codeclimate.com/v1/badges/e08f2bbee238af7bfdc7/maintainability
+   :target: https://codeclimate.com/github/erikvw/django-crypto-fields/maintainability
+   :alt: Maintainability
+
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/ambv/black
+   :alt: Code Style   
+

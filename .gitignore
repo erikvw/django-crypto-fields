@@ -3,7 +3,6 @@ django_crypto_fields
 .settings
 .project
 .pydevproject
-test-*
 db.sqlite3
 
 
