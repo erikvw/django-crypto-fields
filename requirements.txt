@@ -1,5 +1,0 @@
-django-revision
-edc-base
-edc-constants
-edc-device
-edc-model-fields

@@ -43,11 +43,12 @@ class AppConfig(DjangoAppConfig):
         need to be loaded before models.
         """
         self.temp_path = mkdtemp()
-        self._key_path = KeyPath(
-            path=self.temp_path
-            if "test" in sys.argv and "raven" not in sys.argv
-            else None
-        )
+
+        path = None
+        if "test" in sys.argv and "raven" not in sys.argv:
+            path = self.temp_path
+
+        self._key_path = KeyPath(path=path)
         self.key_files = None
         self.last_key_path = get_last_key_path(self.last_key_path_filename)
 
@@ -66,7 +67,8 @@ class AppConfig(DjangoAppConfig):
                         f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n"
                     )
                 )
-                key_creator = KeyCreator(key_files=self.key_files, verbose_mode=True)
+                key_creator = KeyCreator(
+                    key_files=self.key_files, verbose_mode=True)
                 key_creator.create_keys()
                 self._keys = Keys(key_path=self.key_path)
                 self._keys.load_keys()

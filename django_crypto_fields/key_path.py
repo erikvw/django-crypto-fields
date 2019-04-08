@@ -24,7 +24,7 @@ class KeyPath:
     """A class to set/determine the correct key_path.
 
     if this is called during a test, the value of settings.DEBUG sets
-    the value of settings.KEY_PATH to a tempdir
+    the value of settings.KEY_PATH to a tempdir if not set explicitly.
     """
 
     default_key_prefix = "user"
@@ -51,7 +51,8 @@ class KeyPath:
         if self.path == self.non_production_path:
             self.using_test_keys = True
         if not self.path:
-            raise DjangoCryptoFieldsKeyPathError("Cannot determine the key path.")
+            raise DjangoCryptoFieldsKeyPathError(
+                "Cannot determine the key path.")
 
     def __str__(self):
         return self.path
@@ -60,13 +61,13 @@ class KeyPath:
         """Returns the path or raises.
         """
         path = path or ""
-        if not path or not os.path.exists(path):
-            raise DjangoCryptoFieldsKeyPathDoesNotExist(
-                f"Key path does not exist. Got '{path}'"
-            )
-        elif settings.DEBUG is False and path == self.non_production_path:
+        if settings.DEBUG is False and path == self.non_production_path:
             raise DjangoCryptoFieldsKeyPathError(
                 f"Invalid key path. Key path may not be the default "
                 f"non-production path if DEBUG=False. Got {self.non_production_path}"
+            )
+        elif not path or not os.path.exists(path):
+            raise DjangoCryptoFieldsKeyPathDoesNotExist(
+                f"Key path does not exist. Got '{path}'"
             )
         return path
