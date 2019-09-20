@@ -45,7 +45,9 @@ class AppConfig(DjangoAppConfig):
         self.temp_path = mkdtemp()
 
         path = None
-        if "test" in sys.argv and "raven" not in sys.argv:
+        DJANGO_CRYPTO_FIELDS_TEMP_PATH = getattr(
+            settings, "DJANGO_CRYPTO_FIELDS_TEMP_PATH", "test" in sys.argv)
+        if DJANGO_CRYPTO_FIELDS_TEMP_PATH:
             path = self.temp_path
 
         self._key_path = KeyPath(path=path)
