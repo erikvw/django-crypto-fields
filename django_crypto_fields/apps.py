@@ -46,7 +46,8 @@ class AppConfig(DjangoAppConfig):
 
         path = None
         DJANGO_CRYPTO_FIELDS_TEMP_PATH = getattr(
-            settings, "DJANGO_CRYPTO_FIELDS_TEMP_PATH", "test" in sys.argv)
+            settings, "DJANGO_CRYPTO_FIELDS_TEMP_PATH", "test" in sys.argv
+        )
         if DJANGO_CRYPTO_FIELDS_TEMP_PATH:
             path = self.temp_path
 
@@ -69,8 +70,7 @@ class AppConfig(DjangoAppConfig):
                         f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n"
                     )
                 )
-                key_creator = KeyCreator(
-                    key_files=self.key_files, verbose_mode=True)
+                key_creator = KeyCreator(key_files=self.key_files, verbose_mode=True)
                 key_creator.create_keys()
                 self._keys = Keys(key_path=self.key_path)
                 self._keys.load_keys()
