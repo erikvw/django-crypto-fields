@@ -51,8 +51,7 @@ class KeyPath:
         if self.path == self.non_production_path:
             self.using_test_keys = True
         if not self.path:
-            raise DjangoCryptoFieldsKeyPathError(
-                "Cannot determine the key path.")
+            raise DjangoCryptoFieldsKeyPathError("Cannot determine the key path.")
 
     def __str__(self):
         return self.path

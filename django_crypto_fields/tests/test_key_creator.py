@@ -82,15 +82,13 @@ class TestKeyCreator(TestCase):
     def test_create_keys_does_not_overwrite_production_keys(self):
         app_config = django_apps.get_app_config("django_crypto_fields")
         creator = KeyCreator(key_files=app_config.key_files)
-        self.assertRaises(DjangoCryptoFieldsKeyAlreadyExist,
-                          creator.create_keys)
+        self.assertRaises(DjangoCryptoFieldsKeyAlreadyExist, creator.create_keys)
 
     @override_settings(DEBUG=False, KEY_PATH=production_path_without_keys)
     def test_create_keys_set_to_production_path_and_raises3(self):
         app_config = django_apps.get_app_config("django_crypto_fields")
         # because "test" in sys.argv, this fails
-        self.assertNotEqual(app_config.key_path.path,
-                            production_path_without_keys)
+        self.assertNotEqual(app_config.key_path.path, production_path_without_keys)
         self.assertEqual(settings.KEY_PATH, production_path_without_keys)
         key_path = KeyPath(path=settings.KEY_PATH)
         key_files = KeyFiles(key_path=key_path)
@@ -100,14 +98,14 @@ class TestKeyCreator(TestCase):
         key_files = KeyFiles(key_path=key_path)
         self.assertGreater(len(key_files.files), 0)
 
-#     @override_settings(DEBUG=True, KEY_PATH=None)
-#     def test_default_path_for_debug(self):
-#         """Because this is a test, sets to the tmp path.
-#
-#         Behavior is different for runserver.
-#         """
-#         app_config = django_apps.get_app_config("django_crypto_fields")
-#         self.assertEqual(app_config.key_path.path, app_config.temp_path)
+    #     @override_settings(DEBUG=True, KEY_PATH=None)
+    #     def test_default_path_for_debug(self):
+    #         """Because this is a test, sets to the tmp path.
+    #
+    #         Behavior is different for runserver.
+    #         """
+    #         app_config = django_apps.get_app_config("django_crypto_fields")
+    #         self.assertEqual(app_config.key_path.path, app_config.temp_path)
 
     @override_settings(DEBUG=False)
     def test_default_path_in_production_raises(self):
@@ -124,8 +122,7 @@ class TestKeyCreator(TestCase):
     def test_key_filenames_modes(self):
         key_files = KeyFiles(key_path=self.tmp_key_path)
         self.assertEqual(len(list(key_files.key_filenames.keys())), 3)
-        self.assertEqual(list(key_files.key_filenames.keys()),
-                         ["rsa", "aes", "salt"])
+        self.assertEqual(list(key_files.key_filenames.keys()), ["rsa", "aes", "salt"])
 
     def test_key_filenames_key_types_per_mode(self):
         key_files = KeyFiles(key_path=self.tmp_key_path)
@@ -140,5 +137,4 @@ class TestKeyCreator(TestCase):
 
         for mode in key_files.key_filenames.values():
             for key_type in mode.values():
-                self.assertIn(key_files.key_path.path,
-                              list(key_type.values())[0])
+                self.assertIn(key_files.key_path.path, list(key_type.values())[0])
