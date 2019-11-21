@@ -49,7 +49,8 @@ class Cryptor(object):
         if self.aes_encryption_mode == AES_CIPHER.MODE_CFB:
             padding_length = 0
         else:
-            padding_length = (block_size - len(plaintext) % block_size) % block_size
+            padding_length = (block_size - len(plaintext) %
+                              block_size) % block_size
             padding_length = padding_length or 16
         padded = (
             plaintext
@@ -92,7 +93,7 @@ class Cryptor(object):
         cipher = AES_CIPHER.new(
             getattr(self.keys, aes_key), self.aes_encryption_mode, iv
         )
-        plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size :]
+        plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size:]
         return self.unpadded(plaintext, cipher.block_size).decode()
 
     def rsa_encrypt(self, plaintext, mode):
@@ -104,7 +105,8 @@ class Cryptor(object):
         try:
             ciphertext = getattr(self.keys, rsa_key).encrypt(plaintext)
         except (ValueError, TypeError) as e:
-            raise EncryptionError(f"RSA encryption failed for value. Got '{e}'")
+            raise EncryptionError(
+                f"RSA encryption failed for value. Got '{e}'")
         return ciphertext
 
     def rsa_decrypt(self, ciphertext, mode):

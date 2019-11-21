@@ -2,6 +2,7 @@ import os
 
 from django.conf import settings
 from django.core.management.color import color_style
+import sys
 
 
 class DjangoCryptoFieldsKeyPathError(Exception):
@@ -34,7 +35,7 @@ class KeyPath:
 
     def __init__(self, path=None, key_prefix=None):
         self.key_prefix = key_prefix or self.default_key_prefix
-        if settings.DEBUG:
+        if "test" in sys.argv or "runtest.py" in sys.argv or "tox" in sys.argv:
             path = path or self.non_production_path
         else:
             path = path or settings.KEY_PATH
@@ -51,7 +52,8 @@ class KeyPath:
         if self.path == self.non_production_path:
             self.using_test_keys = True
         if not self.path:
-            raise DjangoCryptoFieldsKeyPathError("Cannot determine the key path.")
+            raise DjangoCryptoFieldsKeyPathError(
+                "Cannot determine the key path.")
 
     def __str__(self):
         return self.path
