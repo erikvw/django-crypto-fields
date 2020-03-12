@@ -30,7 +30,7 @@ setup(
     long_description=README,
     zip_safe=False,
     keywords="django fields encryption security",
-    install_requires=["pycryptodome", "django_audit_fields", "edc-utils",],
+    install_requires=["pycryptodome", "django_audit_fields", "edc-utils"],
     classifiers=[
         "Environment :: Web Environment",
         "Framework :: Django",
