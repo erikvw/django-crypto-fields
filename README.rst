@@ -112,8 +112,8 @@ Contribute
 .. |pypi| image:: https://img.shields.io/pypi/v/django-crypto-fields.svg
     :target: https://pypi.python.org/pypi/django-crypto-fields
     
-.. |travis| image:: https://travis-ci.org/erikvw/django-crypto-fields.svg?branch=develop
-    :target: https://travis-ci.org/erikvw/django-crypto-fields
+.. |travis| image:: https://travis-ci.com/erikvw/django-crypto-fields.svg?branch=develop
+    :target: https://travis-ci.com/erikvw/django-crypto-fields
     
 .. |codecov| image:: https://codecov.io/gh/erikvw/django-crypto-fields/branch/develop/graph/badge.svg
   :target: https://codecov.io/gh/erikvw/django-crypto-fields
