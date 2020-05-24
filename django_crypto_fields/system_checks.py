@@ -1,4 +1,5 @@
 import os
+import sys
 
 from Crypto.Cipher import AES
 from collections import namedtuple
@@ -18,6 +19,14 @@ error_configs = dict(
     encryption_keys_check=err("django_crypto_fields.E001", Error),
     aes_mode_check=err("django_crypto_fields.E002", Error),
 )
+
+
+def testing():
+    if "test" in sys.argv:
+        return True
+    if "runtests" in sys.argv:
+        return True
+    return False
 
 
 def key_path_check(app_configs, **kwargs):
@@ -51,7 +60,7 @@ def encryption_keys_check(app_configs, **kwargs):
         auto_create_keys = settings.AUTO_CREATE_KEYS
     except AttributeError:
         auto_create_keys = None
-    if key_files.key_files_exist and auto_create_keys:
+    if key_files.key_files_exist and auto_create_keys and not testing():
         error = error_configs.get("encryption_keys_check")
         error_msg = (
             "settings.AUTO_CREATE_KEYS may not be 'True' when encryption keys exist."
