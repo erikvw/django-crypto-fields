@@ -1,7 +1,9 @@
+CHANGES
+
+0.1.28
+------
+- improve ability to locate test keys if DEBUG=True
 
 2019-03-03
 ----------
-
 - switch from pycrypto to pycryotpdome
-- import audit fields from django-audit-fields instead of edc-base/edc-model
-- 
