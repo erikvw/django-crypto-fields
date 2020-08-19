@@ -112,5 +112,7 @@ class Cryptor(object):
         try:
             plaintext = getattr(self.keys, rsa_key).decrypt(ciphertext)
         except ValueError as e:
-            raise EncryptionError(f"{e} Got {ciphertext}.")
+            raise EncryptionError(
+                f"{e} Using {rsa_key} from key_path=`{settings.KEY_PATH}`."
+            )
         return plaintext.decode(ENCODING)
