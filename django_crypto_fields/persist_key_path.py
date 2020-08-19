@@ -56,8 +56,8 @@ def persist_key_path(key_path=None, filename=None):
     if last_key_path != key_path.path:
         raise DjangoCryptoFieldsKeyPathChangeError(
             style.ERROR(
-                f"Key path changed since last startup! You must resolve "
-                f"this before using the system. Using the wrong keys will "
-                f"corrupt your data."
+                "Key path changed since last startup! You must resolve "
+                "this before using the system. Using the wrong keys will "
+                "corrupt your data."
             )
         )

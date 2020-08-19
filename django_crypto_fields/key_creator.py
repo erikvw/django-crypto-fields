@@ -43,7 +43,7 @@ class KeyCreator:
         self._create_salt()
         sys.stdout.write("    Done generating new encryption keys.\n")
         sys.stdout.write(f"    Your new encryption keys are in {self.key_path}.\n")
-        sys.stdout.write(style.ERROR(f"    DON'T FORGET TO BACKUP YOUR NEW KEYS!!\n"))
+        sys.stdout.write(style.ERROR("    DON'T FORGET TO BACKUP YOUR NEW KEYS!!\n"))
 
     def _create_rsa(self, mode=None):
         """Creates RSA keys.
