@@ -1,5 +1,10 @@
 CHANGES
 
+0.3.0
+-----
+- add to gh-actions
+- run tests for py 3.7, 3.8,3.9 and django 3.0,3.1
+
 0.1.28
 ------
 - improve ability to locate test keys if DEBUG=True
