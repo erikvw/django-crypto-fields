@@ -1,4 +1,4 @@
-|pypi| |travis| |codecov| |downloads| |maintainability| |black|
+|pypi| |actions| |codecov| |downloads| |maintainability| |black|
 
 django-crypto-fields
 --------------------
@@ -99,7 +99,7 @@ Disadvantages
 =============
 
 - Limited support for lookup types. The "query value" is the hash not the decrypted secret, so Django lookups like ``['startswith', 'istartswith', 'endswith', 'iendswith', 'contains', 'icontains', 'iexact']`` are not supported.
-- Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from ``django-crypto-fields``, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.  
+- Hashing with a secret may be considered less secure than just a "secret". You decide what your requirements are. For systems that collect PII in fields classes from ``django-crypto-fields``, we take all the basic security precautions: OS and application-level password protection, Full-Drive encryption, physical security and so on.
 
 Other encrypted field modules are available if you just want to use encrypted field classes in Django models and do not need unique constraints nor plan to join tables on encrypted fields for analysis.
 
@@ -111,10 +111,10 @@ Contribute
 
 .. |pypi| image:: https://img.shields.io/pypi/v/django-crypto-fields.svg
     :target: https://pypi.python.org/pypi/django-crypto-fields
-    
-.. |travis| image:: https://travis-ci.com/erikvw/django-crypto-fields.svg?branch=develop
-    :target: https://travis-ci.com/erikvw/django-crypto-fields
-    
+
+.. |actions| image:: https://github.com/erikvw/django-crypto-fields/workflows/build/badge.svg?branch=develop
+  :target: https://github.com/erikvw/django-crypto-fields/actions?query=workflow:build
+
 .. |codecov| image:: https://codecov.io/gh/erikvw/django-crypto-fields/branch/develop/graph/badge.svg
   :target: https://codecov.io/gh/erikvw/django-crypto-fields
 
@@ -127,5 +127,5 @@ Contribute
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/ambv/black
-   :alt: Code Style   
+   :alt: Code Style
 
