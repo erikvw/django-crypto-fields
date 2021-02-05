@@ -1,7 +1,0 @@
-django-revision
-edc-constants
-edc-device
-edc-model
-edc-model-fields
-edc-test-utils
-mysqlclient

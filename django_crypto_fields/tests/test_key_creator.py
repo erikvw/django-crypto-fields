@@ -1,15 +1,18 @@
 import os
+from tempfile import mkdtemp
 
 from django.apps import apps as django_apps
 from django.conf import settings
-from django.test.utils import override_settings
 from django.test import TestCase, tag  # noqa
-from tempfile import mkdtemp
+from django.test.utils import override_settings
 
-from ..key_creator import KeyCreator, DjangoCryptoFieldsKeyAlreadyExist
+from ..key_creator import DjangoCryptoFieldsKeyAlreadyExist, KeyCreator
 from ..key_files import KeyFiles
-from ..key_path import DjangoCryptoFieldsKeyPathDoesNotExist
-from ..key_path import KeyPath, DjangoCryptoFieldsKeyPathError
+from ..key_path import (
+    DjangoCryptoFieldsKeyPathDoesNotExist,
+    DjangoCryptoFieldsKeyPathError,
+    KeyPath,
+)
 
 production_path_with_keys = mkdtemp()
 production_path_without_keys = mkdtemp()

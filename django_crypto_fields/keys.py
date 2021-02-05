@@ -7,7 +7,7 @@ from Crypto.Util import number
 from django.apps import apps as django_apps
 from django.core.exceptions import AppRegistryNotReady
 
-from .constants import RSA, AES, SALT, PRIVATE
+from .constants import AES, PRIVATE, RSA, SALT
 from .exceptions import DjangoCryptoFieldsKeysAlreadyLoaded
 from .key_files import KeyFiles
 
