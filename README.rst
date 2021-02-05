@@ -3,7 +3,7 @@
 django-crypto-fields
 --------------------
 
-Python 3.6, 3.7, MySQL, Django 2.0+
+Python 3.7, 3.8, 3.9 MySQL, Django 2.0-3.1
 
 Uses ``pycryptodome``
 
