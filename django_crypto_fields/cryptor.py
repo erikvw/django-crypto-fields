@@ -6,7 +6,7 @@ from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.exceptions import AppRegistryNotReady
 
-from .constants import RSA, AES, PRIVATE, PUBLIC, ENCODING
+from .constants import AES, ENCODING, PRIVATE, PUBLIC, RSA
 from .exceptions import EncryptionError
 
 

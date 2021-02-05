@@ -5,8 +5,7 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA as RSA_PUBLIC_KEY
 from django.core.management.color import color_style
 
-from .constants import RSA, AES, SALT, PRIVATE, PUBLIC, RSA_KEY_SIZE
-
+from .constants import AES, PRIVATE, PUBLIC, RSA, RSA_KEY_SIZE, SALT
 
 style = color_style()
 

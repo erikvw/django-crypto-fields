@@ -1,18 +1,18 @@
 import os
 import sys
+from tempfile import mkdtemp
 
 from django.apps import AppConfig as DjangoAppConfig
 from django.conf import settings
 from django.core.checks import register
 from django.core.management.color import color_style
-from tempfile import mkdtemp
 
 from .key_creator import KeyCreator
 from .key_files import KeyFiles
 from .key_path import KeyPath
 from .keys import Keys
 from .persist_key_path import get_last_key_path
-from .system_checks import key_path_check, aes_mode_check, encryption_keys_check
+from .system_checks import aes_mode_check, encryption_keys_check, key_path_check
 
 
 class DjangoCryptoFieldsError(Exception):

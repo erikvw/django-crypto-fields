@@ -6,9 +6,13 @@ from django.core.management.color import color_style
 from django.db import models
 from django.forms import widgets
 
-from ..constants import HASH_PREFIX, RSA, LOCAL_MODE, ENCODING
-from ..exceptions import CipherError, EncryptionError
-from ..exceptions import MalformedCiphertextError, EncryptionLookupError
+from ..constants import ENCODING, HASH_PREFIX, LOCAL_MODE, RSA
+from ..exceptions import (
+    CipherError,
+    EncryptionError,
+    EncryptionLookupError,
+    MalformedCiphertextError,
+)
 from ..field_cryptor import FieldCryptor
 
 style = color_style()

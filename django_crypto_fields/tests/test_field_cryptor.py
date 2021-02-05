@@ -3,7 +3,7 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag  # noqa
 
-from ..constants import HASH_PREFIX, ENCODING, AES, RSA, LOCAL_MODE
+from ..constants import AES, ENCODING, HASH_PREFIX, LOCAL_MODE, RSA
 from ..cryptor import Cryptor
 from ..exceptions import MalformedCiphertextError
 from ..field_cryptor import FieldCryptor

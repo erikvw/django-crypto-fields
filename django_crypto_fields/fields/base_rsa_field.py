@@ -1,4 +1,4 @@
-from ..constants import RSA, LOCAL_MODE
+from ..constants import LOCAL_MODE, RSA
 from .base_field import BaseField
 
 

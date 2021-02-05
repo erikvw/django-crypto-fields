@@ -1,6 +1,6 @@
 import os
 
-from .constants import RSA, AES, SALT, PRIVATE, PUBLIC, RESTRICTED_MODE, LOCAL_MODE
+from .constants import AES, LOCAL_MODE, PRIVATE, PUBLIC, RESTRICTED_MODE, RSA, SALT
 
 
 class KeyFiles:

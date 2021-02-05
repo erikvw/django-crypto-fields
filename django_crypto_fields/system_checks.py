@@ -1,16 +1,18 @@
 import os
 import sys
+from collections import namedtuple
 
 from Crypto.Cipher import AES
-from collections import namedtuple
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.checks import Critical, Error
 
 from .cryptor import Cryptor
-from .persist_key_path import persist_key_path
-from .persist_key_path import DjangoCryptoFieldsKeyPathChangeError
-from .persist_key_path import DjangoCryptoFieldsKeyPathError
+from .persist_key_path import (
+    DjangoCryptoFieldsKeyPathChangeError,
+    DjangoCryptoFieldsKeyPathError,
+    persist_key_path,
+)
 
 err = namedtuple("Err", "id cls")
 

@@ -2,8 +2,7 @@ from django.db import models
 from django.utils import timezone
 from edc_model.models import BaseModel
 
-from ..fields import EncryptedTextField
-from ..fields import FirstnameField, LastnameField, IdentityField
+from ..fields import EncryptedTextField, FirstnameField, IdentityField, LastnameField
 from ..models import CryptoMixin
 
 

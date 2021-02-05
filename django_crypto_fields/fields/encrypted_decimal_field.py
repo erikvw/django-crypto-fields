@@ -1,6 +1,6 @@
-import six
-
 from decimal import Decimal
+
+import six
 
 from .base_rsa_field import BaseRsaField
 

@@ -5,7 +5,7 @@ from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from ...constants import LOCAL_MODE, AES
+from ...constants import AES, LOCAL_MODE
 from ...cryptor import Cryptor
 
 
