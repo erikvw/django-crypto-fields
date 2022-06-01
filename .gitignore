@@ -1,3 +1,6 @@
+_version.py
+.etc/
+.env/
 django_crypto_fields
 .pypirc
 .settings
