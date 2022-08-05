@@ -32,13 +32,14 @@ omit = ["requirements.txt"]
 legacy_tox_ini = """
 [tox]
 envlist =
-    py{39,310}-dj{32,40,41,dev},
+    py{38,39,310}-dj{32,40,41,dev},
     lint
 
 isolated_build = true
 
 [gh-actions]
 python =
+    3.8: py38
     3.9: py39, lint
     3.10: py310
 

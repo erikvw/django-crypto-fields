@@ -3,11 +3,13 @@
 django-crypto-fields
 --------------------
 
-Python 3.7, 3.8, 3.9 MySQL, Django 2.0-3.1
+Python 3.8, 3.9, 3.10, Django 3.2, 4.0, 4.1 using mysql
 
-Uses ``pycryptodome``
+* Uses ``pycryptodomex``
+* This module has known problems with `postgres`.
 
 Add encrypted field classes to your Django models where ``unique=True`` and ``unique_together`` attributes work as expected.
+
 
 For example:
 
@@ -29,7 +31,6 @@ For example:
 	    comment = EncryptedTextField(
 	        max_length=500)
 
-**Important:** This module has known problems with `postgres`.
 
 Installation
 ============

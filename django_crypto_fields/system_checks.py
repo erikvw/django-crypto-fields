@@ -78,7 +78,7 @@ def encryption_keys_check(app_configs, **kwargs):
 def aes_mode_check(app_configs, **kwargs):
     error = error_configs.get("aes_mode_check")
     errors = []
-    hint = "See django_crypto_fields.cryptor.py and comments " "in pycrypto.blockalgo.py."
+    hint = "See django_crypto_fields.cryptor.py and comments in pycryptodomex.blockalgo.py."
     cryptor = Cryptor()
     if cryptor.aes_encryption_mode == AES.MODE_CFB:
         error_msg = "Encryption mode MODE_CFB should not be used."

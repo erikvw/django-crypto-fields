@@ -50,7 +50,7 @@ class FieldCryptor(object):
         self.cipher_buffer = {self.cipher_buffer_key: {}}
         if not self.aes_encryption_mode:
             try:
-                # do not use MODE_CFB, see comments in pycrypto.blockalgo.py
+                # do not use MODE_CFB, see comments in pycryptodomex.blockalgo.py
                 self.aes_encryption_mode = settings.AES_ENCRYPTION_MODE
             except AttributeError:
                 self.aes_encryption_mode = AES_CIPHER.MODE_CBC
