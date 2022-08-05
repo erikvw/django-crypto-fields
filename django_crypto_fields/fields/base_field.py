@@ -85,9 +85,7 @@ class BaseField(models.Field):
             raise
             # raise ValidationError(e)
         except MalformedCiphertextError as e:
-            sys.stdout.write(
-                style.ERROR("MalformedCiphertextError. Got {}\n".format(str(e)))
-            )
+            sys.stdout.write(style.ERROR("MalformedCiphertextError. Got {}\n".format(str(e))))
             sys.stdout.flush()
             # raise ValidationError(e)
         return decrypted_value
@@ -142,9 +140,7 @@ class BaseField(models.Field):
     def get_in_as_lookup(self, values):
         hashed_values = []
         for value in values:
-            hashed_values.append(
-                HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value)
-            )
+            hashed_values.append(HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value))
         return hashed_values
 
     def get_internal_type(self):

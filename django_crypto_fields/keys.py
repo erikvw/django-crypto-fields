@@ -1,9 +1,9 @@
 import copy
 import sys
 
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.PublicKey import RSA as RSA_PUBLIC_KEY
-from Crypto.Util import number
+from Cryptodome.Cipher import PKCS1_OAEP
+from Cryptodome.PublicKey import RSA as RSA_PUBLIC_KEY
+from Cryptodome.Util import number
 from django.apps import apps as django_apps
 from django.core.exceptions import AppRegistryNotReady
 
@@ -34,8 +34,7 @@ class Keys:
         self.aes_modes_supported = sorted([k for k in self._keys[AES]])
 
     def load_keys(self):
-        """Loads all keys defined in self.key_filenames.
-        """
+        """Loads all keys defined in self.key_filenames."""
         try:
             if django_apps.get_app_config("django_crypto_fields").encryption_keys:
                 raise DjangoCryptoFieldsKeysAlreadyLoaded(
@@ -61,8 +60,7 @@ class Keys:
             self.keys_are_ready = True
 
     def load_rsa_key(self, mode, key):
-        """Loads an RSA key into _keys.
-        """
+        """Loads an RSA key into _keys."""
         key_file = self.key_filenames[RSA][mode][key]
         with open(key_file, "rb") as frsa:
             rsa_key = RSA_PUBLIC_KEY.importKey(frsa.read())
@@ -90,8 +88,7 @@ class Keys:
         return key_file
 
     def load_salt_key(self, mode, key):
-        """Decrypts and loads a salt key into _keys.
-        """
+        """Decrypts and loads a salt key into _keys."""
         attr = SALT + "_" + mode + "_" + PRIVATE
         rsa_key = self._keys[RSA][mode][PRIVATE]
         key_file = self.key_filenames[SALT][mode][PRIVATE]
@@ -101,8 +98,7 @@ class Keys:
         return key_file
 
     def update_rsa_key_info(self, rsa_key, mode):
-        """Stores info about the RSA key.
-        """
+        """Stores info about the RSA key."""
         modBits = number.size(rsa_key._key.n)
         self.rsa_key_info[mode] = {"bits": modBits}
         k = number.ceil_div(modBits, 8)

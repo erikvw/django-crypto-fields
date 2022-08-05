@@ -1,7 +1,7 @@
 import binascii
 import hashlib
 
-from Crypto.Cipher import AES as AES_CIPHER
+from Cryptodome.Cipher import AES as AES_CIPHER
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.exceptions import AppRegistryNotReady, ObjectDoesNotExist
@@ -91,7 +91,7 @@ class FieldCryptor(object):
         return binascii.hexlify(dk)
 
     def encrypt(self, value, update=None):
-        """ Returns ciphertext as byte data using either an
+        """Returns ciphertext as byte data using either an
         RSA or AES cipher.
 
         * 'value' is either plaintext or ciphertext
@@ -184,8 +184,7 @@ class FieldCryptor(object):
         return self._using
 
     def update_crypt(self, ciphertext):
-        """ Updates cipher model (Crypt) and temporary buffer.
-        """
+        """Updates cipher model (Crypt) and temporary buffer."""
         if self.verify_ciphertext(ciphertext):
             hashed_value = self.get_hash(ciphertext)
             secret = self.get_secret(ciphertext)
@@ -214,8 +213,7 @@ class FieldCryptor(object):
             ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
         except IndexError:
             ValueError(
-                f"Malformed ciphertext. Expected prefixes "
-                f"{HASH_PREFIX}, {CIPHER_PREFIX}"
+                f"Malformed ciphertext. Expected prefixes " f"{HASH_PREFIX}, {CIPHER_PREFIX}"
             )
         try:
             if ciphertext[: len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
@@ -238,7 +236,7 @@ class FieldCryptor(object):
         return ciphertext
 
     def get_prep_value(self, value):
-        """ Returns the prefix + hash as stored in the DB table column of
+        """Returns the prefix + hash as stored in the DB table column of
         your model's "encrypted" field.
 
         Used by get_prep_value()"""
@@ -253,8 +251,7 @@ class FieldCryptor(object):
         return value  # returns into CharField
 
     def get_hash(self, ciphertext):
-        """Returns the hashed_value given a ciphertext or None.
-        """
+        """Returns the hashed_value given a ciphertext or None."""
         try:
             ciphertext.encode(ENCODING)
         except AttributeError:
@@ -262,8 +259,7 @@ class FieldCryptor(object):
         return ciphertext[len(HASH_PREFIX) :][: self.hash_size] or None
 
     def get_secret(self, ciphertext):
-        """ Returns the secret given a ciphertext.
-        """
+        """Returns the secret given a ciphertext."""
         if ciphertext is None:
             secret = None
         if self.is_encrypted(ciphertext):
@@ -281,9 +277,7 @@ class FieldCryptor(object):
                     .get(hash=hashed_value, algorithm=self.algorithm, mode=self.mode)
                 )
                 secret = cipher.get("secret")
-                self.cipher_buffer[self.cipher_buffer_key].update(
-                    {hashed_value: secret}
-                )
+                self.cipher_buffer[self.cipher_buffer_key].update({hashed_value: secret})
             except ObjectDoesNotExist:
                 raise EncryptionError(
                     f"Failed to get secret for given {self.algorithm} "
@@ -369,9 +363,7 @@ class FieldCryptor(object):
                 f"Ciphertext must start with {hash_prefix}. "
                 f"Got {ciphertext[:len(hash_prefix)]}"
             )
-        hash_value = ciphertext[len(hash_prefix) :].split(
-            CIPHER_PREFIX.encode(ENCODING)
-        )[0]
+        hash_value = ciphertext[len(hash_prefix) :].split(CIPHER_PREFIX.encode(ENCODING))[0]
         if len(hash_value) != self.hash_size:
             raise MalformedCiphertextError(
                 "Expected hash prefix to be followed by a hash. "
@@ -388,13 +380,11 @@ class FieldCryptor(object):
                 secret = ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
                 if len(secret) == 0:
                     raise MalformedCiphertextError(
-                        "Expected cipher prefix to be followed by a secret. "
-                        "Got nothing (1)"
+                        "Expected cipher prefix to be followed by a secret. " "Got nothing (1)"
                     )
             except IndexError:
                 raise MalformedCiphertextError(
-                    "Expected cipher prefix to be followed by a secret. "
-                    "Got nothing (2)"
+                    "Expected cipher prefix to be followed by a secret. " "Got nothing (2)"
                 )
         if (
             ciphertext[-1 * len(CIPHER_PREFIX) :] == CIPHER_PREFIX.encode(ENCODING)
@@ -406,8 +396,7 @@ class FieldCryptor(object):
         return True
 
     def mask(self, value, mask=None):
-        """ Returns 'mask' if value is encrypted.
-        """
+        """Returns 'mask' if value is encrypted."""
         mask = mask or "<encrypted>"
         if self.is_encrypted(value):
             return mask

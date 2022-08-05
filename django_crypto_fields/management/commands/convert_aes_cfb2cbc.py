@@ -1,6 +1,6 @@
 import sys
 
-from Crypto.Cipher import AES as AES_CIPHER
+from Cryptodome.Cipher import AES as AES_CIPHER
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError

@@ -25,8 +25,7 @@ class TestFieldCryptor(TestCase):
         self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
 
     def test_can_verify_hash_not_raises(self):
-        """Assert does NOT raise on valid hash.
-        """
+        """Assert does NOT raise on valid hash."""
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = HASH_PREFIX.encode(ENCODING) + field_cryptor.hash(
             "Mohammed Ali floats like a butterfly"
@@ -39,8 +38,7 @@ class TestFieldCryptor(TestCase):
             pass
 
     def test_can_verify_hash_raises(self):
-        """Assert does raises on invalid hash.
-        """
+        """Assert does raises on invalid hash."""
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = "erik"  # missing prefix
         self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
@@ -83,8 +81,7 @@ class TestFieldCryptor(TestCase):
         self.assertEqual(value, field_cryptor.verify_value(value))
 
     def test_rsa_field_encryption(self):
-        """Assert successful RSA field roundtrip.
-        """
+        """Assert successful RSA field roundtrip."""
         plaintext = "erik is a pleeb!!"
         for mode in self.keys.key_filenames[RSA]:
             field_cryptor = FieldCryptor(RSA, mode)
@@ -92,8 +89,7 @@ class TestFieldCryptor(TestCase):
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext))
 
     def test_rsa_field_encryption_update_secret(self):
-        """Assert successful AES field roundtrip for same value.
-        """
+        """Assert successful AES field roundtrip for same value."""
         plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         for mode in self.keys.key_filenames[RSA]:
             field_cryptor = FieldCryptor(RSA, mode)
@@ -104,8 +100,7 @@ class TestFieldCryptor(TestCase):
             self.assertFalse(ciphertext1 == ciphertext2)
 
     def test_aes_field_encryption(self):
-        """Assert successful RSA field roundtrip.
-        """
+        """Assert successful RSA field roundtrip."""
         plaintext = "erik is a pleeb!!"
         for mode in self.keys.key_filenames[AES]:
             field_cryptor = FieldCryptor(AES, mode)
@@ -113,8 +108,7 @@ class TestFieldCryptor(TestCase):
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext))
 
     def test_rsa_field_encryption_encoded(self):
-        """Assert successful RSA field roundtrip.
-        """
+        """Assert successful RSA field roundtrip."""
         plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         for mode in self.keys.key_filenames[RSA]:
             field_cryptor = FieldCryptor(RSA, mode)
@@ -122,8 +116,7 @@ class TestFieldCryptor(TestCase):
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext))
 
     def test_aes_field_encryption_encoded(self):
-        """Assert successful AES field roundtrip.
-        """
+        """Assert successful AES field roundtrip."""
         plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         for mode in self.keys.key_filenames[AES]:
             field_cryptor = FieldCryptor(AES, mode)
@@ -131,8 +124,7 @@ class TestFieldCryptor(TestCase):
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext))
 
     def test_aes_field_encryption_update_secret(self):
-        """Assert successful AES field roundtrip for same value.
-        """
+        """Assert successful AES field roundtrip for same value."""
         plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         for mode in self.keys.key_filenames[AES]:
             field_cryptor = FieldCryptor(AES, mode)
@@ -171,8 +163,7 @@ class TestFieldCryptor(TestCase):
         self.assertEqual(plaintext, cryptor.aes_decrypt(secret, LOCAL_MODE))
 
     def test_get_secret(self):
-        """Asserts secret is returned either as None or the secret.
-        """
+        """Asserts secret is returned either as None or the secret."""
         cryptor = Cryptor()
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         plaintext = None
@@ -185,24 +176,21 @@ class TestFieldCryptor(TestCase):
         self.assertEqual(plaintext, cryptor.rsa_decrypt(secret, LOCAL_MODE))
 
     def test_rsa_field_as_none(self):
-        """Asserts RSA roundtrip on None.
-        """
+        """Asserts RSA roundtrip on None."""
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         plaintext = None
         ciphertext = field_cryptor.encrypt(plaintext)
         self.assertIsNone(field_cryptor.decrypt(ciphertext))
 
     def test_aes_field_as_none(self):
-        """Asserts AES roundtrip on None.
-        """
+        """Asserts AES roundtrip on None."""
         field_cryptor = FieldCryptor(AES, LOCAL_MODE)
         plaintext = None
         ciphertext = field_cryptor.encrypt(plaintext)
         self.assertIsNone(field_cryptor.decrypt(ciphertext))
 
     def test_model_with_encrypted_fields(self):
-        """Asserts roundtrip via a model with encrypted fields.
-        """
+        """Asserts roundtrip via a model with encrypted fields."""
         firstname = "erik"
         identity = "123456789"
         comment = "erik is a pleeb!!∂ƒ˜∫˙ç"
@@ -218,8 +206,7 @@ class TestFieldCryptor(TestCase):
         self.assertEqual(test_model.comment, comment)
 
     def test_model_with_encrypted_fields_as_none(self):
-        """Asserts roundtrip via a model with encrypted fields.
-        """
+        """Asserts roundtrip via a model with encrypted fields."""
         firstname = "erik"
         identity = "123456789"
         comment = None
@@ -244,9 +231,7 @@ class TestFieldCryptor(TestCase):
         firstname = "erik"
         identity = "123456789"
         comment = "erik is a pleeb!!∂ƒ˜∫˙ç"
-        TestModel.objects.create(
-            firstname=firstname, identity=identity, comment=comment
-        )
+        TestModel.objects.create(firstname=firstname, identity=identity, comment=comment)
         firstname2 = "erik2"
         comment2 = "erik was a pleeb!!∂ƒ˜∫˙ç"
         with transaction.atomic():

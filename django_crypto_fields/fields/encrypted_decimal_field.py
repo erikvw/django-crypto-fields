@@ -49,7 +49,7 @@ class EncryptedDecimalField(BaseRsaField):
         return str(value)
 
     def to_python(self, value):
-        """ Returns as integer """
+        """Returns as integer"""
         retval = super(EncryptedDecimalField, self).to_python(value)
         if retval:
             if not self.field_cryptor.is_encrypted(retval):

@@ -13,7 +13,7 @@ class CryptModelAdmin(admin.ModelAdmin):
 
     fields = sorted([field.name for field in Crypt._meta.fields])
 
-    readonly_fields = [field.name for field in Crypt._meta.fields]
+    readonly_fields = tuple(field.name for field in Crypt._meta.fields)
 
     list_display = ("algorithm", "hash", "modified", "hostname_modified")
 

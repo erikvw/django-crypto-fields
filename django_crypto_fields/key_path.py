@@ -19,6 +19,18 @@ class DjangoCryptoFieldsKeyPathChangeError(Exception):
 style = color_style()
 
 
+def get_key_path(no_warn=None):
+    key_path = getattr(settings, "KEY_PATH", None)
+    if not key_path and not settings.DEBUG:
+        if not no_warn:
+            raise DjangoCryptoFieldsKeyPathError(
+                "Key path not set for DEBUG=False. See Settings.KEY_PATH."
+            )
+    else:
+        key_path = getattr(settings, "KEY_PATH", f"{os.path.join(settings.BASE_DIR, '.etc')}")
+    return key_path
+
+
 class KeyPath:
     """A class to set/determine the correct key_path.
 
@@ -36,7 +48,7 @@ class KeyPath:
         # if "test" in sys.argv or "tox" in sys.argv:
         #     path = path or self.non_production_path
         # else:
-        path = path or settings.KEY_PATH
+        path = path or get_key_path()
         self.path = self._is_valid(path)
         if not self.path:
             raise DjangoCryptoFieldsKeyPathError(
@@ -44,7 +56,7 @@ class KeyPath:
                 f"set a path other than the default non-production path "
                 f"[DEBUG={settings.DEBUG}, "
                 f"KEY_PATH=='{self.path}', "
-                f"settings.KEY_PATH=='{settings.KEY_PATH}', "
+                f"settings.KEY_PATH=='{get_key_path(no_warn=True)}', "
                 f"non-production path == '{self.non_production_path}']. "
             )
         if self.path == self.non_production_path:
@@ -56,8 +68,7 @@ class KeyPath:
         return self.path
 
     def _is_valid(self, path):
-        """Returns the path or raises.
-        """
+        """Returns the path or raises."""
         path = path or ""
         if settings.DEBUG is False and path == self.non_production_path:
             raise DjangoCryptoFieldsKeyPathError(

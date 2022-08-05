@@ -2,7 +2,7 @@ import os
 import sys
 from collections import namedtuple
 
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.checks import Critical, Error
@@ -64,9 +64,7 @@ def encryption_keys_check(app_configs, **kwargs):
         auto_create_keys = None
     if key_files.key_files_exist and auto_create_keys and not testing():
         error = error_configs.get("encryption_keys_check")
-        error_msg = (
-            "settings.AUTO_CREATE_KEYS may not be 'True' when encryption keys exist."
-        )
+        error_msg = "settings.AUTO_CREATE_KEYS may not be 'True' when encryption keys exist."
         hint = (
             "Did you backup your keys? Perhaps you just created new keys, "
             "to continue, set AUTO_CREATE_KEYS=False and restart."
@@ -80,9 +78,7 @@ def encryption_keys_check(app_configs, **kwargs):
 def aes_mode_check(app_configs, **kwargs):
     error = error_configs.get("aes_mode_check")
     errors = []
-    hint = (
-        "See django_crypto_fields.cryptor.py and comments " "in pycrypto.blockalgo.py."
-    )
+    hint = "See django_crypto_fields.cryptor.py and comments " "in pycrypto.blockalgo.py."
     cryptor = Cryptor()
     if cryptor.aes_encryption_mode == AES.MODE_CFB:
         error_msg = "Encryption mode MODE_CFB should not be used."

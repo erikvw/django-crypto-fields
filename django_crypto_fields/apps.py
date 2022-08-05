@@ -66,9 +66,7 @@ class AppConfig(DjangoAppConfig):
                         f"Got {self.key_path}"
                     )
                 sys.stdout.write(
-                    style.SUCCESS(
-                        f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n"
-                    )
+                    style.SUCCESS(f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n")
                 )
                 key_creator = KeyCreator(key_files=self.key_files, verbose_mode=True)
                 key_creator.create_keys()
@@ -83,9 +81,7 @@ class AppConfig(DjangoAppConfig):
                 )
 
                 sys.stdout.write(
-                    style.WARNING(
-                        f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n"
-                    )
+                    style.WARNING(f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n")
                 )
         else:
             self._keys = Keys(key_path=self.key_path)
