@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.apps import apps as django_apps
-from django.test import TestCase, tag  # noqa
+from django.test import TestCase
 
 from ..constants import AES, LOCAL_MODE, RESTRICTED_MODE, RSA
 from ..cryptor import Cryptor

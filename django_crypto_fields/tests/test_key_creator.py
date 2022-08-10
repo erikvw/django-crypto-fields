@@ -3,7 +3,7 @@ from tempfile import mkdtemp
 
 from django.apps import apps as django_apps
 from django.conf import settings
-from django.test import TestCase, tag  # noqa
+from django.test import TestCase
 from django.test.utils import override_settings
 
 from ..key_creator import DjangoCryptoFieldsKeyAlreadyExist, KeyCreator

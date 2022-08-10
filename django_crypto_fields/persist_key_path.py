@@ -1,11 +1,12 @@
 import csv
 import os
 import sys
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.management.color import color_style
-from edc_utils import get_utcnow
 
 style = color_style()
 
@@ -56,7 +57,9 @@ def persist_key_path(key_path=None, filename=None):
         with open(filename, "w") as f:
             writer = csv.DictWriter(f, fieldnames=["path", "date"])
             writer.writeheader()
-            writer.writerow(dict(path=key_path.path, date=get_utcnow()))
+            writer.writerow(
+                dict(path=key_path.path, date=datetime.now().astimezone(ZoneInfo("UTC")))
+            )
         last_key_path = key_path.path
     else:
         if not os.path.exists(last_key_path):

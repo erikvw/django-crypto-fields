@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from django.conf import settings
 from django.core.management.color import color_style
@@ -19,7 +20,7 @@ class DjangoCryptoFieldsKeyPathChangeError(Exception):
 style = color_style()
 
 
-def get_key_path(no_warn=None):
+def get_key_path(no_warn=None) -> str:
     key_path = getattr(settings, "KEY_PATH", None)
     if not key_path and not settings.DEBUG:
         if not no_warn:
@@ -43,13 +44,10 @@ class KeyPath:
     # path for non-production use with runserver
     non_production_path = os.path.join(settings.BASE_DIR, "crypto_fields")
 
-    def __init__(self, path=None, key_prefix=None):
+    def __init__(self, path: Optional[str] = None, key_prefix: Optional[str] = None):
         self.key_prefix = key_prefix or self.default_key_prefix
-        # if "test" in sys.argv or "tox" in sys.argv:
-        #     path = path or self.non_production_path
-        # else:
         path = path or get_key_path()
-        self.path = self._is_valid(path)
+        self.path: str = self._is_valid(path)
         if not self.path:
             raise DjangoCryptoFieldsKeyPathError(
                 f"Invalid key path. Production systems must explicitly "
@@ -67,7 +65,7 @@ class KeyPath:
     def __str__(self):
         return self.path
 
-    def _is_valid(self, path):
+    def _is_valid(self, path: Optional[str]) -> str:
         """Returns the path or raises."""
         path = path or ""
         if settings.DEBUG is False and path == self.non_production_path:

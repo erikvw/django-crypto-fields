@@ -27,7 +27,7 @@ class Keys:
 
     def __init__(self, **kwargs):
         key_files = self.key_files_cls(**kwargs)
-        self.key_path = key_files.key_path
+        self.key_path: str = key_files.key_path
         self.key_filenames = key_files.key_filenames
         self._keys = copy.deepcopy(key_files.key_filenames)
         self.rsa_modes_supported = sorted([k for k in self._keys[RSA]])

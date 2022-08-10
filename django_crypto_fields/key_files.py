@@ -1,6 +1,8 @@
 import os
+from typing import Dict
 
 from .constants import AES, LOCAL_MODE, PRIVATE, PUBLIC, RESTRICTED_MODE, RSA, SALT
+from .key_path import KeyPath
 
 
 class KeyFiles:
@@ -16,11 +18,11 @@ class KeyFiles:
        - 1 salt restricted (RSA encrypted).
     """
 
-    def __init__(self, key_path=None):
+    def __init__(self, key_path: KeyPath = None):
         self.key_path = key_path
 
     @property
-    def key_filenames(self):
+    def key_filenames(self) -> Dict[str, Dict[str, Dict[str, str]]]:
         return {
             RSA: {
                 RESTRICTED_MODE: {

@@ -1,7 +1,7 @@
 from django.apps import apps as django_apps
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.test import TestCase, tag  # noqa
+from django.test import TestCase
 
 from ..constants import AES, ENCODING, HASH_PREFIX, LOCAL_MODE, RSA
 from ..cryptor import Cryptor
@@ -38,7 +38,7 @@ class TestFieldCryptor(TestCase):
             pass
 
     def test_can_verify_hash_raises(self):
-        """Assert does raises on invalid hash."""
+        """Assert does raise on invalid hash."""
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = "erik"  # missing prefix
         self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
