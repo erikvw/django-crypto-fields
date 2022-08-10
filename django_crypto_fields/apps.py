@@ -27,17 +27,17 @@ style = color_style()
 
 
 class AppConfig(DjangoAppConfig):
-    name = "django_crypto_fields"
-    verbose_name = "Data Encryption"
+    name: str = "django_crypto_fields"
+    verbose_name: str = "Data Encryption"
     _keys = None
     _key_path_validated = None
-    app_label = "django_crypto_fields"
-    last_key_path_filename = "django_crypto_fields"
-    key_reference_model = "django_crypto_fields.keyreference"
+    app_label: str = "django_crypto_fields"
+    last_key_path_filename: str = "django_crypto_fields"
+    key_reference_model: str = "django_crypto_fields.keyreference"
     # change if using more than one database and not 'default'.
-    crypt_model_using = "default"
+    crypt_model_using: str = "default"
 
-    def __init__(self, app_label, model_name):
+    def __init__(self, app_label: str, model_name: str):
         """Placed here instead of `ready()`. For models to
         load correctly that use field classes from this module the keys
         need to be loaded before models.
@@ -45,10 +45,7 @@ class AppConfig(DjangoAppConfig):
         self.temp_path = mkdtemp()
 
         path = None
-        DJANGO_CRYPTO_FIELDS_TEMP_PATH = getattr(
-            settings, "DJANGO_CRYPTO_FIELDS_TEMP_PATH", "test" in sys.argv
-        )
-        if DJANGO_CRYPTO_FIELDS_TEMP_PATH:
+        if getattr(settings, "DJANGO_CRYPTO_FIELDS_TEMP_PATH", "test" in sys.argv):
             path = self.temp_path
 
         self._key_path = KeyPath(path=path)
@@ -66,9 +63,7 @@ class AppConfig(DjangoAppConfig):
                         f"Got {self.key_path}"
                     )
                 sys.stdout.write(
-                    style.SUCCESS(
-                        f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n"
-                    )
+                    style.SUCCESS(f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n")
                 )
                 key_creator = KeyCreator(key_files=self.key_files, verbose_mode=True)
                 key_creator.create_keys()
@@ -83,9 +78,7 @@ class AppConfig(DjangoAppConfig):
                 )
 
                 sys.stdout.write(
-                    style.WARNING(
-                        f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n"
-                    )
+                    style.WARNING(f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n")
                 )
         else:
             self._keys = Keys(key_path=self.key_path)

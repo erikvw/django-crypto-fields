@@ -7,18 +7,14 @@ from .base_rsa_field import BaseRsaField
 
 class FirstnameField(BaseRsaField):
 
-    """ Restricted-rsa encrypted field for a model's Firstname
+    """Restricted-rsa encrypted field for a model's Firstname
     attribute.
     """
 
     def validate_with_cleaned_data(self, attname, cleaned_data):
         if attname in cleaned_data:
             first_name = cleaned_data.get(attname, None)
-            if (
-                first_name
-                and "last_name" in cleaned_data
-                and "initials" in cleaned_data
-            ):
+            if first_name and "last_name" in cleaned_data and "initials" in cleaned_data:
                 # check if value is encrypted, if so we need to decrypt it to
                 # run the tests
                 if self.is_encrypted(first_name):

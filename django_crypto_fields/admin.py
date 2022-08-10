@@ -11,9 +11,9 @@ class CryptModelAdmin(admin.ModelAdmin):
 
     date_hierarchy = "modified"
 
-    fields = sorted([field.name for field in Crypt._meta.fields])
+    fields = sorted(tuple(field.name for field in Crypt._meta.fields))
 
-    readonly_fields = [field.name for field in Crypt._meta.fields]
+    readonly_fields = tuple(field.name for field in Crypt._meta.fields)
 
     list_display = ("algorithm", "hash", "modified", "hostname_modified")
 

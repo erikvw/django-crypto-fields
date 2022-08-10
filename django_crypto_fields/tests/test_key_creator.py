@@ -3,7 +3,7 @@ from tempfile import mkdtemp
 
 from django.apps import apps as django_apps
 from django.conf import settings
-from django.test import TestCase, tag  # noqa
+from django.test import TestCase
 from django.test.utils import override_settings
 
 from ..key_creator import DjangoCryptoFieldsKeyAlreadyExist, KeyCreator
@@ -59,9 +59,7 @@ class TestKeyCreator(TestCase):
     def test_create_keys_defaults_to_non_production_path_and_raises(self):
         self.assertRaises(DjangoCryptoFieldsKeyPathError, KeyPath)
 
-    @override_settings(
-        DEBUG=False, KEY_PATH=os.path.join(settings.BASE_DIR, "crypto_fields")
-    )
+    @override_settings(DEBUG=False, KEY_PATH=os.path.join(settings.BASE_DIR, "crypto_fields"))
     def test_create_keys_set_to_non_production_path_and_raises(self):
         self.assertRaises(DjangoCryptoFieldsKeyPathError, KeyPath)
 

@@ -1,5 +1,12 @@
 CHANGES
 
+0.3.4
+-----
+- remove `pycryptodome` and require `pycryptodomex`. Update import references.
+- drop support for py < 3.8, DJ<3.2
+- run tests for py 3.8, 3.9, 3.10 and django 3,2, 4.0, 4.1
+- add precommit to config
+
 0.3.0
 -----
 - add to gh-actions

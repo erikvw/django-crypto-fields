@@ -1,5 +1,5 @@
 from django.db.utils import IntegrityError
-from django.test import TestCase, tag  # noqa
+from django.test import TestCase
 
 from ..fields.base_field import BaseField
 from .models import TestModel
@@ -7,8 +7,7 @@ from .models import TestModel
 
 class TestModels(TestCase):
     def test_encrypt_rsa(self):
-        """Assert deconstruct.
-        """
+        """Assert deconstruct."""
         test_model = TestModel()
         for fld in test_model._meta.fields:
             if isinstance(fld, BaseField):
@@ -50,29 +49,15 @@ class TestModels(TestCase):
         self.assertEqual(1, TestModel.objects.filter(firstname__exact="Erik1").count())
 
     def test_in(self):
-        TestModel.objects.create(
-            firstname="Erik1", identity="11111111", comment="no comment"
-        )
-        TestModel.objects.create(
-            firstname="Erik2", identity="11111112", comment="no comment"
-        )
-        TestModel.objects.create(
-            firstname="Erik3", identity="11111113", comment="no comment"
-        )
-        TestModel.objects.create(
-            firstname="Erik4", identity="11111114", comment="no comment"
-        )
-        self.assertEqual(
-            2, TestModel.objects.filter(firstname__in=["Erik1", "Erik2"]).count()
-        )
+        TestModel.objects.create(firstname="Erik1", identity="11111111", comment="no comment")
+        TestModel.objects.create(firstname="Erik2", identity="11111112", comment="no comment")
+        TestModel.objects.create(firstname="Erik3", identity="11111113", comment="no comment")
+        TestModel.objects.create(firstname="Erik4", identity="11111114", comment="no comment")
+        self.assertEqual(2, TestModel.objects.filter(firstname__in=["Erik1", "Erik2"]).count())
 
     def test_unique(self):
-        TestModel.objects.create(
-            firstname="Erik1", identity="11111111", comment="no comment"
-        )
-        TestModel.objects.create(
-            firstname="Erik2", identity="11111112", comment="no comment"
-        )
+        TestModel.objects.create(firstname="Erik1", identity="11111111", comment="no comment")
+        TestModel.objects.create(firstname="Erik2", identity="11111112", comment="no comment")
         self.assertRaises(
             IntegrityError,
             TestModel.objects.create,

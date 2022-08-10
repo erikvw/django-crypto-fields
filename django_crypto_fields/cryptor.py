@@ -1,7 +1,7 @@
 import binascii
 
-from Crypto import Random
-from Crypto.Cipher import AES as AES_CIPHER
+from Cryptodome import Random
+from Cryptodome.Cipher import AES as AES_CIPHER
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.exceptions import AppRegistryNotReady
@@ -22,25 +22,23 @@ class Cryptor(object):
         self.aes_encryption_mode = aes_encryption_mode
         if not self.aes_encryption_mode:
             try:
-                # do not use MODE_CFB, see comments in pycrypto.blockalgo.py
+                # do not use MODE_CFB, see comments in pycryptodomex.blockalgo.py
                 self.aes_encryption_mode = settings.AES_ENCRYPTION_MODE
             except AttributeError:
                 self.aes_encryption_mode = AES_CIPHER.MODE_CBC
         try:
             # ignore "keys" parameter if Django is loaded
-            self.keys = django_apps.get_app_config(
-                "django_crypto_fields"
-            ).encryption_keys
+            self.keys = django_apps.get_app_config("django_crypto_fields").encryption_keys
         except AppRegistryNotReady:
             self.keys = keys
 
     def padded(self, plaintext, block_size):
         """Return string padded so length is a multiple of the block size.
-            * store length of padding the last hex value.
-            * if padding is 0, pad as if padding is 16.
-            * AES_CIPHER.MODE_CFB should not be used, but was used
-              without padding in the past. Continue to skip padding
-              for this mode.
+        * store length of padding the last hex value.
+        * if padding is 0, pad as if padding is 16.
+        * AES_CIPHER.MODE_CFB should not be used, but was used
+          without padding in the past. Continue to skip padding
+          for this mode.
         """
         try:
             plaintext = plaintext.encode(ENCODING)
@@ -80,18 +78,14 @@ class Cryptor(object):
     def aes_encrypt(self, plaintext, mode):
         aes_key = "_".join([AES, mode, PRIVATE, "key"])
         iv = Random.new().read(AES_CIPHER.block_size)
-        cipher = AES_CIPHER.new(
-            getattr(self.keys, aes_key), self.aes_encryption_mode, iv
-        )
+        cipher = AES_CIPHER.new(getattr(self.keys, aes_key), self.aes_encryption_mode, iv)
         padded_plaintext = self.padded(plaintext, cipher.block_size)
         return iv + cipher.encrypt(padded_plaintext)
 
     def aes_decrypt(self, ciphertext, mode):
         aes_key = "_".join([AES, mode, PRIVATE, "key"])
         iv = ciphertext[: AES_CIPHER.block_size]
-        cipher = AES_CIPHER.new(
-            getattr(self.keys, aes_key), self.aes_encryption_mode, iv
-        )
+        cipher = AES_CIPHER.new(getattr(self.keys, aes_key), self.aes_encryption_mode, iv)
         plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size :]
         return self.unpadded(plaintext, cipher.block_size).decode()
 
@@ -112,7 +106,5 @@ class Cryptor(object):
         try:
             plaintext = getattr(self.keys, rsa_key).decrypt(ciphertext)
         except ValueError as e:
-            raise EncryptionError(
-                f"{e} Using {rsa_key} from key_path=`{settings.KEY_PATH}`."
-            )
+            raise EncryptionError(f"{e} Using {rsa_key} from key_path=`{settings.KEY_PATH}`.")
         return plaintext.decode(ENCODING)
