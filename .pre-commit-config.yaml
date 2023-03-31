@@ -1,6 +1,5 @@
 ---
 exclude: tests/etc/user-*
-
 repos:
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.4
@@ -10,25 +9,25 @@ repos:
           - "-x *test*.py"
 
   - repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 23.1.0
     hooks:
       - id: black
-        language_version: python3.8
+        language_version: python3.9
 
   - repo: https://github.com/pycqa/flake8
-    rev: 4.0.1
+    rev: 6.0.0
     hooks:
       - id: flake8
         args:
           - "--config=setup.cfg"
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
       - id: isort
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+    rev: v4.4.0
     hooks:
       - id: requirements-txt-fixer
         files: requirements/.*\.txt$
@@ -42,7 +41,7 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.26.3
+    rev: v1.29.0
     hooks:
       - id: yamllint
         args:
