@@ -27,12 +27,16 @@ source = ["django_crypto_fields"]
 show_missing = true
 skip_covered = true
 omit = ["requirements.txt"]
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+]
 
 [tool.tox]
 legacy_tox_ini = """
 [tox]
 envlist =
-    py{310,311}-dj{40,41,dev},
+    py{310,311}-dj{41,dev},
     lint
 
 isolated_build = true
@@ -40,12 +44,11 @@ isolated_build = true
 [gh-actions]
 python =
     3.10: py310
-    3.11: py311
+    3.11: py311, lint
 
 [gh-actions:env]
 DJANGO =
-    4.0: dj40 lint
-    4.1: dj41
+    4.1: dj41, lint
     dev: djdev
 
 [testenv]
@@ -54,12 +57,11 @@ deps =
     -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/test_utils.txt
     -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/edc.txt
     -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/third_party_dev.txt
-    dj40: Django>=4.0,<4.1
     dj41: Django>=4.1,<4.2
     djdev: https://github.com/django/django/tarball/main
 
 commands =
-    pip install -U pip
+    pip install -U pip coverage[toml]
     pip --version
     pip freeze
     coverage run -a runtests.py
