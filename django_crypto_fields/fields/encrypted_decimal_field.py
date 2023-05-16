@@ -4,11 +4,9 @@ from .base_rsa_field import BaseRsaField
 
 
 class EncryptedDecimalField(BaseRsaField):
-
     description = "local-rsa encrypted field for 'IntegerField'"
 
     def __init__(self, *args, **kwargs):
-
         if "max_digits" not in kwargs:
             raise AttributeError(
                 "EncryptedDecimalField requires attribute 'max_digits. " "Got none"

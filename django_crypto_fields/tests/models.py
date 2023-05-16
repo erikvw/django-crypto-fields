@@ -7,7 +7,6 @@ from ..models import CryptoMixin
 
 
 class TestModel(CryptoMixin, BaseModel):
-
     firstname = FirstnameField(verbose_name="First Name", null=True)
 
     lastname = LastnameField(verbose_name="Last Name", null=True)

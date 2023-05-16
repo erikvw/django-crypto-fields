@@ -8,7 +8,6 @@ Crypt = get_crypt_model()
 
 @admin.register(Crypt, site=encryption_admin)
 class CryptModelAdmin(admin.ModelAdmin):
-
     date_hierarchy = "modified"
 
     fields = sorted(tuple(field.name for field in Crypt._meta.fields))

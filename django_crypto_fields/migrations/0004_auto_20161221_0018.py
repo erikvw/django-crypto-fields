@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("django_crypto_fields", "0003_auto_20161124_1835")]
 
     operations = [

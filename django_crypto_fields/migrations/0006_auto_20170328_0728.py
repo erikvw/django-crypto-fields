@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("django_crypto_fields", "0005_auto_20170106_1849")]
 
     operations = [

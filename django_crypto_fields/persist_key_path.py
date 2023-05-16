@@ -32,7 +32,6 @@ def get_etc_dir(no_warn=None):
 
 
 def get_last_key_path(filename=None):
-
     last_key_path = None
     if "test" not in sys.argv:
         if not filename:
@@ -50,7 +49,6 @@ def get_last_key_path(filename=None):
 
 
 def persist_key_path(key_path=None, filename=None):
-
     last_key_path = get_last_key_path(filename)
 
     if not last_key_path:
