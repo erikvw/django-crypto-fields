@@ -1,5 +1,17 @@
 CHANGES
 
+0.3.7
+-----
+- minor: util to get list of encrypted field classes from a model or instance
+
+0.3.6
+-----
+- minor: setup
+
+0.3.5
+-----
+- minor: util to detect encrypted fields in a model
+
 0.3.4
 -----
 - remove `pycryptodome` and require `pycryptodomex`. Update import references.
