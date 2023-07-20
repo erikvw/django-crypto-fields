@@ -9,7 +9,6 @@ from edc_utils import get_utcnow
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("django_crypto_fields", "0004_auto_20161221_0018")]
 
     operations = [

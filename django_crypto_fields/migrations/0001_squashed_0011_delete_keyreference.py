@@ -12,7 +12,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("django_crypto_fields", "0001_initial"),
         ("django_crypto_fields", "0002_crypt_cipher_mode"),

@@ -7,7 +7,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("django_crypto_fields", "0002_crypt_cipher_mode")]
 
     operations = [

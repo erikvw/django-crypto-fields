@@ -19,7 +19,6 @@ style = color_style()
 
 
 class BaseField(models.Field):
-
     description = "Field class that stores values as encrypted"
 
     def __init__(self, algorithm, mode, *args, **kwargs):
