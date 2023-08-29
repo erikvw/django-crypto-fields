@@ -76,10 +76,6 @@ class AppConfig(DjangoAppConfig):
                     "the project, set settings.AUTO_CREATE_KEYS=True and restart. "
                     "Make sure the folder is writeable."
                 )
-
-                sys.stdout.write(
-                    style.WARNING(f" * settings.AUTO_CREATE_KEYS={self.auto_create_keys}.\n")
-                )
         else:
             self._keys = Keys(key_path=self.key_path)
             self._keys.load_keys()
