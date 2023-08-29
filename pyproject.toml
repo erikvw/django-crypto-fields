@@ -36,7 +36,6 @@ exclude_lines = [
 legacy_tox_ini = """
 [tox]
 envlist =
-    py{310}-dj{41,42},
     py{311}-dj{41,42,dev},
     lint
 
@@ -44,12 +43,10 @@ isolated_build = true
 
 [gh-actions]
 python =
-    3.10: py310
     3.11: py311, lint
 
 [gh-actions:env]
 DJANGO =
-    4.1: dj41
     4.2: dj42, lint
     dev: djdev
 
@@ -59,7 +56,6 @@ deps =
     -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/test_utils.txt
     -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/edc.txt
     -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/third_party_dev.txt
-    dj41: Django>=4.1,<4.2
     dj42: Django>=4.2,<5.0
     djdev: https://github.com/django/django/tarball/main
 
