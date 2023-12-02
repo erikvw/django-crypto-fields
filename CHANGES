@@ -1,5 +1,14 @@
 CHANGES
 
+0.3.9
+-----
+- add minor migration to add locale fields thru django-audit-fields
+
+0.3.8
+-----
+- drop support for python < 3.11
+- add minor migration triggered by django-audit-fields
+
 0.3.7
 -----
 - minor: util to get list of encrypted field classes from a model or instance
