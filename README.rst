@@ -113,8 +113,8 @@ Contribute
 .. |pypi| image:: https://img.shields.io/pypi/v/django-crypto-fields.svg
     :target: https://pypi.python.org/pypi/django-crypto-fields
 
-.. |actions| image:: https://github.com/erikvw/django-crypto-fields/workflows/build/badge.svg?branch=develop
-  :target: https://github.com/erikvw/django-crypto-fields/actions?query=workflow:build
+.. |actions| image:: https://github.com/erikvw/django-crypto-fields/actions/workflows/build.yml/badge.svg
+  :target: https://github.com/erikvw/django-crypto-fields/actions/workflows/build.yml
 
 .. |codecov| image:: https://codecov.io/gh/erikvw/django-crypto-fields/branch/develop/graph/badge.svg
   :target: https://codecov.io/gh/erikvw/django-crypto-fields
