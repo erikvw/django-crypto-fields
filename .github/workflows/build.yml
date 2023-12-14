@@ -11,9 +11,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.11']
-        django-version: ['4.2', 'dev']
+        python-version: ['3.11', '3.12']
+        django-version: ['4.2', '5.0', 'dev']
 
+        exclude:
+          - python-version: '3.12'
+            django-version: '4.2'
+          - python-version: '3.11'
+            django-version: 'dev'
     services:
       mysql:
         image: mysql:latest
@@ -31,20 +36,19 @@ jobs:
           sudo apt-get -y update
           sudo apt-get install libcups2-dev wamerican
 
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Get pip cache dir
         id: pip-cache
         run: |
-          echo "::set-output name=dir::$(pip cache dir)"
+          echo "dir=$(pip cache dir)" >>$GITHUB_OUTPUT
 
       - name: Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.pip-cache.outputs.dir }}
           key:
@@ -64,7 +68,7 @@ jobs:
         env:
           DJANGO: ${{ matrix.django-version }}
 
-      - name: Upload coverage
-        uses: codecov/codecov-action@v1
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
         with:
           name: Python ${{ matrix.python-version }}

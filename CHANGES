@@ -1,5 +1,9 @@
 CHANGES
 
+0.3.10
+------
+- update testing matrix to include DJ50. Drop DJ41.
+
 0.3.9
 -----
 - add minor migration to add locale fields thru django-audit-fields
