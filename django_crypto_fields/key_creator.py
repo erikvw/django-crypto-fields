@@ -19,7 +19,6 @@ class DjangoCryptoFieldsKeyAlreadyExist(Exception):
 
 
 class KeyCreator:
-
     """Creates new keys if key do not yet exist."""
 
     def __init__(self, key_files=None, verbose_mode=None):

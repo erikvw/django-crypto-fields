@@ -13,7 +13,6 @@ from .key_files import KeyFiles
 
 
 class Keys:
-
     """
     Class to prepare RSA, AES keys for use by field classes.
 
