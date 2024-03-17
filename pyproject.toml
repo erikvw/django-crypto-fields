@@ -56,7 +56,7 @@ DJANGO =
 deps =
     pre-commit
     git+https://github.com/clinicedc/edc-test-utils@develop
-    git+https://github.com/clinicedc/edc-test-settingss@develop
+    git+https://github.com/clinicedc/edc-test-settings@develop
     coverage[toml]==6.4.3
     tox>=3.25
     tox-gh-actions>=2.4.0
