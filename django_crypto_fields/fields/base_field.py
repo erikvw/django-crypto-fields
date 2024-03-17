@@ -26,7 +26,7 @@ class BaseField(models.Field):
         self.keys = encryption_keys
         if not encryption_keys.loaded:
             raise DjangoCryptoFieldsKeysNotLoaded(
-                "Encryption keys not loaded. You need to run initialize().x"
+                "Encryption keys not loaded. You need to run initialize()"
             )
         self.algorithm = algorithm or RSA
         self.mode = mode or LOCAL_MODE

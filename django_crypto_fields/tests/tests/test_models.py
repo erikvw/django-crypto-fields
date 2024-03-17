@@ -2,13 +2,18 @@ from django.db.utils import IntegrityError
 from django.test import TestCase
 
 from django_crypto_fields.fields.base_field import BaseField
+from django_crypto_fields.keys import encryption_keys
 
-from ...keys import encryption_keys
 from ..models import TestModel
 
 
 class TestModels(TestCase):
+
     def setUp(self):
+        try:
+            encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
+        except FileNotFoundError:
+            pass
         encryption_keys.verbose = False
         encryption_keys.initialize()
 

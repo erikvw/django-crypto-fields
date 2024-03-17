@@ -1,8 +1,13 @@
 from django.db import models
 from django.utils import timezone
 
-from ..fields import EncryptedTextField, FirstnameField, IdentityField, LastnameField
-from ..models import CryptoMixin
+from django_crypto_fields.fields import (
+    EncryptedTextField,
+    FirstnameField,
+    IdentityField,
+    LastnameField,
+)
+from django_crypto_fields.models import CryptoMixin
 
 
 class TestModel(CryptoMixin, models.Model):

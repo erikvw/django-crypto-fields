@@ -4,7 +4,7 @@ from tempfile import mkdtemp
 
 from django.conf import settings
 from django.test import TestCase
-from django.test.utils import override_settings, tag
+from django.test.utils import override_settings
 
 from django_crypto_fields.exceptions import (
     DjangoCryptoFieldsKeyAlreadyExist,
@@ -21,11 +21,12 @@ production_path_without_keys = mkdtemp()
 
 class TestKeyCreator(TestCase):
     def setUp(self):
-        encryption_keys.verbose = False
         try:
             encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
         except FileNotFoundError:
             pass
+        encryption_keys.verbose = False
+        encryption_keys.initialize()
 
     def tearDown(self):
         try:
@@ -33,20 +34,16 @@ class TestKeyCreator(TestCase):
         except FileNotFoundError:
             pass
 
-    @tag("1")
-    @override_settings(
-        DJANGO_CRYPTO_FIELDS_KEY_PATH=mkdtemp(), DJANGO_CRYPTO_FIELDS_INITIALIZE=False
-    )
+    @override_settings(DJANGO_CRYPTO_FIELDS_KEY_PATH=mkdtemp())
     def test_keys_do_not_exist(self):
         encryption_keys.verbose = False
-        encryption_keys.initialize()
         encryption_keys.reset(delete_all_keys="delete_all_keys")
         for file in encryption_keys.files:
             self.assertFalse(Path(file).exists())
 
-    @tag("1")
     @override_settings(DJANGO_CRYPTO_FIELDS_KEY_PATH=mkdtemp())
     def test_keys_exist(self):
+        encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
         encryption_keys.verbose = False
         encryption_keys.initialize()
         for file in encryption_keys.files:
@@ -82,10 +79,9 @@ class TestKeyCreator(TestCase):
     )
     def test_create_keys_does_not_overwrite_production_keys(self):
         keys = Keys(verbose=False)
-        keys.reset()
+        keys.reset(verbose=False)
         self.assertRaises(DjangoCryptoFieldsKeyAlreadyExist, keys.create)
 
-    @tag("2")
     @override_settings(
         DEBUG=False,
         DJANGO_CRYPTO_FIELDS_KEY_PATH=None,
@@ -95,19 +91,16 @@ class TestKeyCreator(TestCase):
         self.assertFalse(settings.DEBUG)
         self.assertRaises(DjangoCryptoFieldsKeyPathError, KeyPath)
 
-    @tag("1")
     @override_settings(DJANGO_CRYPTO_FIELDS_KEY_PATH=mkdtemp())
     def test_path(self):
         path = get_keypath_from_settings()
         key_path = KeyPath()
         self.assertEqual(str(key_path.path), path)
 
-    @tag("1")
     def test_key_filenames_modes(self):
         self.assertEqual(len(list(encryption_keys.template.keys())), 3)
         self.assertEqual(list(encryption_keys.template.keys()), ["rsa", "aes", "salt"])
 
-    @tag("1")
     @override_settings(DJANGO_CRYPTO_FIELDS_KEY_PATH=None)
     def test_key_filenames_key_types_per_mode(self):
         self.assertEqual(len(list(encryption_keys.template.keys())), 3)
@@ -116,7 +109,6 @@ class TestKeyCreator(TestCase):
             key_types.sort()
             self.assertEqual(key_types, ["local", "restricted"])
 
-    @tag("1")
     @override_settings(DJANGO_CRYPTO_FIELDS_KEY_PATH=None)
     def test_key_filenames_path_per_key_type(self):
         for mode in encryption_keys.template.values():

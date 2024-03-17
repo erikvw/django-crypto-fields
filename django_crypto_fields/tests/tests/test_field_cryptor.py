@@ -6,12 +6,25 @@ from django_crypto_fields.constants import AES, ENCODING, HASH_PREFIX, LOCAL_MOD
 from django_crypto_fields.cryptor import Cryptor
 from django_crypto_fields.exceptions import MalformedCiphertextError
 from django_crypto_fields.field_cryptor import FieldCryptor
+from django_crypto_fields.keys import encryption_keys
 
-from ...keys import encryption_keys
 from ..models import TestModel
 
 
 class TestFieldCryptor(TestCase):
+    def setUp(self):
+        try:
+            encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
+        except FileNotFoundError:
+            pass
+        encryption_keys.verbose = False
+        encryption_keys.initialize()
+
+    def tearDown(self):
+        try:
+            encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
+        except FileNotFoundError:
+            pass
 
     def test_can_verify_hash_as_none(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)

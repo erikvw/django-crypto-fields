@@ -54,16 +54,18 @@ DJANGO =
 
 [testenv]
 deps =
-    -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/tox.txt
-    -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/test_utils.txt
-    -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/edc.txt
-    -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/third_party_dev.txt
+    pre-commit
+    git+https://github.com/clinicedc/edc-test-utils@develop
+    git+https://github.com/clinicedc/edc-test-settingss@develop
+    coverage[toml]==6.4.3
+    tox>=3.25
+    tox-gh-actions>=2.4.0
     dj42: Django>=4.2,<5.0
     dj50: Django>=5.0
     djdev: https://github.com/django/django/tarball/main
 
 commands =
-    pip install -U pip coverage[toml]
+    pip install -U pip
     pip --version
     pip freeze
     coverage run -a runtests.py

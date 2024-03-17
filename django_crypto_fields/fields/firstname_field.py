@@ -26,20 +26,22 @@ class FirstnameField(BaseRsaField):
                             "Ensure initials are letters (A-Z) in upper case, "
                             "no spaces or numbers."
                         )
-                    # check first and last initial matches first and last name
-                    if initials and first_name:
-                        if first_name[:1].upper() != initials[:1].upper():
-                            raise ValidationError(
-                                "First initial does not match first name, "
-                                "expected '{}' but you wrote '{}'.".format(
-                                    first_name[:1], initials[:1]
-                                )
-                            )
-                    if initials and last_name:
-                        if last_name[:1].upper() != initials[-1:].upper():
-                            raise ValidationError(
-                                "Last initial does not match last name, "
-                                "expected '{}' but you wrote '{}'.".format(
-                                    last_name[:1], initials[-1:]
-                                )
-                            )
+                    self.check_initials_and_firstname(initials, first_name)
+                    self.check_initials_and_lastname(initials, last_name)
+
+    @staticmethod
+    def check_initials_and_firstname(initials, first_name) -> None:
+        """Check first and last initial matches first and last name"""
+        if initials and first_name and first_name[:1].upper() != initials[:1].upper():
+            raise ValidationError(
+                "First initial does not match first name, "
+                "expected '{}' but you wrote '{}'.".format(first_name[:1], initials[:1])
+            )
+
+    @staticmethod
+    def check_initials_and_lastname(initials, last_name) -> None:
+        if initials and last_name and last_name[:1].upper() != initials[-1:].upper():
+            raise ValidationError(
+                "Last initial does not match last name, "
+                "expected '{}' but you wrote '{}'.".format(last_name[:1], initials[-1:])
+            )
