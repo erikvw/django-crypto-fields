@@ -6,4 +6,4 @@ class BaseAesField(BaseField):
     def __init__(self, *args, **kwargs):
         algorithm = AES
         mode = LOCAL_MODE
-        super(BaseAesField, self).__init__(algorithm, mode, *args, **kwargs)
+        super().__init__(algorithm, mode, *args, **kwargs)

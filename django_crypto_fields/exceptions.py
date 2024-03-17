@@ -1,8 +1,40 @@
-class DjangoCryptoFieldsLoadingError(Exception):
+class DjangoCryptoFieldsKeyError(Exception):
+    pass
+
+
+class DjangoCryptoFieldsKeyAlreadyExist(Exception):
     pass
 
 
 class DjangoCryptoFieldsKeysAlreadyLoaded(Exception):
+    pass
+
+
+class DjangoCryptoFieldsKeysNotLoaded(Exception):
+    pass
+
+
+class DjangoCryptoFieldsError(Exception):
+    pass
+
+
+class DjangoCryptoFieldsKeysDoNotExist(Exception):
+    pass
+
+
+class DjangoCryptoFieldsLoadingError(Exception):
+    pass
+
+
+class DjangoCryptoFieldsKeyPathError(Exception):
+    pass
+
+
+class DjangoCryptoFieldsKeyPathChangeError(Exception):
+    pass
+
+
+class DjangoCryptoFieldsKeyPathDoesNotExist(Exception):
     pass
 
 

@@ -1,11 +1,23 @@
 from django.db.utils import IntegrityError
 from django.test import TestCase
 
-from ..fields.base_field import BaseField
-from .models import TestModel
+from django_crypto_fields.fields.base_field import BaseField
+
+from ...keys import encryption_keys
+from ..models import TestModel
 
 
 class TestModels(TestCase):
+    def setUp(self):
+        encryption_keys.verbose = False
+        encryption_keys.initialize()
+
+    def tearDown(self):
+        try:
+            encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
+        except FileNotFoundError:
+            pass
+
     def test_encrypt_rsa(self):
         """Assert deconstruct."""
         test_model = TestModel()

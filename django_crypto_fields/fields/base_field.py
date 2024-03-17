@@ -1,6 +1,5 @@
 import sys
 
-from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.management.color import color_style
 from django.db import models
@@ -9,11 +8,13 @@ from django.forms import widgets
 from ..constants import ENCODING, HASH_PREFIX, LOCAL_MODE, RSA
 from ..exceptions import (
     CipherError,
+    DjangoCryptoFieldsKeysNotLoaded,
     EncryptionError,
     EncryptionLookupError,
     MalformedCiphertextError,
 )
 from ..field_cryptor import FieldCryptor
+from ..keys import encryption_keys
 
 style = color_style()
 
@@ -22,7 +23,11 @@ class BaseField(models.Field):
     description = "Field class that stores values as encrypted"
 
     def __init__(self, algorithm, mode, *args, **kwargs):
-        self.keys = django_apps.get_app_config("django_crypto_fields").encryption_keys
+        self.keys = encryption_keys
+        if not encryption_keys.loaded:
+            raise DjangoCryptoFieldsKeysNotLoaded(
+                "Encryption keys not loaded. You need to run initialize().x"
+            )
         self.algorithm = algorithm or RSA
         self.mode = mode or LOCAL_MODE
         self.help_text = kwargs.get("help_text", "")
@@ -46,7 +51,7 @@ class BaseField(models.Field):
         kwargs["max_length"] = self.max_length
         kwargs["help_text"] = self.help_text
         kwargs.setdefault("blank", True)
-        super(BaseField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def deconstruct(self):
         name, path, args, kwargs = super(BaseField, self).deconstruct()

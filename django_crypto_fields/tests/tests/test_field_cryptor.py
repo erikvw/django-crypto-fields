@@ -1,19 +1,17 @@
-from django.apps import apps as django_apps
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.test import TestCase
 
-from ..constants import AES, ENCODING, HASH_PREFIX, LOCAL_MODE, RSA
-from ..cryptor import Cryptor
-from ..exceptions import MalformedCiphertextError
-from ..field_cryptor import FieldCryptor
-from .models import TestModel
+from django_crypto_fields.constants import AES, ENCODING, HASH_PREFIX, LOCAL_MODE, RSA
+from django_crypto_fields.cryptor import Cryptor
+from django_crypto_fields.exceptions import MalformedCiphertextError
+from django_crypto_fields.field_cryptor import FieldCryptor
+
+from ...keys import encryption_keys
+from ..models import TestModel
 
 
 class TestFieldCryptor(TestCase):
-    def setUp(self):
-        app_config = django_apps.get_app_config("django_crypto_fields")
-        self.keys = app_config.encryption_keys
 
     def test_can_verify_hash_as_none(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
@@ -83,7 +81,7 @@ class TestFieldCryptor(TestCase):
     def test_rsa_field_encryption(self):
         """Assert successful RSA field roundtrip."""
         plaintext = "erik is a pleeb!!"
-        for mode in self.keys.key_filenames[RSA]:
+        for mode in encryption_keys.get(RSA):
             field_cryptor = FieldCryptor(RSA, mode)
             ciphertext = field_cryptor.encrypt(plaintext)
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext))
@@ -91,7 +89,7 @@ class TestFieldCryptor(TestCase):
     def test_rsa_field_encryption_update_secret(self):
         """Assert successful AES field roundtrip for same value."""
         plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
-        for mode in self.keys.key_filenames[RSA]:
+        for mode in encryption_keys.get(RSA):
             field_cryptor = FieldCryptor(RSA, mode)
             ciphertext1 = field_cryptor.encrypt(plaintext)
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext1))
@@ -102,7 +100,7 @@ class TestFieldCryptor(TestCase):
     def test_aes_field_encryption(self):
         """Assert successful RSA field roundtrip."""
         plaintext = "erik is a pleeb!!"
-        for mode in self.keys.key_filenames[AES]:
+        for mode in encryption_keys.get(AES):
             field_cryptor = FieldCryptor(AES, mode)
             ciphertext = field_cryptor.encrypt(plaintext)
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext))
@@ -110,7 +108,7 @@ class TestFieldCryptor(TestCase):
     def test_rsa_field_encryption_encoded(self):
         """Assert successful RSA field roundtrip."""
         plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
-        for mode in self.keys.key_filenames[RSA]:
+        for mode in encryption_keys.get(RSA):
             field_cryptor = FieldCryptor(RSA, mode)
             ciphertext = field_cryptor.encrypt(plaintext)
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext))
@@ -118,7 +116,7 @@ class TestFieldCryptor(TestCase):
     def test_aes_field_encryption_encoded(self):
         """Assert successful AES field roundtrip."""
         plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
-        for mode in self.keys.key_filenames[AES]:
+        for mode in encryption_keys.get(AES):
             field_cryptor = FieldCryptor(AES, mode)
             ciphertext = field_cryptor.encrypt(plaintext)
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext))
@@ -126,7 +124,7 @@ class TestFieldCryptor(TestCase):
     def test_aes_field_encryption_update_secret(self):
         """Assert successful AES field roundtrip for same value."""
         plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
-        for mode in self.keys.key_filenames[AES]:
+        for mode in encryption_keys.get(AES):
             field_cryptor = FieldCryptor(AES, mode)
             ciphertext1 = field_cryptor.encrypt(plaintext)
             self.assertEqual(plaintext, field_cryptor.decrypt(ciphertext1))

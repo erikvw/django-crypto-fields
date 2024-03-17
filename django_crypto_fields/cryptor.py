@@ -2,12 +2,13 @@ import binascii
 
 from Cryptodome import Random
 from Cryptodome.Cipher import AES as AES_CIPHER
-from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.exceptions import AppRegistryNotReady
 
 from .constants import AES, ENCODING, PRIVATE, PUBLIC, RSA
 from .exceptions import EncryptionError
+from .keys import encryption_keys
+from .utils import get_keypath_from_settings
 
 
 class Cryptor(object):
@@ -28,7 +29,7 @@ class Cryptor(object):
                 self.aes_encryption_mode = AES_CIPHER.MODE_CBC
         try:
             # ignore "keys" parameter if Django is loaded
-            self.keys = django_apps.get_app_config("django_crypto_fields").encryption_keys
+            self.keys = encryption_keys
         except AppRegistryNotReady:
             self.keys = keys
 
@@ -106,5 +107,7 @@ class Cryptor(object):
         try:
             plaintext = getattr(self.keys, rsa_key).decrypt(ciphertext)
         except ValueError as e:
-            raise EncryptionError(f"{e} Using {rsa_key} from key_path=`{settings.KEY_PATH}`.")
+            raise EncryptionError(
+                f"{e} Using {rsa_key} from key_path=`{get_keypath_from_settings()}`."
+            )
         return plaintext.decode(ENCODING)

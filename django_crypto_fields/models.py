@@ -44,7 +44,11 @@ class Crypt(AuditUuidModelMixin, models.Model):
     objects = CryptModelManager()
 
     def natural_key(self):
-        return (self.hash, self.algorithm, self.mode)
+        return (
+            self.hash,
+            self.algorithm,
+            self.mode,
+        )
 
     class Meta:
         verbose_name = "Crypt"

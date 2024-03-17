@@ -6,12 +6,12 @@ version_file="_version.py"
 
 [tool.black]
 line-length = 95
-target-version = ["py311"]
+target-version = ["py312"]
 extend-exclude = '''^(.*\/)*\b(migrations)\b($|\/.*$)'''
 
 [tool.isort]
 profile = "black"
-py_version = "311"
+py_version = "312"
 skip = [".tox", ".eggs", "migrations"]
 
 [tool.coverage.run]

@@ -4,9 +4,8 @@ import hashlib
 from Cryptodome.Cipher import AES as AES_CIPHER
 from django.apps import apps as django_apps
 from django.conf import settings
-from django.core.exceptions import AppRegistryNotReady, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 
-from . import get_crypt_model
 from .constants import (
     AES,
     CIPHER_PREFIX,
@@ -25,6 +24,8 @@ from .exceptions import (
     EncryptionKeyError,
     MalformedCiphertextError,
 )
+from .keys import encryption_keys
+from .utils import get_crypt_model_cls
 
 
 class FieldCryptor(object):
@@ -54,12 +55,7 @@ class FieldCryptor(object):
                 self.aes_encryption_mode = settings.AES_ENCRYPTION_MODE
             except AttributeError:
                 self.aes_encryption_mode = AES_CIPHER.MODE_CBC
-        app_config = django_apps.get_app_config("django_crypto_fields")
-        try:
-            # ignore "keys" parameter if Django is loaded
-            self.keys = app_config.encryption_keys
-        except AppRegistryNotReady:
-            self.keys = keys
+        self.keys = encryption_keys
         self.cryptor = Cryptor(aes_encryption_mode=self.aes_encryption_mode)
         self.hash_size = len(self.hash("Foo"))
 
@@ -71,7 +67,7 @@ class FieldCryptor(object):
         """Returns the cipher model and avoids issues with model
         loading and field classes.
         """
-        return get_crypt_model()
+        return get_crypt_model_cls()
 
     def hash(self, plaintext):
         """Returns a hexified hash of a plaintext value (as bytes).
@@ -210,11 +206,12 @@ class FieldCryptor(object):
         """
         try:
             ciphertext.split(HASH_PREFIX.encode(ENCODING))[1]
+        except IndexError:
+            ValueError(f"Malformed ciphertext. Expected prefixes {HASH_PREFIX}")
+        try:
             ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
         except IndexError:
-            ValueError(
-                f"Malformed ciphertext. Expected prefixes " f"{HASH_PREFIX}, {CIPHER_PREFIX}"
-            )
+            ValueError(f"Malformed ciphertext. Expected prefixes {CIPHER_PREFIX}")
         try:
             if ciphertext[: len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
                 raise MalformedCiphertextError(
@@ -262,8 +259,10 @@ class FieldCryptor(object):
         """Returns the secret given a ciphertext."""
         if ciphertext is None:
             secret = None
-        if self.is_encrypted(ciphertext):
+        elif self.is_encrypted(ciphertext):
             secret = ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
+        else:
+            raise CipherError("Expected a ciphertext or None")
         return secret
 
     def fetch_secret(self, hash_with_prefix):
