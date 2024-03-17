@@ -11,9 +11,10 @@ CHANGES
 - name global Keys instance 'encryption_keys'.
 - change settings.KEY_PATH to settings.DJANGO_CRYPTO_FIELDS_KEY_PATH.
   (settings.KEY_PATH will still work)
+- change settings.AUTO_CREATE_KEYS to settings.DJANGO_CRYPTO_FIELDS_AUTO_CREATE.
+  (settings.AUTO_CREATE_KEYS will still work)
 - use pathlib instead of os
 - merge system checks into Keys validation
-- drop support for py3.8, 3.9, 3.10 and Django 3.2, 4.0, 4.1
 
 0.3.10
 ------
