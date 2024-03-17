@@ -2,8 +2,8 @@ CHANGES
 
 0.4.0
 -----
-- merge functionality of key_creator and key_files into keys module, simplify
-  and refactor.
+- merge functionality of key_creator and key_files into keys module,
+  simplify and refactor.
 - refactor KeyPath
 - initialize / create encryption_keys in constructor of Keys class.
 - set Keys instance in keys module and import from there instead of
@@ -11,10 +11,11 @@ CHANGES
 - name global Keys instance 'encryption_keys'.
 - change settings.KEY_PATH to settings.DJANGO_CRYPTO_FIELDS_KEY_PATH.
   (settings.KEY_PATH will still work)
-- change settings.AUTO_CREATE_KEYS to settings.DJANGO_CRYPTO_FIELDS_AUTO_CREATE.
+- change settings.AUTO_CREATE_KEYS to
+  settings.DJANGO_CRYPTO_FIELDS_AUTO_CREATE.
   (settings.AUTO_CREATE_KEYS will still work)
 - use pathlib instead of os
-- merge system checks into Keys validation
+- remove system checks, raise exceptions when Keys is instantiated.
 
 0.3.10
 ------
