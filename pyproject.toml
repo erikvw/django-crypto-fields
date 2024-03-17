@@ -55,12 +55,12 @@ DJANGO =
 [testenv]
 deps =
     pre-commit
-    git+https://github.com/clinicedc/edc-test-utils@develop
-    git+https://github.com/clinicedc/edc-test-settings@develop
-    coverage[toml]==6.4.3
-    tox>=3.25
-    tox-gh-actions>=2.4.0
-    dj42: Django>=4.2,<5.0
+    edc-test-utils
+    edc-test-settings==0.1.2
+    coverage[toml]
+    tox
+    tox-gh-actions
+    dj42: Django==4.2.11
     dj50: Django>=5.0
     djdev: https://github.com/django/django/tarball/main
 
