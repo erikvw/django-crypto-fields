@@ -10,7 +10,7 @@ project_settings = DefaultTestSettings(
     calling_file=__file__,
     BASE_DIR=base_dir,
     APP_NAME=app_name,
-    DJANGO_CRYPTO_FIELDS_KEY_PATH=base_dir / "etc",
+    DJANGO_CRYPTO_FIELDS_KEY_PATH=base_dir / "crypto_keys",
     GIT_DIR=base_dir.parent.parent,
     INSTALLED_APPS=[
         "django.contrib.admin",
@@ -21,7 +21,6 @@ project_settings = DefaultTestSettings(
         "django.contrib.sites",
         "django.contrib.staticfiles",
         "django_revision.apps.AppConfig",
-        # "edc_device.apps.AppConfig",
         f"{app_name}.apps.AppConfig",
     ],
 ).settings
