@@ -47,19 +47,28 @@ class FieldCryptor:
 
     crypt_model = "django_crypto_fields.crypt"
 
-    def __init__(self, algorithm: str, mode: int):
+    def __init__(self, algorithm: str, access_mode: str):
         self._using = None
         self.algorithm = algorithm
-        self.mode = mode
+        self.access_mode = access_mode
         self.aes_encryption_mode = AES_CIPHER.MODE_CBC
-        self.cipher_buffer_key = f"{self.algorithm}_{self.mode}"
+        self.cipher_buffer_key = f"{self.algorithm}_{self.access_mode}"
         self.cipher_buffer = {self.cipher_buffer_key: {}}
         self.keys = encryption_keys
         self.cryptor = Cryptor()
         self.hash_size: int = len(self.hash("Foo"))
 
     def __repr__(self) -> str:
-        return f"FieldCryptor(algorithm='{self.algorithm}', mode='{self.mode}')"
+        return f"FieldCryptor(algorithm='{self.algorithm}', mode='{self.access_mode}')"
+
+    @property
+    def salt_key(self):
+        attr = "_".join([SALT, self.access_mode, PRIVATE])
+        try:
+            salt = getattr(self.keys, attr)
+        except AttributeError as e:
+            raise EncryptionKeyError(f"Invalid key. Got {attr}. {e}")
+        return salt
 
     @property
     def crypt_model_cls(self) -> Type[Crypt]:
@@ -77,12 +86,7 @@ class FieldCryptor:
             plaintext = plaintext.encode(ENCODING)
         except AttributeError:
             pass
-        attr = "_".join([SALT, self.mode, PRIVATE])
-        try:
-            salt = getattr(self.keys, attr)
-        except AttributeError as e:
-            raise EncryptionKeyError(f"Invalid key. Got {attr}. {e}")
-        dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext, salt, HASH_ROUNDS)
+        dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext, self.salt_key, HASH_ROUNDS)
         return binascii.hexlify(dk)
 
     def encrypt(self, value, update=None):
@@ -118,7 +122,7 @@ class FieldCryptor:
                         HASH_PREFIX.encode(ENCODING)
                         + self.hash(value)
                         + CIPHER_PREFIX.encode(ENCODING)
-                        + cipher(value, self.mode)
+                        + cipher(value, self.access_mode)
                     )
                     if update:
                         self.update_crypt(ciphertext)
@@ -144,30 +148,19 @@ class FieldCryptor:
             hash_with_prefix = hash_with_prefix.encode(ENCODING)
         except AttributeError:
             pass
-        if hash_with_prefix:
-            if self.is_encrypted(hash_with_prefix):
-                # hashed_value = self.get_hash(hash_with_prefix)
-                secret = self.fetch_secret(hash_with_prefix)
-                if secret:
-                    if self.algorithm == AES:
-                        plaintext = self.cryptor.aes_decrypt(secret, self.mode)
-                    elif self.algorithm == RSA:
-                        plaintext = self.cryptor.rsa_decrypt(secret, self.mode)
-                    else:
-                        raise CipherError(
-                            "Cannot determine algorithm for decryption."
-                            " Valid options are {0}. Got {1}".format(
-                                ", ".join(list(self.keys.key_filenames)), self.algorithm
-                            )
-                        )
+        if self.is_encrypted(hash_with_prefix):
+            if secret := self.fetch_secret(hash_with_prefix):
+                if self.algorithm == AES:
+                    plaintext = self.cryptor.aes_decrypt(secret, self.access_mode)
+                elif self.algorithm == RSA:
+                    plaintext = self.cryptor.rsa_decrypt(secret, self.access_mode)
                 else:
-                    if hashed_value := self.get_hash(hash_with_prefix):
-                        raise EncryptionError(
-                            'Failed to decrypt. Could not find "secret" '
-                            f" for hash '{hashed_value}'"
+                    raise CipherError(
+                        "Cannot determine algorithm for decryption."
+                        " Valid options are {0}. Got {1}".format(
+                            ", ".join(list(self.keys.key_filenames)), self.algorithm
                         )
-                    else:
-                        raise EncryptionError("Failed to decrypt. Malformed ciphertext")
+                    )
         return plaintext
 
     @property
@@ -185,7 +178,7 @@ class FieldCryptor:
             self.cipher_buffer[self.cipher_buffer_key].update({hashed_value: secret})
             try:
                 crypt = self.crypt_model_cls.objects.using(self.using).get(
-                    hash=hashed_value, algorithm=self.algorithm, mode=self.mode
+                    hash=hashed_value, algorithm=self.algorithm, mode=self.access_mode
                 )
                 crypt.secret = secret
                 crypt.save()
@@ -195,7 +188,7 @@ class FieldCryptor:
                     secret=secret,
                     algorithm=self.algorithm,
                     cipher_mode=self.aes_encryption_mode,
-                    mode=self.mode,
+                    mode=self.access_mode,
                 )
 
     def verify_ciphertext(self, ciphertext):
@@ -273,14 +266,14 @@ class FieldCryptor:
                 cipher = (
                     self.crypt_model_cls.objects.using(self.using)
                     .values("secret")
-                    .get(hash=hashed_value, algorithm=self.algorithm, mode=self.mode)
+                    .get(hash=hashed_value, algorithm=self.algorithm, mode=self.access_mode)
                 )
                 secret = cipher.get("secret")
                 self.cipher_buffer[self.cipher_buffer_key].update({hashed_value: secret})
             except ObjectDoesNotExist:
                 raise EncryptionError(
                     f"Failed to get secret for given {self.algorithm} "
-                    f"{self.mode} hash. Got '{hash_with_prefix}'"
+                    f"{self.access_mode} hash. Got '{hash_with_prefix}'"
                 )
         return secret
 
