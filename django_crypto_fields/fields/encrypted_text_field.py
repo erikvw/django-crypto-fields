@@ -8,4 +8,4 @@ class EncryptedTextField(BaseAesField):
 
     def formfield(self, **kwargs):
         kwargs["widget"] = widgets.Textarea()
-        return super(EncryptedTextField, self).formfield(**kwargs)
+        return super().formfield(**kwargs)

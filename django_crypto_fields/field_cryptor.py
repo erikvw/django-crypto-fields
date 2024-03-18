@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Type
 
 from Cryptodome.Cipher import AES as AES_CIPHER
 from django.apps import apps as django_apps
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from .constants import (
@@ -48,21 +47,15 @@ class FieldCryptor:
 
     crypt_model = "django_crypto_fields.crypt"
 
-    def __init__(self, algorithm: str, mode: str, aes_encryption_mode: str | None = None):
+    def __init__(self, algorithm: str, mode: int):
         self._using = None
         self.algorithm = algorithm
         self.mode = mode
-        self.aes_encryption_mode = aes_encryption_mode
+        self.aes_encryption_mode = AES_CIPHER.MODE_CBC
         self.cipher_buffer_key = f"{self.algorithm}_{self.mode}"
         self.cipher_buffer = {self.cipher_buffer_key: {}}
-        if not self.aes_encryption_mode:
-            try:
-                # do not use MODE_CFB, see comments in pycryptodomex.blockalgo.py
-                self.aes_encryption_mode = settings.AES_ENCRYPTION_MODE
-            except AttributeError:
-                self.aes_encryption_mode = AES_CIPHER.MODE_CBC
         self.keys = encryption_keys
-        self.cryptor = Cryptor(aes_encryption_mode=self.aes_encryption_mode)
+        self.cryptor = Cryptor()
         self.hash_size: int = len(self.hash("Foo"))
 
     def __repr__(self) -> str:
@@ -254,7 +247,7 @@ class FieldCryptor:
                 pass
         return value
 
-    def get_hash(self, ciphertext: bytes | None) -> bytes | None:
+    def get_hash(self, ciphertext: bytes) -> bytes | None:
         """Returns the hashed_value given a ciphertext or None."""
         try:
             ciphertext.encode(ENCODING)
@@ -262,7 +255,7 @@ class FieldCryptor:
             pass
         return ciphertext[len(HASH_PREFIX) :][: self.hash_size] or None
 
-    def get_secret(self, ciphertext: bytes | None) -> bytes | None:
+    def get_secret(self, ciphertext: bytes) -> bytes | None:
         """Returns the secret given a ciphertext."""
         if ciphertext is None:
             secret = None

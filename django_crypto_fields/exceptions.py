@@ -22,10 +22,6 @@ class DjangoCryptoFieldsKeysDoNotExist(Exception):
     pass
 
 
-class DjangoCryptoFieldsLoadingError(Exception):
-    pass
-
-
 class DjangoCryptoFieldsKeyPathError(Exception):
     pass
 
@@ -43,14 +39,6 @@ class EncryptionError(Exception):
 
 
 class CipherError(Exception):
-    pass
-
-
-class AlgorithmError(Exception):
-    pass
-
-
-class ModeError(Exception):
     pass
 
 

@@ -7,19 +7,16 @@ from django.core.management.color import color_style
 from django_crypto_fields.key_path import KeyPath
 
 
-class DjangoCryptoFieldsError(Exception):
-    pass
-
-
-class DjangoCryptoFieldsKeysDoNotExist(Exception):
-    pass
-
-
 class AppConfig(DjangoAppConfig):
     name: str = "django_crypto_fields"
     verbose_name: str = "django-crypto-fields"
     app_label: str = "django_crypto_fields"
     crypt_model_using: str = "default"
+
+    def import_models(self):
+        from .keys import encryption_keys  # noqa
+
+        return super().import_models()
 
     def ready(self):
         style = color_style()
@@ -34,8 +31,3 @@ class AppConfig(DjangoAppConfig):
             style.WARNING(" * Remember to keep a backup of your encryption keys\n")
         )
         sys.stdout.write(f" Done loading {self.verbose_name}.\n")
-
-    def import_models(self):
-        from .keys import encryption_keys  # noqa
-
-        return super().import_models()

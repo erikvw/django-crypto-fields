@@ -14,37 +14,15 @@ from .key_path import KeyPath
 
 __all__ = ["persist_key_path_or_raise"]
 
+style = color_style()
+
 
 def persist_key_path_or_raise() -> None:
-    last_used_path: PurePath | None = None
-    path: Path = Path(KeyPath().path)
-    file = Path(path / "django_crypto_fields")
-    if file.exists():
-        if "runtests.py" in sys.argv:
-            file.unlink()  # delete the file
-        else:
-            # open file `django_crypto_fields` and read last path
-            with file.open(mode="r") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    # use first row only
-                    last_used_path = PurePath(row.get("path"))
-                    break
-    if not last_used_path:
-        # persist the path in file `django_crypto_fields`
-        with file.open(mode="w") as f:
-            writer = csv.DictWriter(f, fieldnames=["path", "date"])
-            writer.writeheader()
-            writer.writerow(dict(path=path, date=datetime.now().astimezone(ZoneInfo("UTC"))))
-        last_used_path = path
-    else:
-        if not Path(last_used_path).exists():
-            style = color_style()
-            raise DjangoCryptoFieldsKeyPathError(
-                style.ERROR(f"Invalid last key path. See {file}. Got {last_used_path}")
-            )
-    if last_used_path != path:
-        style = color_style()
+    expected_folder: Path = Path(KeyPath().path)
+    last_used_folder, filepath = read_last_used(expected_folder)
+    if not last_used_folder:
+        last_used_folder = write_last_used(filepath)
+    if last_used_folder != expected_folder:
         raise DjangoCryptoFieldsKeyPathChangeError(
             style.ERROR(
                 "Key path changed since last startup! You must resolve "
@@ -52,3 +30,38 @@ def persist_key_path_or_raise() -> None:
                 "corrupt your data."
             )
         )
+
+
+def write_last_used(filepath: Path) -> Path:
+    """Write the last used path in file `django_crypto_fields`."""
+    with filepath.open(mode="w") as f:
+        writer = csv.DictWriter(f, fieldnames=["path", "date"])
+        writer.writeheader()
+        writer.writerow(
+            dict(path=filepath.parent, date=datetime.now().astimezone(ZoneInfo("UTC")))
+        )
+    return filepath.parent
+
+
+def read_last_used(folder: Path) -> tuple[PurePath | None, Path]:
+    """Opens file `django_crypto_fields` and read last path."""
+    last_used_path = None
+    filepath = Path(folder / "django_crypto_fields")
+    if filepath.exists():
+        if "runtests.py" in sys.argv:
+            filepath.unlink()
+        else:
+            with filepath.open(mode="r") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    # use first row only
+                    last_used_path = PurePath(row.get("path"))
+                    if not Path(last_used_path).exists():
+                        raise DjangoCryptoFieldsKeyPathError(
+                            style.ERROR(
+                                "Last path used to access encryption keys is invalid. "
+                                f"See file `{filepath}`. Got `{last_used_path}`"
+                            )
+                        )
+                    break
+    return last_used_path, filepath

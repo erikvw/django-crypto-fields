@@ -28,7 +28,7 @@ style = color_style()
 class BaseField(models.Field):
     description = "Field class that stores values as encrypted"
 
-    def __init__(self, algorithm: str, mode: str, *args, **kwargs):
+    def __init__(self, algorithm: str, access_mode: str, *args, **kwargs):
         self.readonly = False
         self.keys: Keys = encryption_keys
         if not encryption_keys.loaded:
@@ -36,11 +36,11 @@ class BaseField(models.Field):
                 "Encryption keys not loaded. You need to run initialize()"
             )
         self.algorithm = algorithm or RSA
-        self.mode = mode or LOCAL_MODE
+        self.mode = access_mode or LOCAL_MODE
         self.help_text: str = kwargs.get("help_text", "")
         if not self.help_text.startswith(" (Encryption:"):
             self.help_text = "{} (Encryption: {} {})".format(
-                self.help_text.split(" (Encryption:")[0], algorithm.upper(), mode
+                self.help_text.split(" (Encryption:")[0], algorithm.upper(), self.mode
             )
         self.field_cryptor = FieldCryptor(self.algorithm, self.mode)
         min_length: int = len(HASH_PREFIX) + self.field_cryptor.hash_size

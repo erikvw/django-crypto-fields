@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Type
 
 from django.apps import apps as django_apps
 from django.conf import settings
@@ -37,7 +37,7 @@ def get_crypt_model() -> str:
     return getattr(settings, "DJANGO_CRYPTO_FIELDS_MODEL", "django_crypto_fields.crypt")
 
 
-def get_crypt_model_cls() -> Crypt:
+def get_crypt_model_cls() -> Type[Crypt]:
     """Return the Crypt model that is active in this project."""
     try:
         return django_apps.get_model(get_crypt_model(), require_ready=False)

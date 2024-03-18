@@ -35,7 +35,7 @@ class EncryptedDecimalField(BaseRsaField):
         decimal_max_digits = int(kwargs.get("max_digits"))
         del kwargs["decimal_places"]
         del kwargs["max_digits"]
-        super(EncryptedDecimalField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.decimal_decimal_places = decimal_decimal_places
         self.decimal_max_digits = decimal_max_digits
 

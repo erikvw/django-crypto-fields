@@ -47,13 +47,13 @@ def get_template(path: PurePath, key_prefix: str) -> dict[str, dict[str, dict[st
 
 def get_filenames(path: PurePath, key_prefix: str) -> list[PurePath]:
     filenames = []
-    for _, v in get_template(path, key_prefix).items():
-        for _, _v in v.items():
-            for _, filename in _v.items():
+    for encryption_mode in get_template(path, key_prefix).values():
+        for access_mode in encryption_mode.values():
+            for filename in access_mode.values():
                 filenames.append(filename)
     return filenames
 
 
-def write_msg(verbose, msg: str):
+def write_msg(verbose, msg: str) -> None:
     if verbose:
         sys.stdout.write(msg)

@@ -5,5 +5,5 @@ from .base_field import BaseField
 class BaseAesField(BaseField):
     def __init__(self, *args, **kwargs):
         algorithm = AES
-        mode = LOCAL_MODE
-        super().__init__(algorithm, mode, *args, **kwargs)
+        access_mode = LOCAL_MODE
+        super().__init__(algorithm, access_mode, *args, **kwargs)

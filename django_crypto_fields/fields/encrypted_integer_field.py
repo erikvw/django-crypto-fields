@@ -6,6 +6,6 @@ class EncryptedIntegerField(BaseRsaField):
 
     def to_python(self, value):
         """Returns as integer"""
-        retval = super(EncryptedIntegerField, self).to_python(value)
+        retval = super().to_python(value)
         retval = int(retval)
         return retval
