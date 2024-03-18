@@ -34,3 +34,8 @@ class AppConfig(DjangoAppConfig):
             style.WARNING(" * Remember to keep a backup of your encryption keys\n")
         )
         sys.stdout.write(f" Done loading {self.verbose_name}.\n")
+
+    def import_models(self):
+        from .keys import encryption_keys  # noqa
+
+        return super().import_models()

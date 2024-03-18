@@ -80,6 +80,15 @@ In your tests you can set ``settings.DEBUG = True`` and ``settings.AUTO_CREATE_K
 
 By default assumes your test module is ``runtests.py``. You can changes this by setting ``settings.DJANGO_CRYPTO_FIELDS_TEST_MODULE``.
 
+When are encryption keys loaded?
+================================
+
+The encryption keys are loaded as a side effect of accessing the ``keys`` module.
+The keys module is imported in this apps AppConfig just before ``import_models``.
+During runtime the encryption keys are stored in the ``encryption_keys`` global.
+
+See module ``apps.py``, module ``keys.py`` and ``fields.BaseField`` constructor.
+
 History
 =======
 

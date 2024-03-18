@@ -3,7 +3,6 @@ import binascii
 from Cryptodome import Random
 from Cryptodome.Cipher import AES as AES_CIPHER
 from django.conf import settings
-from django.core.exceptions import AppRegistryNotReady
 
 from .constants import AES, ENCODING, PRIVATE, PUBLIC, RSA
 from .exceptions import EncryptionError
@@ -11,7 +10,7 @@ from .keys import encryption_keys
 from .utils import get_keypath_from_settings
 
 
-class Cryptor(object):
+class Cryptor:
     """Base class for all classes providing RSA and AES encryption
     methods.
 
@@ -19,7 +18,7 @@ class Cryptor(object):
     of this except the filenames are replaced with the actual keys.
     """
 
-    def __init__(self, keys=None, aes_encryption_mode=None):
+    def __init__(self, aes_encryption_mode=None):
         self.aes_encryption_mode = aes_encryption_mode
         if not self.aes_encryption_mode:
             try:
@@ -27,13 +26,9 @@ class Cryptor(object):
                 self.aes_encryption_mode = settings.AES_ENCRYPTION_MODE
             except AttributeError:
                 self.aes_encryption_mode = AES_CIPHER.MODE_CBC
-        try:
-            # ignore "keys" parameter if Django is loaded
-            self.keys = encryption_keys
-        except AppRegistryNotReady:
-            self.keys = keys
+        self.keys = encryption_keys
 
-    def padded(self, plaintext, block_size):
+    def padded(self, plaintext: str, block_size):
         """Return string padded so length is a multiple of the block size.
         * store length of padding the last hex value.
         * if padding is 0, pad as if padding is 16.

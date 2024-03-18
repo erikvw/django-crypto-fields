@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import sys
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core.management.color import color_style
@@ -16,31 +19,35 @@ from ..exceptions import (
 from ..field_cryptor import FieldCryptor
 from ..keys import encryption_keys
 
+if TYPE_CHECKING:
+    from ..keys import Keys
+
 style = color_style()
 
 
 class BaseField(models.Field):
     description = "Field class that stores values as encrypted"
 
-    def __init__(self, algorithm, mode, *args, **kwargs):
-        self.keys = encryption_keys
+    def __init__(self, algorithm: str, mode: str, *args, **kwargs):
+        self.readonly = False
+        self.keys: Keys = encryption_keys
         if not encryption_keys.loaded:
             raise DjangoCryptoFieldsKeysNotLoaded(
                 "Encryption keys not loaded. You need to run initialize()"
             )
         self.algorithm = algorithm or RSA
         self.mode = mode or LOCAL_MODE
-        self.help_text = kwargs.get("help_text", "")
+        self.help_text: str = kwargs.get("help_text", "")
         if not self.help_text.startswith(" (Encryption:"):
             self.help_text = "{} (Encryption: {} {})".format(
                 self.help_text.split(" (Encryption:")[0], algorithm.upper(), mode
             )
         self.field_cryptor = FieldCryptor(self.algorithm, self.mode)
-        min_length = len(HASH_PREFIX) + self.field_cryptor.hash_size
-        max_length = kwargs.get("max_length", min_length)
-        self.max_length = min_length if max_length < min_length else max_length
+        min_length: int = len(HASH_PREFIX) + self.field_cryptor.hash_size
+        max_length: int = kwargs.get("max_length", min_length)
+        self.max_length: int = min_length if max_length < min_length else max_length
         if self.algorithm == RSA:
-            max_message_length = self.keys.rsa_key_info[self.mode]["max_message_length"]
+            max_message_length: int = self.keys.rsa_key_info[self.mode]["max_message_length"]
             if self.max_length > max_message_length:
                 raise EncryptionError(
                     "{} attribute 'max_length' cannot exceed {} for RSA. Got {}. "
@@ -80,29 +87,21 @@ class BaseField(models.Field):
                 self.readonly = True  # did not decrypt
                 decrypted_value = value
         except CipherError as e:
-            sys.stdout.write(style.ERROR("CipherError. Got {}\n".format(str(e))))
+            sys.stdout.write(style.ERROR(f"CipherError. Got {e}\n"))
             sys.stdout.flush()
-            # raise ValidationError(e)
         except EncryptionError as e:
-            sys.stdout.write(style.ERROR("EncryptionError. Got {}\n".format(str(e))))
+            sys.stdout.write(style.ERROR(f"EncryptionError. Got {e}\n"))
             sys.stdout.flush()
             raise
-            # raise ValidationError(e)
         except MalformedCiphertextError as e:
-            sys.stdout.write(style.ERROR("MalformedCiphertextError. Got {}\n".format(str(e))))
+            sys.stdout.write(style.ERROR(f"MalformedCiphertextError. Got {e}\n"))
             sys.stdout.flush()
-            # raise ValidationError(e)
         return decrypted_value
 
     def from_db_value(self, value, *args):
         if value is None or value in ["", b""]:
             return value
         return self.decrypt(value)
-
-    #     def to_python(self, value):
-    #         if value is None or value in ['', b'']:
-    #             return value
-    #         return self.decrypt(value)
 
     def get_prep_value(self, value):
         """Returns the encrypted value, including prefix, as the
