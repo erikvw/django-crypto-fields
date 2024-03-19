@@ -90,31 +90,6 @@ def safe_encode_utf8(value) -> bytes:
     return value
 
 
-def has_valid_secret_or_raise(ciphertext: bytes) -> bool:
-    """Verifies secret segment of ciphertext and raises an
-    exception if not OK.
-    """
-    if ciphertext[: len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
-        try:
-            secret = ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
-            if len(secret) == 0:
-                raise MalformedCiphertextError(
-                    "Expected cipher prefix to be followed by a secret. " "Got nothing (1)"
-                )
-        except IndexError:
-            raise MalformedCiphertextError(
-                "Expected cipher prefix to be followed by a secret. " "Got nothing (2)"
-            )
-    if (
-        ciphertext[-1 * len(CIPHER_PREFIX) :] == CIPHER_PREFIX.encode(ENCODING)
-        and len(ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]) == 0
-    ):
-        raise MalformedCiphertextError(
-            "Expected cipher prefix to be followed by a secret. " "Got nothing (3)"
-        )
-    return True
-
-
 def has_valid_hash_or_raise(ciphertext: bytes, hash_size: int) -> bool:
     """Verifies hash segment of ciphertext (bytes) and
     raises an exception if not OK.
@@ -163,5 +138,42 @@ def has_valid_value_or_raise(
             raise MalformedCiphertextError("Expected a value, got just the encryption prefix.")
         has_valid_hash_or_raise(encoded_value, hash_size)
         if has_secret:
-            has_valid_secret_or_raise(encoded_value)
+            is_valid_ciphertext_or_raise(encoded_value, hash_size)
     return value  # note, is original passed value
+
+
+def is_valid_ciphertext_or_raise(ciphertext: bytes, hash_size: int):
+    """Returns an unchanged ciphertext after verifying format cipher_prefix +
+    hash + cipher_prefix + secret.
+    """
+    try:
+        ciphertext.split(HASH_PREFIX.encode(ENCODING))[1]
+    except IndexError:
+        raise MalformedCiphertextError(
+            f"Malformed ciphertext. Expected prefixes {HASH_PREFIX}"
+        )
+    try:
+        ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
+    except IndexError:
+        raise MalformedCiphertextError(
+            f"Malformed ciphertext. Expected prefixes {CIPHER_PREFIX}"
+        )
+    try:
+        if ciphertext[: len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
+            raise MalformedCiphertextError(
+                f"Malformed ciphertext. Expected hash prefix {HASH_PREFIX}"
+            )
+        if (
+            len(
+                ciphertext.split(HASH_PREFIX.encode(ENCODING))[1].split(
+                    CIPHER_PREFIX.encode(ENCODING)
+                )[0]
+            )
+            != hash_size
+        ):
+            raise MalformedCiphertextError(
+                f"Malformed ciphertext. Expected hash size of {hash_size}."
+            )
+    except IndexError:
+        MalformedCiphertextError("Malformed ciphertext.")
+    return ciphertext

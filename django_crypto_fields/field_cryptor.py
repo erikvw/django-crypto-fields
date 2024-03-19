@@ -20,14 +20,14 @@ from .constants import (
     SALT,
 )
 from .cryptor import Cryptor
-from .exceptions import (
-    CipherError,
-    EncryptionError,
-    EncryptionKeyError,
-    MalformedCiphertextError,
-)
+from .exceptions import CipherError, EncryptionError, EncryptionKeyError
 from .keys import encryption_keys
-from .utils import get_crypt_model_cls, has_valid_value_or_raise, safe_encode_utf8
+from .utils import (
+    get_crypt_model_cls,
+    has_valid_value_or_raise,
+    is_valid_ciphertext_or_raise,
+    safe_encode_utf8,
+)
 
 if TYPE_CHECKING:
     from .models import Crypt
@@ -141,7 +141,7 @@ class FieldCryptor:
 
     def update_crypt(self, ciphertext):
         """Updates cipher model (Crypt) and temporary buffer."""
-        if self.verify_ciphertext(ciphertext):
+        if is_valid_ciphertext_or_raise(ciphertext, self.hash_size):
             hashed_value = self.get_hash(ciphertext)
             secret = self.get_secret(ciphertext)
             self.cipher_buffer[self.cipher_buffer_key].update({hashed_value: secret})
@@ -159,38 +159,6 @@ class FieldCryptor:
                     cipher_mode=self.aes_encryption_mode,
                     mode=self.access_mode,
                 )
-
-    def verify_ciphertext(self, ciphertext):
-        """Returns ciphertext after verifying format prefix +
-        hash + prefix + secret.
-        """
-        try:
-            ciphertext.split(HASH_PREFIX.encode(ENCODING))[1]
-        except IndexError:
-            raise ValueError(f"Malformed ciphertext. Expected prefixes {HASH_PREFIX}")
-        try:
-            ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
-        except IndexError:
-            raise ValueError(f"Malformed ciphertext. Expected prefixes {CIPHER_PREFIX}")
-        try:
-            if ciphertext[: len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
-                raise MalformedCiphertextError(
-                    f"Malformed ciphertext. Expected hash prefix {HASH_PREFIX}"
-                )
-            if (
-                len(
-                    ciphertext.split(HASH_PREFIX.encode(ENCODING))[1].split(
-                        CIPHER_PREFIX.encode(ENCODING)
-                    )[0]
-                )
-                != self.hash_size
-            ):
-                raise MalformedCiphertextError(
-                    f"Malformed ciphertext. Expected hash size of {self.hash_size}."
-                )
-        except IndexError:
-            MalformedCiphertextError("Malformed ciphertext.")
-        return ciphertext
 
     def get_prep_value(self, value: str | bytes | None) -> str | bytes | None:
         """Returns the prefix + hash as stored in the DB table column of
@@ -228,7 +196,7 @@ class FieldCryptor:
                 "encryption algorithm. Valid options are {0}. "
                 "Got {1} ({2})".format(", ".join(self.keys.key_filenames), self.algorithm, e)
             )
-        return self.verify_ciphertext(ciphertext)
+        return is_valid_ciphertext_or_raise(ciphertext, self.hash_size)
 
     def get_hash(self, ciphertext: bytes) -> bytes | None:
         """Returns the hashed_value given a ciphertext or None."""

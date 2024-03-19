@@ -54,14 +54,13 @@ def read_last_used(folder: Path) -> tuple[PurePath | None, Path]:
             with filepath.open(mode="r") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    # use first row only
                     last_used_path = PurePath(row.get("path"))
-                    if not Path(last_used_path).exists():
-                        raise DjangoCryptoFieldsKeyPathError(
-                            style.ERROR(
-                                "Last path used to access encryption keys is invalid. "
-                                f"See file `{filepath}`. Got `{last_used_path}`"
-                            )
-                        )
                     break
+    if last_used_path and not Path(last_used_path).exists():
+        raise DjangoCryptoFieldsKeyPathError(
+            style.ERROR(
+                "Last path used to access encryption keys is invalid. "
+                f"See file `{filepath}`. Got `{last_used_path}`"
+            )
+        )
     return last_used_path, filepath

@@ -10,8 +10,8 @@ from django_crypto_fields.keys import encryption_keys
 
 from ...utils import (
     has_valid_hash_or_raise,
-    has_valid_secret_or_raise,
     has_valid_value_or_raise,
+    is_valid_ciphertext_or_raise,
 )
 from ..models import TestModel
 
@@ -76,14 +76,19 @@ class TestFieldCryptor(TestCase):
     def test_verify_with_secret(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = field_cryptor.encrypt("Mohammed Ali floats like a butterfly")
-        self.assertTrue(has_valid_secret_or_raise(value))
+        self.assertTrue(is_valid_ciphertext_or_raise(value, field_cryptor.hash_size))
 
     def test_raises_on_verify_without_secret(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = HASH_PREFIX.encode(ENCODING) + field_cryptor.hash(
             "Mohammed Ali floats like a butterfly"
         )
-        self.assertRaises(MalformedCiphertextError, has_valid_secret_or_raise, value)
+        self.assertRaises(
+            MalformedCiphertextError,
+            is_valid_ciphertext_or_raise,
+            value,
+            field_cryptor.hash_size,
+        )
 
     def test_verify_is_encrypted(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
