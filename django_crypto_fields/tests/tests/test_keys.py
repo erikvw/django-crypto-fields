@@ -21,32 +21,26 @@ production_path_without_keys = mkdtemp()
 
 class TestKeyCreator(TestCase):
     def setUp(self):
-        try:
-            encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
-        except FileNotFoundError:
-            pass
+        encryption_keys.reset_and_delete_keys(verbose=False)
         encryption_keys.verbose = False
         encryption_keys.initialize()
 
     def tearDown(self):
-        try:
-            encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
-        except FileNotFoundError:
-            pass
+        encryption_keys.reset_and_delete_keys(verbose=False)
 
     @override_settings(DJANGO_CRYPTO_FIELDS_KEY_PATH=mkdtemp())
     def test_keys_do_not_exist(self):
         encryption_keys.verbose = False
-        encryption_keys.reset(delete_all_keys="delete_all_keys")
-        for file in encryption_keys.files:
+        encryption_keys.reset_and_delete_keys()
+        for file in encryption_keys.filenames:
             self.assertFalse(Path(file).exists())
 
     @override_settings(DJANGO_CRYPTO_FIELDS_KEY_PATH=mkdtemp())
     def test_keys_exist(self):
-        encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
+        encryption_keys.reset_and_delete_keys(verbose=False)
         encryption_keys.verbose = False
         encryption_keys.initialize()
-        for file in encryption_keys.files:
+        for file in encryption_keys.filenames:
             self.assertTrue(Path(file).exists())
 
     @override_settings(DEBUG=False, DJANGO_CRYPTO_FIELDS_KEY_PATH="/blah/blah/blah/blah")
@@ -79,7 +73,7 @@ class TestKeyCreator(TestCase):
     )
     def test_create_keys_does_not_overwrite_production_keys(self):
         keys = Keys(verbose=False)
-        keys.reset(verbose=False)
+        keys.reset()
         self.assertRaises(DjangoCryptoFieldsKeyAlreadyExist, keys.create)
 
     @override_settings(

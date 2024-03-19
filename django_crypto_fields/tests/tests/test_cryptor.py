@@ -10,18 +10,12 @@ from django_crypto_fields.keys import encryption_keys
 
 class TestCryptor(TestCase):
     def setUp(self):
-        try:
-            encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
-        except FileNotFoundError:
-            pass
+        encryption_keys.reset_and_delete_keys(verbose=False)
         encryption_keys.verbose = False
         encryption_keys.initialize()
 
     def tearDown(self):
-        try:
-            encryption_keys.reset(delete_all_keys="delete_all_keys", verbose=False)
-        except FileNotFoundError:
-            pass
+        encryption_keys.reset_and_delete_keys(verbose=False)
 
     def test_mode_support(self):
         self.assertEqual(encryption_keys.rsa_modes_supported, [LOCAL_MODE, RESTRICTED_MODE])
