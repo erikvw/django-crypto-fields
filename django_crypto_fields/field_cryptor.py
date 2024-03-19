@@ -27,7 +27,7 @@ from .exceptions import (
     MalformedCiphertextError,
 )
 from .keys import encryption_keys
-from .utils import get_crypt_model_cls
+from .utils import get_crypt_model_cls, has_valid_value_or_raise, safe_encode_utf8
 
 if TYPE_CHECKING:
     from .models import Crypt
@@ -82,14 +82,11 @@ class FieldCryptor:
 
         The hashed value is used as a signature of the "secret".
         """
-        try:
-            plaintext = plaintext.encode(ENCODING)
-        except AttributeError:
-            pass
+        plaintext = safe_encode_utf8(plaintext)
         dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext, self.salt_key, HASH_ROUNDS)
         return binascii.hexlify(dk)
 
-    def encrypt(self, value, update=None):
+    def encrypt(self, value: str | bytes | None, update: bool | None = None):
         """Returns ciphertext as byte data using either an
         RSA or AES cipher.
 
@@ -102,38 +99,13 @@ class FieldCryptor:
         * 'value' is not re-encrypted if already encrypted and properly
           formatted 'ciphertext'.
         """
-        try:
-            ciphertext = value.encode(ENCODING)
-        except AttributeError:
-            ciphertext = value
-        if ciphertext is None or value == b"":
-            pass
-        else:
-            update = True if update is None else update
-            if not self.is_encrypted(value):
-                try:
-                    if self.algorithm == AES:
-                        cipher = self.cryptor.aes_encrypt
-                    elif self.algorithm == RSA:
-                        cipher = self.cryptor.rsa_encrypt
-                    else:
-                        cipher = None
-                    ciphertext = (
-                        HASH_PREFIX.encode(ENCODING)
-                        + self.hash(value)
-                        + CIPHER_PREFIX.encode(ENCODING)
-                        + cipher(value, self.access_mode)
-                    )
-                    if update:
-                        self.update_crypt(ciphertext)
-                except AttributeError as e:
-                    raise CipherError(
-                        "Cannot determine cipher method. Unknown "
-                        "encryption algorithm. Valid options are {0}. "
-                        "Got {1} ({2})".format(
-                            ", ".join(self.keys.key_filenames), self.algorithm, e
-                        )
-                    )
+        ciphertext = None
+        update = True if update is None else update
+        value = safe_encode_utf8(value)
+        if value is not None and value != b"" and not self.is_encrypted(value):
+            ciphertext = self.get_ciphertext(value)
+            if update:
+                self.update_crypt(ciphertext)
         return ciphertext
 
     def decrypt(self, hash_with_prefix: str):
@@ -144,10 +116,7 @@ class FieldCryptor:
         hash_with_prefix = hash_prefix+hash.
         """
         plaintext = None
-        try:
-            hash_with_prefix = hash_with_prefix.encode(ENCODING)
-        except AttributeError:
-            pass
+        hash_with_prefix = safe_encode_utf8(hash_with_prefix)
         if self.is_encrypted(hash_with_prefix):
             if secret := self.fetch_secret(hash_with_prefix):
                 if self.algorithm == AES:
@@ -240,12 +209,30 @@ class FieldCryptor:
                 pass
         return value
 
+    def get_ciphertext(self, value):
+        cipher = None
+        if self.algorithm == AES:
+            cipher = self.cryptor.aes_encrypt
+        elif self.algorithm == RSA:
+            cipher = self.cryptor.rsa_encrypt
+        try:
+            ciphertext = (
+                HASH_PREFIX.encode(ENCODING)
+                + self.hash(value)
+                + CIPHER_PREFIX.encode(ENCODING)
+                + cipher(value, self.access_mode)
+            )
+        except AttributeError as e:
+            raise CipherError(
+                "Cannot determine cipher method. Unknown "
+                "encryption algorithm. Valid options are {0}. "
+                "Got {1} ({2})".format(", ".join(self.keys.key_filenames), self.algorithm, e)
+            )
+        return self.verify_ciphertext(ciphertext)
+
     def get_hash(self, ciphertext: bytes) -> bytes | None:
         """Returns the hashed_value given a ciphertext or None."""
-        try:
-            ciphertext.encode(ENCODING)
-        except AttributeError:
-            pass
+        ciphertext = safe_encode_utf8(ciphertext)
         return ciphertext[len(HASH_PREFIX) :][: self.hash_size] or None
 
     def get_secret(self, ciphertext: bytes) -> bytes | None:
@@ -286,100 +273,15 @@ class FieldCryptor:
         """
         is_encrypted = False
         if value is not None:
-            try:
-                value = value.encode(ENCODING)
-            except AttributeError:
-                pass
+            value = safe_encode_utf8(value)
             if value[: len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
                 if not value[: len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING):
-                    self.verify_value(value, has_secret=False)
+                    has_valid_value_or_raise(value, self.hash_size, has_secret=False)
                     is_encrypted = True
                 elif value[: len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING):
-                    self.verify_value(value, has_secret=True)
+                    has_valid_value_or_raise(value, self.hash_size, has_secret=True)
                     is_encrypted = True
         return is_encrypted
-
-    def verify_value(self, value: str | bytes, has_secret=None) -> str | bytes:
-        """Encodes the value, validates its format, and returns it
-        or raises an exception.
-
-        A value is either a value that can be encrypted or one that
-        already is encrypted.
-
-        * A value cannot just be equal to HASH_PREFIX or CIPHER_PREFIX;
-        * A value prefixed with HASH_PREFIX must be followed by a
-          valid hash (by length);
-        * A value prefixed with HASH_PREFIX + hashed_value +
-          CIPHER_PREFIX must be followed by some text;
-        * A value prefix by CIPHER_PREFIX must be followed by
-          some text;
-        """
-        has_secret = True if has_secret is None else has_secret
-        try:
-            bytes_value = value.encode(ENCODING)
-        except AttributeError:
-            bytes_value = value
-        if bytes_value is not None and bytes_value != b"":
-            if bytes_value in [
-                HASH_PREFIX.encode(ENCODING),
-                CIPHER_PREFIX.encode(ENCODING),
-            ]:
-                raise MalformedCiphertextError(
-                    "Expected a value, got just the encryption prefix."
-                )
-            self.verify_hash(bytes_value)
-            if has_secret:
-                self.verify_secret(bytes_value)
-        return value  # note, is original passed value
-
-    def verify_hash(self, ciphertext: bytes) -> bool:
-        """Verifies hash segment of ciphertext (bytes) and
-        raises an exception if not OK.
-        """
-        try:
-            ciphertext = ciphertext.encode(ENCODING)
-        except AttributeError:
-            pass
-        hash_prefix = HASH_PREFIX.encode(ENCODING)
-        if ciphertext == HASH_PREFIX.encode(ENCODING):
-            raise MalformedCiphertextError(f"Ciphertext has not hash. Got {ciphertext}")
-        if not ciphertext[: len(hash_prefix)] == hash_prefix:
-            raise MalformedCiphertextError(
-                f"Ciphertext must start with {hash_prefix}. "
-                f"Got {ciphertext[:len(hash_prefix)]}"
-            )
-        hash_value = ciphertext[len(hash_prefix) :].split(CIPHER_PREFIX.encode(ENCODING))[0]
-        if len(hash_value) != self.hash_size:
-            raise MalformedCiphertextError(
-                "Expected hash prefix to be followed by a hash. "
-                "Got something else or nothing"
-            )
-        return True
-
-    @staticmethod
-    def verify_secret(ciphertext: bytes) -> bool:
-        """Verifies secret segment of ciphertext and raises an
-        exception if not OK.
-        """
-        if ciphertext[: len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
-            try:
-                secret = ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
-                if len(secret) == 0:
-                    raise MalformedCiphertextError(
-                        "Expected cipher prefix to be followed by a secret. " "Got nothing (1)"
-                    )
-            except IndexError:
-                raise MalformedCiphertextError(
-                    "Expected cipher prefix to be followed by a secret. " "Got nothing (2)"
-                )
-        if (
-            ciphertext[-1 * len(CIPHER_PREFIX) :] == CIPHER_PREFIX.encode(ENCODING)
-            and len(ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]) == 0
-        ):
-            raise MalformedCiphertextError(
-                "Expected cipher prefix to be followed by a secret. " "Got nothing (3)"
-            )
-        return True
 
     def mask(self, value, mask=None):
         """Returns 'mask' if value is encrypted."""

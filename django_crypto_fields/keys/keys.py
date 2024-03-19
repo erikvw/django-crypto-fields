@@ -24,7 +24,7 @@ from django_crypto_fields.utils import (
     get_key_prefix_from_settings,
 )
 
-from .utils import get_filenames, get_template, write_msg
+from .utils import get_filenames, get_template, key_files_exist, write_msg
 
 style = color_style()
 
@@ -56,7 +56,7 @@ class Keys:
         write_msg(self.verbose, "Loading encryption keys\n")
         self.keys = deepcopy(self.template)
         persist_key_path_or_raise()
-        if not self.key_files_exist:
+        if not key_files_exist(self.path, self.key_prefix):
             if auto_create_keys := get_auto_create_keys_from_settings():
                 if not os.access(self.path, os.W_OK):
                     raise DjangoCryptoFieldsError(
@@ -98,7 +98,7 @@ class Keys:
 
     def create(self) -> None:
         """Generates RSA and AES keys as per `filenames`."""
-        if self.key_files_exist:
+        if key_files_exist(self.path, self.key_prefix):
             raise DjangoCryptoFieldsKeyAlreadyExist(
                 f"Not creating new keys. Encryption keys already exist. See {self.path}."
             )
@@ -117,36 +117,36 @@ class Keys:
                 f"Encryption keys have already been loaded. Path='{self.path}'."
             )
         write_msg(self.verbose, f" * loading keys from {self.path}\n")
-        for mode, keys in self.keys[RSA].items():
+        for access_mode, keys in self.keys[RSA].items():
             for key in keys:
-                write_msg(self.verbose, f" * loading {RSA}.{mode}.{key} ...\r")
-                self.load_rsa_key(mode, key)
-                write_msg(self.verbose, f" * loading {RSA}.{mode}.{key} ... Done.\n")
-        for mode in self.keys[AES]:
-            write_msg(self.verbose, f" * loading {AES}.{mode} ...\r")
-            self.load_aes_key(mode)
-            write_msg(self.verbose, f" * loading {AES}.{mode} ... Done.\n")
-        for mode in self.keys[SALT]:
-            write_msg(self.verbose, f" * loading {SALT}.{mode} ...\r")
-            self.load_salt_key(mode, key)
-            write_msg(self.verbose, f" * loading {SALT}.{mode} ... Done.\n")
+                write_msg(self.verbose, f" * loading {RSA}.{access_mode}.{key} ...\r")
+                self.load_rsa_key(access_mode, key)
+                write_msg(self.verbose, f" * loading {RSA}.{access_mode}.{key} ... Done.\n")
+        for access_mode in self.keys[AES]:
+            write_msg(self.verbose, f" * loading {AES}.{access_mode} ...\r")
+            self.load_aes_key(access_mode)
+            write_msg(self.verbose, f" * loading {AES}.{access_mode} ... Done.\n")
+        for access_mode in self.keys[SALT]:
+            write_msg(self.verbose, f" * loading {SALT}.{access_mode} ...\r")
+            self.load_salt_key(access_mode)
+            write_msg(self.verbose, f" * loading {SALT}.{access_mode} ... Done.\n")
         self.loaded = True
 
-    def load_rsa_key(self, mode, key) -> None:
+    def load_rsa_key(self, access_mode, key) -> None:
         """Loads an RSA key into _keys."""
         if self.loaded:
             raise DjangoCryptoFieldsKeysAlreadyLoaded(
                 "Encryption keys have already been loaded."
             )
-        path = Path(self.keys[RSA][mode][key])
+        path = Path(self.keys[RSA][access_mode][key])
         with path.open(mode="rb") as f:
             rsa_key = RSA_PUBLIC_KEY.importKey(f.read())
             rsa_key = PKCS1_OAEP.new(rsa_key)
-            self.keys[RSA][mode][key] = rsa_key
-            self.update_rsa_key_info(rsa_key, mode)
-        setattr(self, RSA + "_" + mode + "_" + key + "_key", rsa_key)
+            self.keys[RSA][access_mode][key] = rsa_key
+            self.update_rsa_key_info(rsa_key, access_mode)
+        setattr(self, RSA + "_" + access_mode + "_" + key + "_key", rsa_key)
 
-    def load_aes_key(self, mode) -> None:
+    def load_aes_key(self, access_mode: str) -> None:
         """Decrypts and loads an AES key into _keys.
 
         Note: AES does not use a public key.
@@ -156,97 +156,82 @@ class Keys:
                 "Encryption keys have already been loaded."
             )
         key = PRIVATE
-        rsa_key = self.keys[RSA][mode][key]
+        rsa_key = self.keys[RSA][access_mode][key]
         try:
-            path = Path(self.keys[AES][mode][key])
+            path = Path(self.keys[AES][access_mode][key])
         except KeyError:
             raise
         with path.open(mode="rb") as f:
             aes_key = rsa_key.decrypt(f.read())
-        self.keys[AES][mode][key] = aes_key
-        setattr(self, AES + "_" + mode + "_" + key + "_key", aes_key)
+        self.keys[AES][access_mode][key] = aes_key
+        setattr(self, AES + "_" + access_mode + "_" + key + "_key", aes_key)
 
-    def load_salt_key(self, mode, key) -> None:
+    def load_salt_key(self, access_mode: str) -> None:
         """Decrypts and loads a salt key into _keys."""
         if self.loaded:
             raise DjangoCryptoFieldsKeysAlreadyLoaded(
                 "Encryption keys have already been loaded."
             )
-        attr = SALT + "_" + mode + "_" + PRIVATE
-        rsa_key = self.keys[RSA][mode][PRIVATE]
-        path = Path(self.keys[SALT][mode][PRIVATE])
+        attr = SALT + "_" + access_mode + "_" + PRIVATE
+        rsa_key = self.keys[RSA][access_mode][PRIVATE]
+        path = Path(self.keys[SALT][access_mode][PRIVATE])
         with path.open(mode="rb") as f:
             salt = rsa_key.decrypt(f.read())
             setattr(self, attr, salt)
 
-    def update_rsa_key_info(self, rsa_key, mode) -> None:
+    def update_rsa_key_info(self, rsa_key, access_mode: str) -> None:
         """Stores info about the RSA key."""
         if self.loaded:
             raise DjangoCryptoFieldsKeysAlreadyLoaded(
                 "Encryption keys have already been loaded."
             )
         mod_bits = number.size(rsa_key._key.n)
-        self.rsa_key_info[mode] = {"bits": mod_bits}
+        self.rsa_key_info[access_mode] = {"bits": mod_bits}
         k = number.ceil_div(mod_bits, 8)
-        self.rsa_key_info[mode].update({"bytes": k})
+        self.rsa_key_info[access_mode].update({"bytes": k})
         h_len = rsa_key._hashObj.digest_size
-        self.rsa_key_info[mode].update({"max_message_length": k - (2 * h_len) - 2})
+        self.rsa_key_info[access_mode].update({"max_message_length": k - (2 * h_len) - 2})
 
-    def _create_rsa(self, mode=None) -> None:
+    def _create_rsa(self) -> None:
         """Creates RSA keys."""
-        modes = [mode] if mode else self.keys.get(RSA)
-        for mode in modes:
+        for access_mode in self.keys.get(RSA):
             key = RSA_PUBLIC_KEY.generate(RSA_KEY_SIZE)
             pub = key.publickey()
-            path = Path(self.keys.get(RSA).get(mode).get(PUBLIC))
+            path = Path(self.keys.get(RSA).get(access_mode).get(PUBLIC))
             try:
                 with path.open(mode="xb") as f1:
                     f1.write(pub.exportKey("PEM"))
-                write_msg(self.verbose, f" - Created new RSA {mode} key {path}\n")
-                path = Path(self.keys.get(RSA).get(mode).get(PRIVATE))
+                write_msg(self.verbose, f" - Created new RSA {access_mode} key {path}\n")
+                path = Path(self.keys.get(RSA).get(access_mode).get(PRIVATE))
                 with open(path, "xb") as f2:
                     f2.write(key.exportKey("PEM"))
-                write_msg(self.verbose, f" - Created new RSA {mode} key {path}\n")
+                write_msg(self.verbose, f" - Created new RSA {access_mode} key {path}\n")
             except FileExistsError as e:
                 raise DjangoCryptoFieldsKeyError(f"RSA key already exists. Got {e}")
 
-    def _create_aes(self, mode=None) -> None:
+    def _create_aes(self) -> None:
         """Creates AES keys and RSA encrypts them."""
-        modes = [mode] if mode else self.keys.get(AES)
-        for mode in modes:
-            with Path(self.keys.get(RSA).get(mode).get(PUBLIC)).open(mode="rb") as rsa_file:
-                rsa_key = RSA_PUBLIC_KEY.importKey(rsa_file.read())
+        for access_mode in self.keys.get(AES):
+            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(mode="rb") as f:
+                rsa_key = RSA_PUBLIC_KEY.importKey(f.read())
             rsa_key = PKCS1_OAEP.new(rsa_key)
             aes_key = Random.new().read(16)
-            path = Path(self.keys.get(AES).get(mode).get(PRIVATE))
+            path = Path(self.keys.get(AES).get(access_mode).get(PRIVATE))
             with path.open(mode="xb") as f:
                 f.write(rsa_key.encrypt(aes_key))
-            write_msg(self.verbose, f" - Created new AES {mode} key {path}\n")
+            write_msg(self.verbose, f" - Created new AES {access_mode} key {path}\n")
 
-    def _create_salt(self, mode=None) -> None:
+    def _create_salt(self) -> None:
         """Creates a salt and RSA encrypts it."""
-        modes = [mode] if mode else self.keys.get(SALT)
-        for mode in modes:
-            with Path(self.keys.get(RSA).get(mode).get(PUBLIC)).open(mode="rb") as rsa_file:
-                rsa_key = RSA_PUBLIC_KEY.importKey(rsa_file.read())
+        for access_mode in self.keys.get(SALT):
+            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(mode="rb") as f:
+                rsa_key = RSA_PUBLIC_KEY.importKey(f.read())
             rsa_key = PKCS1_OAEP.new(rsa_key)
             salt = Random.new().read(8)
-            path = Path(self.keys.get(SALT).get(mode).get(PRIVATE))
+            path = Path(self.keys.get(SALT).get(access_mode).get(PRIVATE))
             with path.open(mode="xb") as f:
                 f.write(rsa_key.encrypt(salt))
-            write_msg(self.verbose, f" - Created new salt {mode} key {path}\n")
-
-    @property
-    def key_files_exist(self) -> bool:
-        """Return True if any key files exist in the key path."""
-        key_files_exist = False
-        for group, key_group in self.template.items():
-            for mode, keys in key_group.items():
-                for key in keys:
-                    if Path(self.keys[group][mode][key]).exists():
-                        key_files_exist = True
-                        break
-        return key_files_exist
+            write_msg(self.verbose, f" - Created new salt {access_mode} key {path}\n")
 
 
 encryption_keys = Keys()

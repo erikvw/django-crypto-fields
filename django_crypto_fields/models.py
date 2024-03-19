@@ -30,9 +30,6 @@ class Crypt(AuditUuidModelMixin, models.Model):
     # causes problems with Postgres!!
     secret = models.BinaryField(verbose_name="Secret")
 
-    #     secret = models.TextField(
-    #         verbose_name="Secret")
-
     algorithm = models.CharField(max_length=25, db_index=True, null=True)
 
     mode = models.CharField(max_length=25, db_index=True, null=True)

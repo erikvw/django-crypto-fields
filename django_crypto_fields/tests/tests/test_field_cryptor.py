@@ -8,6 +8,11 @@ from django_crypto_fields.exceptions import MalformedCiphertextError
 from django_crypto_fields.field_cryptor import FieldCryptor
 from django_crypto_fields.keys import encryption_keys
 
+from ...utils import (
+    has_valid_hash_or_raise,
+    has_valid_secret_or_raise,
+    has_valid_value_or_raise,
+)
 from ..models import TestModel
 
 
@@ -29,11 +34,15 @@ class TestFieldCryptor(TestCase):
     def test_can_verify_hash_as_none(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = None
-        self.assertRaises(TypeError, field_cryptor.verify_hash, value)
+        self.assertRaises(TypeError, has_valid_hash_or_raise, value, field_cryptor.hash_size)
         value = ""
-        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
+        self.assertRaises(
+            MalformedCiphertextError, has_valid_hash_or_raise, value, field_cryptor.hash_size
+        )
         value = b""
-        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
+        self.assertRaises(
+            MalformedCiphertextError, has_valid_hash_or_raise, value, field_cryptor.hash_size
+        )
 
     def test_can_verify_hash_not_raises(self):
         """Assert does NOT raise on valid hash."""
@@ -42,7 +51,7 @@ class TestFieldCryptor(TestCase):
             "Mohammed Ali floats like a butterfly"
         )
         try:
-            field_cryptor.verify_hash(value)
+            has_valid_hash_or_raise(value, field_cryptor.hash_size)
         except MalformedCiphertextError:
             self.fail("MalformedCiphertextError unexpectedly raised")
         else:
@@ -52,23 +61,29 @@ class TestFieldCryptor(TestCase):
         """Assert does raise on invalid hash."""
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = "erik"  # missing prefix
-        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
+        self.assertRaises(
+            MalformedCiphertextError, has_valid_hash_or_raise, value, field_cryptor.hash_size
+        )
         value = HASH_PREFIX + "blah"  # incorrect prefix
-        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
+        self.assertRaises(
+            MalformedCiphertextError, has_valid_hash_or_raise, value, field_cryptor.hash_size
+        )
         value = HASH_PREFIX  # no hash following prefix
-        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_hash, value)
+        self.assertRaises(
+            MalformedCiphertextError, has_valid_hash_or_raise, value, field_cryptor.hash_size
+        )
 
     def test_verify_with_secret(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = field_cryptor.encrypt("Mohammed Ali floats like a butterfly")
-        self.assertTrue(field_cryptor.verify_secret(value))
+        self.assertTrue(has_valid_secret_or_raise(value))
 
     def test_raises_on_verify_without_secret(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = HASH_PREFIX.encode(ENCODING) + field_cryptor.hash(
             "Mohammed Ali floats like a butterfly"
         )
-        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_secret, value)
+        self.assertRaises(MalformedCiphertextError, has_valid_secret_or_raise, value)
 
     def test_verify_is_encrypted(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
@@ -87,9 +102,11 @@ class TestFieldCryptor(TestCase):
     def test_verify_value(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         value = "Mohammed Ali floats like a butterfly"
-        self.assertRaises(MalformedCiphertextError, field_cryptor.verify_value, value)
+        self.assertRaises(
+            MalformedCiphertextError, has_valid_value_or_raise, value, field_cryptor.hash_size
+        )
         value = field_cryptor.encrypt("Mohammed Ali floats like a butterfly")
-        self.assertEqual(value, field_cryptor.verify_value(value))
+        self.assertEqual(value, has_valid_value_or_raise(value, field_cryptor.hash_size))
 
     def test_rsa_field_encryption(self):
         """Assert successful RSA field roundtrip."""

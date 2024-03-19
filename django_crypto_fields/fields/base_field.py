@@ -135,7 +135,7 @@ class BaseField(models.Field):
                 self.get_in_as_lookup(value)
             else:
                 value = HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value)
-        return super(BaseField, self).get_prep_lookup(lookup_type, value)
+        return super().get_prep_lookup(lookup_type, value)
 
     def get_isnull_as_lookup(self, value):
         return value
@@ -147,7 +147,7 @@ class BaseField(models.Field):
         return hashed_values
 
     def get_internal_type(self):
-        """This is a Charfield as we only ever store the hash,
+        """This is a `CharField` as we only ever store the hash,
         which is a fixed length char.
         """
         return "CharField"
