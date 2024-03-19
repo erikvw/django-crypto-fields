@@ -6,6 +6,7 @@ CHANGES
   simplify and refactor.
 - refactor KeyPath
 - initialize / create encryption_keys in constructor of Keys class.
+- load keys before import_models from AppConfig
 - set Keys instance in keys module and import from there instead of
   from AppConfig.
 - name global Keys instance 'encryption_keys'.
@@ -15,7 +16,7 @@ CHANGES
   settings.DJANGO_CRYPTO_FIELDS_AUTO_CREATE.
   (settings.AUTO_CREATE_KEYS will still work)
 - use pathlib instead of os
-- remove system checks, raise exceptions when Keys is instantiated.
+- remove system checks, instead raise exceptions when Keys is instantiated.
 
 0.3.10
 ------
