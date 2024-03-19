@@ -112,72 +112,60 @@ class Keys:
 
     def load_keys(self) -> None:
         """Loads all keys defined in self.filenames."""
+        write_msg(self.verbose, f" * loading keys from {self.path}\n")
         if self.loaded:
             raise DjangoCryptoFieldsKeysAlreadyLoaded(
                 f"Encryption keys have already been loaded. Path='{self.path}'."
             )
-        write_msg(self.verbose, f" * loading keys from {self.path}\n")
+        self.load_rsa_keys()
+        self.load_aes_keys()
+        self.load_salt_keys()
+        self.loaded = True
+
+    def load_rsa_keys(self) -> None:
+        """Loads RSA keys into _keys."""
         for access_mode, keys in self.keys[RSA].items():
             for key in keys:
                 write_msg(self.verbose, f" * loading {RSA}.{access_mode}.{key} ...\r")
-                self.load_rsa_key(access_mode, key)
+                path = Path(self.keys[RSA][access_mode][key])
+                with path.open(mode="rb") as f:
+                    rsa_key = RSA_PUBLIC_KEY.importKey(f.read())
+                    rsa_key = PKCS1_OAEP.new(rsa_key)
+                    self.keys[RSA][access_mode][key] = rsa_key
+                    self.update_rsa_key_info(rsa_key, access_mode)
+                setattr(self, RSA + "_" + access_mode + "_" + key + "_key", rsa_key)
                 write_msg(self.verbose, f" * loading {RSA}.{access_mode}.{key} ... Done.\n")
-        for access_mode in self.keys[AES]:
-            write_msg(self.verbose, f" * loading {AES}.{access_mode} ...\r")
-            self.load_aes_key(access_mode)
-            write_msg(self.verbose, f" * loading {AES}.{access_mode} ... Done.\n")
-        for access_mode in self.keys[SALT]:
-            write_msg(self.verbose, f" * loading {SALT}.{access_mode} ...\r")
-            self.load_salt_key(access_mode)
-            write_msg(self.verbose, f" * loading {SALT}.{access_mode} ... Done.\n")
-        self.loaded = True
 
-    def load_rsa_key(self, access_mode, key) -> None:
-        """Loads an RSA key into _keys."""
-        if self.loaded:
-            raise DjangoCryptoFieldsKeysAlreadyLoaded(
-                "Encryption keys have already been loaded."
-            )
-        path = Path(self.keys[RSA][access_mode][key])
-        with path.open(mode="rb") as f:
-            rsa_key = RSA_PUBLIC_KEY.importKey(f.read())
-            rsa_key = PKCS1_OAEP.new(rsa_key)
-            self.keys[RSA][access_mode][key] = rsa_key
-            self.update_rsa_key_info(rsa_key, access_mode)
-        setattr(self, RSA + "_" + access_mode + "_" + key + "_key", rsa_key)
-
-    def load_aes_key(self, access_mode: str) -> None:
-        """Decrypts and loads an AES key into _keys.
+    def load_aes_keys(self) -> None:
+        """Decrypts and loads AES keys into _keys.
 
         Note: AES does not use a public key.
         """
-        if self.loaded:
-            raise DjangoCryptoFieldsKeysAlreadyLoaded(
-                "Encryption keys have already been loaded."
-            )
         key = PRIVATE
-        rsa_key = self.keys[RSA][access_mode][key]
-        try:
-            path = Path(self.keys[AES][access_mode][key])
-        except KeyError:
-            raise
-        with path.open(mode="rb") as f:
-            aes_key = rsa_key.decrypt(f.read())
-        self.keys[AES][access_mode][key] = aes_key
-        setattr(self, AES + "_" + access_mode + "_" + key + "_key", aes_key)
+        for access_mode in self.keys[AES]:
+            write_msg(self.verbose, f" * loading {AES}.{access_mode} ...\r")
+            rsa_key = self.keys[RSA][access_mode][key]
+            try:
+                path = Path(self.keys[AES][access_mode][key])
+            except KeyError:
+                raise
+            with path.open(mode="rb") as f:
+                aes_key = rsa_key.decrypt(f.read())
+            self.keys[AES][access_mode][key] = aes_key
+            setattr(self, AES + "_" + access_mode + "_" + key + "_key", aes_key)
+            write_msg(self.verbose, f" * loading {AES}.{access_mode} ... Done.\n")
 
-    def load_salt_key(self, access_mode: str) -> None:
-        """Decrypts and loads a salt key into _keys."""
-        if self.loaded:
-            raise DjangoCryptoFieldsKeysAlreadyLoaded(
-                "Encryption keys have already been loaded."
-            )
-        attr = SALT + "_" + access_mode + "_" + PRIVATE
-        rsa_key = self.keys[RSA][access_mode][PRIVATE]
-        path = Path(self.keys[SALT][access_mode][PRIVATE])
-        with path.open(mode="rb") as f:
-            salt = rsa_key.decrypt(f.read())
-            setattr(self, attr, salt)
+    def load_salt_keys(self) -> None:
+        """Decrypts and loads salt keys into _keys."""
+        for access_mode in self.keys[SALT]:
+            write_msg(self.verbose, f" * loading {SALT}.{access_mode} ...\r")
+            attr = SALT + "_" + access_mode + "_" + PRIVATE
+            rsa_key = self.keys[RSA][access_mode][PRIVATE]
+            path = Path(self.keys[SALT][access_mode][PRIVATE])
+            with path.open(mode="rb") as f:
+                salt = rsa_key.decrypt(f.read())
+                setattr(self, attr, salt)
+            write_msg(self.verbose, f" * loading {SALT}.{access_mode} ... Done.\n")
 
     def update_rsa_key_info(self, rsa_key, access_mode: str) -> None:
         """Stores info about the RSA key."""

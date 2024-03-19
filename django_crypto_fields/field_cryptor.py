@@ -167,11 +167,11 @@ class FieldCryptor:
         try:
             ciphertext.split(HASH_PREFIX.encode(ENCODING))[1]
         except IndexError:
-            ValueError(f"Malformed ciphertext. Expected prefixes {HASH_PREFIX}")
+            raise ValueError(f"Malformed ciphertext. Expected prefixes {HASH_PREFIX}")
         try:
             ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
         except IndexError:
-            ValueError(f"Malformed ciphertext. Expected prefixes {CIPHER_PREFIX}")
+            raise ValueError(f"Malformed ciphertext. Expected prefixes {CIPHER_PREFIX}")
         try:
             if ciphertext[: len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
                 raise MalformedCiphertextError(
@@ -275,12 +275,9 @@ class FieldCryptor:
         if value is not None:
             value = safe_encode_utf8(value)
             if value[: len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
-                if not value[: len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING):
-                    has_valid_value_or_raise(value, self.hash_size, has_secret=False)
-                    is_encrypted = True
-                elif value[: len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING):
-                    has_valid_value_or_raise(value, self.hash_size, has_secret=True)
-                    is_encrypted = True
+                has_secret = value[: len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING)
+                has_valid_value_or_raise(value, self.hash_size, has_secret=has_secret)
+                is_encrypted = True
         return is_encrypted
 
     def mask(self, value, mask=None):

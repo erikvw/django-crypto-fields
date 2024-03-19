@@ -154,14 +154,14 @@ def has_valid_value_or_raise(
       some text;
     """
     has_secret = True if has_secret is None else has_secret
-    bytes_value = safe_encode_utf8(value)
-    if bytes_value is not None and bytes_value != b"":
-        if bytes_value in [
+    encoded_value = safe_encode_utf8(value)
+    if encoded_value is not None and encoded_value != b"":
+        if encoded_value in [
             HASH_PREFIX.encode(ENCODING),
             CIPHER_PREFIX.encode(ENCODING),
         ]:
             raise MalformedCiphertextError("Expected a value, got just the encryption prefix.")
-        has_valid_hash_or_raise(bytes_value, hash_size)
+        has_valid_hash_or_raise(encoded_value, hash_size)
         if has_secret:
-            has_valid_secret_or_raise(bytes_value)
+            has_valid_secret_or_raise(encoded_value)
     return value  # note, is original passed value
