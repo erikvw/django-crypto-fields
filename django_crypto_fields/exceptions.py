@@ -52,3 +52,7 @@ class EncryptionLookupError(Exception):
 
 class MalformedCiphertextError(Exception):
     pass
+
+
+class InvalidEncryptionAlgorithm(Exception):
+    pass

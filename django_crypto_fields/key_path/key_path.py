@@ -30,14 +30,7 @@ class KeyPath:
     def __post_init__(self):
         path = get_keypath_from_settings()
         if not path:
-            if get_test_module_from_settings() in sys.argv:
-                path = mkdtemp()
-            else:
-                raise DjangoCryptoFieldsKeyPathError(
-                    "Path may not be none. Production or debug systems must explicitly "
-                    "set a valid path to the encryption keys. "
-                    "See settings.DJANGO_CRYPTO_FIELDS_KEY_PATH."
-                )
+            path = self.create_folder_for_tests_or_raise()
         elif not Path(path).exists():
             raise DjangoCryptoFieldsKeyPathDoesNotExist(
                 "Path to encryption keys does not exist. "
@@ -59,3 +52,15 @@ class KeyPath:
 
     def __str__(self) -> str:
         return str(self.path)
+
+    @staticmethod
+    def create_folder_for_tests_or_raise() -> PurePath:
+        if get_test_module_from_settings() in sys.argv:
+            path = PurePath(mkdtemp())
+        else:
+            raise DjangoCryptoFieldsKeyPathError(
+                "Path may not be none. Production or debug systems must explicitly "
+                "set a valid path to the encryption keys. "
+                "See settings.DJANGO_CRYPTO_FIELDS_KEY_PATH."
+            )
+        return path

@@ -57,24 +57,7 @@ class Keys:
         self.keys = deepcopy(self.template)
         persist_key_path_or_raise()
         if not key_files_exist(self.path, self.key_prefix):
-            if auto_create_keys := get_auto_create_keys_from_settings():
-                if not os.access(self.path, os.W_OK):
-                    raise DjangoCryptoFieldsError(
-                        "Cannot auto-create encryption keys. Folder is not writeable."
-                        f"Got {self.path}"
-                    )
-                write_msg(
-                    self.verbose,
-                    style.SUCCESS(f" * settings.AUTO_CREATE_KEYS={auto_create_keys}.\n"),
-                )
-                self.create()
-            else:
-                raise DjangoCryptoFieldsKeysDoNotExist(
-                    f"Failed to find any encryption keys in path {self.path}. "
-                    "If this is your first time loading "
-                    "the project, set settings.AUTO_CREATE_KEYS=True and restart. "
-                    "Make sure the folder is writeable."
-                )
+            self.create_new_keys_or_raise()
         self.load_keys()
         self.rsa_modes_supported = sorted([k for k in self.keys[RSA]])
         self.aes_modes_supported = sorted([k for k in self.keys[AES]])
@@ -98,7 +81,28 @@ class Keys:
     def get(self, k: str):
         return self.keys.get(k)
 
-    def create(self) -> None:
+    def create_new_keys_or_raise(self):
+        """Calls create after checking if allowed."""
+        if auto_create_keys := get_auto_create_keys_from_settings():
+            if not os.access(self.path, os.W_OK):
+                raise DjangoCryptoFieldsError(
+                    "Cannot auto-create encryption keys. Folder is not writeable."
+                    f"Got {self.path}"
+                )
+            write_msg(
+                self.verbose,
+                style.SUCCESS(f" * settings.AUTO_CREATE_KEYS={auto_create_keys}.\n"),
+            )
+            self._create()
+        else:
+            raise DjangoCryptoFieldsKeysDoNotExist(
+                f"Failed to find any encryption keys in path {self.path}. "
+                "If this is your first time loading "
+                "the project, set settings.AUTO_CREATE_KEYS=True and restart. "
+                "Make sure the folder is writeable."
+            )
+
+    def _create(self) -> None:
         """Generates RSA and AES keys as per `filenames`."""
         if key_files_exist(self.path, self.key_prefix):
             raise DjangoCryptoFieldsKeyAlreadyExist(

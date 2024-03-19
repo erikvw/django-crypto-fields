@@ -74,7 +74,7 @@ class TestKeyCreator(TestCase):
     def test_create_keys_does_not_overwrite_production_keys(self):
         keys = Keys(verbose=False)
         keys.reset()
-        self.assertRaises(DjangoCryptoFieldsKeyAlreadyExist, keys.create)
+        self.assertRaises(DjangoCryptoFieldsKeyAlreadyExist, keys.create_new_keys_or_raise)
 
     @override_settings(
         DEBUG=False,

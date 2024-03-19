@@ -20,12 +20,18 @@ from .constants import (
     SALT,
 )
 from .cryptor import Cryptor
-from .exceptions import CipherError, EncryptionError, EncryptionKeyError
+from .exceptions import (
+    CipherError,
+    EncryptionError,
+    EncryptionKeyError,
+    InvalidEncryptionAlgorithm,
+)
 from .keys import encryption_keys
 from .utils import (
     get_crypt_model_cls,
     has_valid_value_or_raise,
     is_valid_ciphertext_or_raise,
+    safe_decode,
     safe_encode_utf8,
 )
 
@@ -49,6 +55,7 @@ class FieldCryptor:
 
     def __init__(self, algorithm: str, access_mode: str):
         self._using = None
+        self._algorithm = None
         self.algorithm = algorithm
         self.access_mode = access_mode
         self.aes_encryption_mode = AES_CIPHER.MODE_CBC
@@ -60,6 +67,18 @@ class FieldCryptor:
 
     def __repr__(self) -> str:
         return f"FieldCryptor(algorithm='{self.algorithm}', mode='{self.access_mode}')"
+
+    @property
+    def algorithm(self):
+        return self._algorithm
+
+    @algorithm.setter
+    def algorithm(self, value):
+        self._algorithm = value
+        if value not in [AES, RSA]:
+            raise InvalidEncryptionAlgorithm(
+                f"Invalid encryption algorithm. Expected 'aes' or 'rsa'. Got {value}"
+            )
 
     @property
     def salt_key(self):
@@ -123,13 +142,6 @@ class FieldCryptor:
                     plaintext = self.cryptor.aes_decrypt(secret, self.access_mode)
                 elif self.algorithm == RSA:
                     plaintext = self.cryptor.rsa_decrypt(secret, self.access_mode)
-                else:
-                    raise CipherError(
-                        "Cannot determine algorithm for decryption."
-                        " Valid options are {0}. Got {1}".format(
-                            ", ".join(list(self.keys.key_filenames)), self.algorithm
-                        )
-                    )
         return plaintext
 
     @property
@@ -171,10 +183,7 @@ class FieldCryptor:
         else:
             ciphertext = self.encrypt(value)
             value = ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[0]
-            try:
-                value.decode()
-            except AttributeError:
-                pass
+            value = safe_decode(value)
         return value
 
     def get_ciphertext(self, value):
@@ -183,19 +192,12 @@ class FieldCryptor:
             cipher = self.cryptor.aes_encrypt
         elif self.algorithm == RSA:
             cipher = self.cryptor.rsa_encrypt
-        try:
-            ciphertext = (
-                HASH_PREFIX.encode(ENCODING)
-                + self.hash(value)
-                + CIPHER_PREFIX.encode(ENCODING)
-                + cipher(value, self.access_mode)
-            )
-        except AttributeError as e:
-            raise CipherError(
-                "Cannot determine cipher method. Unknown "
-                "encryption algorithm. Valid options are {0}. "
-                "Got {1} ({2})".format(", ".join(self.keys.key_filenames), self.algorithm, e)
-            )
+        ciphertext = (
+            HASH_PREFIX.encode(ENCODING)
+            + self.hash(value)
+            + CIPHER_PREFIX.encode(ENCODING)
+            + cipher(value, self.access_mode)
+        )
         return is_valid_ciphertext_or_raise(ciphertext, self.hash_size)
 
     def get_hash(self, ciphertext: bytes) -> bytes | None:

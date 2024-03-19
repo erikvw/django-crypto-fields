@@ -90,6 +90,14 @@ def safe_encode_utf8(value) -> bytes:
     return value
 
 
+def safe_decode(value) -> bytes:
+    try:
+        value.decode()
+    except AttributeError:
+        pass
+    return value
+
+
 def has_valid_hash_or_raise(ciphertext: bytes, hash_size: int) -> bool:
     """Verifies hash segment of ciphertext (bytes) and
     raises an exception if not OK.
@@ -138,11 +146,11 @@ def has_valid_value_or_raise(
             raise MalformedCiphertextError("Expected a value, got just the encryption prefix.")
         has_valid_hash_or_raise(encoded_value, hash_size)
         if has_secret:
-            is_valid_ciphertext_or_raise(encoded_value, hash_size)
+            is_valid_ciphertext_or_raise(encoded_value)
     return value  # note, is original passed value
 
 
-def is_valid_ciphertext_or_raise(ciphertext: bytes, hash_size: int):
+def is_valid_ciphertext_or_raise(ciphertext: bytes, hash_size: int | None = None):
     """Returns an unchanged ciphertext after verifying format cipher_prefix +
     hash + cipher_prefix + secret.
     """
@@ -158,22 +166,10 @@ def is_valid_ciphertext_or_raise(ciphertext: bytes, hash_size: int):
         raise MalformedCiphertextError(
             f"Malformed ciphertext. Expected prefixes {CIPHER_PREFIX}"
         )
-    try:
-        if ciphertext[: len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
-            raise MalformedCiphertextError(
-                f"Malformed ciphertext. Expected hash prefix {HASH_PREFIX}"
-            )
-        if (
-            len(
-                ciphertext.split(HASH_PREFIX.encode(ENCODING))[1].split(
-                    CIPHER_PREFIX.encode(ENCODING)
-                )[0]
-            )
-            != hash_size
-        ):
-            raise MalformedCiphertextError(
-                f"Malformed ciphertext. Expected hash size of {hash_size}."
-            )
-    except IndexError:
-        MalformedCiphertextError("Malformed ciphertext.")
+    if ciphertext[: len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
+        raise MalformedCiphertextError(
+            f"Malformed ciphertext. Expected hash prefix {HASH_PREFIX}"
+        )
+    if hash_size is not None:
+        has_valid_hash_or_raise(ciphertext, hash_size)
     return ciphertext
