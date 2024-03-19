@@ -151,7 +151,7 @@ def has_valid_value_or_raise(
 
 
 def is_valid_ciphertext_or_raise(ciphertext: bytes, hash_size: int | None = None):
-    """Returns an unchanged ciphertext after verifying format cipher_prefix +
+    """Returns an unchanged ciphertext after verifying format hash_prefix +
     hash + cipher_prefix + secret.
     """
     try:

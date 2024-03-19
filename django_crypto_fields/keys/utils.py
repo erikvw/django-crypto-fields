@@ -4,15 +4,7 @@ import sys
 from pathlib import Path, PurePath
 from typing import Iterator
 
-from django_crypto_fields.constants import (
-    AES,
-    LOCAL_MODE,
-    PRIVATE,
-    PUBLIC,
-    RESTRICTED_MODE,
-    RSA,
-    SALT,
-)
+from ..constants import AES, LOCAL_MODE, PRIVATE, PUBLIC, RESTRICTED_MODE, RSA, SALT
 
 
 def get_template(path: PurePath, key_prefix: str) -> dict[str, dict[str, dict[str, PurePath]]]:

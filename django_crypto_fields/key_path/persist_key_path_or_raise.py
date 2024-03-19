@@ -47,15 +47,14 @@ def read_last_used(folder: Path) -> tuple[PurePath | None, Path]:
     """Opens file `django_crypto_fields` and read last path."""
     last_used_path = None
     filepath = Path(folder / "django_crypto_fields")
-    if filepath.exists():
-        if "runtests.py" in sys.argv:
-            filepath.unlink()
-        else:
-            with filepath.open(mode="r") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    last_used_path = PurePath(row.get("path"))
-                    break
+    if "runtests.py" in sys.argv:
+        filepath.unlink(missing_ok=True)
+    elif filepath.exists():
+        with filepath.open(mode="r") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                last_used_path = PurePath(row.get("path"))
+                break
     if last_used_path and not Path(last_used_path).exists():
         raise DjangoCryptoFieldsKeyPathError(
             style.ERROR(

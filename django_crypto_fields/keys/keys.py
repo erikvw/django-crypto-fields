@@ -10,20 +10,16 @@ from Cryptodome.PublicKey import RSA as RSA_PUBLIC_KEY
 from Cryptodome.Util import number
 from django.core.management.color import color_style
 
-from django_crypto_fields.constants import AES, PRIVATE, PUBLIC, RSA, RSA_KEY_SIZE, SALT
-from django_crypto_fields.exceptions import (
+from ..constants import AES, PRIVATE, PUBLIC, RSA, RSA_KEY_SIZE, SALT
+from ..exceptions import (
     DjangoCryptoFieldsError,
     DjangoCryptoFieldsKeyAlreadyExist,
     DjangoCryptoFieldsKeyError,
     DjangoCryptoFieldsKeysAlreadyLoaded,
     DjangoCryptoFieldsKeysDoNotExist,
 )
-from django_crypto_fields.key_path import KeyPath, persist_key_path_or_raise
-from django_crypto_fields.utils import (
-    get_auto_create_keys_from_settings,
-    get_key_prefix_from_settings,
-)
-
+from ..key_path import KeyPath, persist_key_path_or_raise
+from ..utils import get_auto_create_keys_from_settings, get_key_prefix_from_settings
 from .utils import get_filenames, get_template, key_files_exist, write_msg
 
 style = color_style()

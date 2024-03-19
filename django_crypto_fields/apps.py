@@ -4,7 +4,7 @@ import sys
 from django.apps import AppConfig as DjangoAppConfig
 from django.core.management.color import color_style
 
-from django_crypto_fields.key_path import KeyPath
+from .key_path import KeyPath
 
 
 class AppConfig(DjangoAppConfig):
