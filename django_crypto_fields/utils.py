@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Type
 
 from django.apps import apps as django_apps
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 
 from .constants import CIPHER_PREFIX, ENCODING, HASH_ALGORITHM, HASH_PREFIX, HASH_ROUNDS
 from .exceptions import MalformedCiphertextError
@@ -43,19 +42,7 @@ def get_crypt_model() -> str:
 
 
 def get_crypt_model_cls() -> Type[Crypt]:
-    """Return the Crypt model that is active in this project."""
-    try:
-        return django_apps.get_model(get_crypt_model(), require_ready=False)
-    except ValueError:
-        raise ImproperlyConfigured(
-            "Invalid. `settings.DJANGO_CRYPTO_FIELDS_MODEL` must refer to a model "
-            f"using lower_label format. Got {get_crypt_model()}."
-        )
-    except LookupError:
-        raise ImproperlyConfigured(
-            "Invalid. `settings.DJANGO_CRYPTO_FIELDS_MODEL` refers to a model "
-            f"that has not been installed. Got {get_crypt_model()}."
-        )
+    return django_apps.get_model(get_crypt_model())
 
 
 def get_auto_create_keys_from_settings() -> bool:
