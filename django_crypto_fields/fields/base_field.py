@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -10,11 +9,9 @@ from django.forms import widgets
 
 from ..constants import ENCODING, HASH_PREFIX, LOCAL_MODE, RSA
 from ..exceptions import (
-    CipherError,
     DjangoCryptoFieldsKeysNotLoaded,
     EncryptionError,
     EncryptionLookupError,
-    MalformedCiphertextError,
 )
 from ..field_cryptor import FieldCryptor
 from ..keys import encryption_keys
@@ -78,24 +75,10 @@ class BaseField(models.Field):
         return super(BaseField, self).formfield(**defaults)
 
     def decrypt(self, value):
-        decrypted_value = None
         if value is None or value in ["", b""]:
-            return value
-        try:
+            decrypted_value = value
+        else:
             decrypted_value = self.field_cryptor.decrypt(value)
-            if not decrypted_value:
-                self.readonly = True  # did not decrypt
-                decrypted_value = value
-        except CipherError as e:
-            sys.stdout.write(style.ERROR(f"CipherError. Got {e}\n"))
-            sys.stdout.flush()
-        except EncryptionError as e:
-            sys.stdout.write(style.ERROR(f"EncryptionError. Got {e}\n"))
-            sys.stdout.flush()
-            raise
-        except MalformedCiphertextError as e:
-            sys.stdout.write(style.ERROR(f"MalformedCiphertextError. Got {e}\n"))
-            sys.stdout.flush()
         return decrypted_value
 
     def from_db_value(self, value, *args):
@@ -119,23 +102,27 @@ class BaseField(models.Field):
         Since the available value is the hash, only exact match
         lookup types are supported.
         """
-        supported_lookups = ["iexact", "exact", "in", "isnull"]
-        if value is None or value in ["", b""] or lookup_type not in supported_lookups:
+        # TODO: why value in ["", b""] and not just value == b""
+        if value is None or value in ["", b""]:
             pass
         else:
-            supported_lookups = ["iexact", "exact", "in", "isnull"]
-            if lookup_type not in supported_lookups:
-                raise EncryptionLookupError(
-                    f"Field type only supports supports '{supported_lookups}' "
-                    f"lookups. Got '{lookup_type}'"
-                )
+            self.raise_if_unsupported_lookup(lookup_type)
             if lookup_type == "isnull":
                 value = self.get_isnull_as_lookup(value)
             elif lookup_type == "in":
-                self.get_in_as_lookup(value)
+                value = self.get_in_as_lookup(value)
             else:
                 value = HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value)
         return super().get_prep_lookup(lookup_type, value)
+
+    @staticmethod
+    def raise_if_unsupported_lookup(lookup_type):
+        supported_lookups = ["iexact", "exact", "in", "isnull"]
+        if lookup_type not in supported_lookups:
+            raise EncryptionLookupError(
+                f"Field type only supports supports '{supported_lookups}' "
+                f"lookups. Got '{lookup_type}'"
+            )
 
     def get_isnull_as_lookup(self, value):
         return value

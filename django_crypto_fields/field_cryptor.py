@@ -1,39 +1,17 @@
 from __future__ import annotations
 
-import binascii
-import hashlib
 from typing import TYPE_CHECKING, Type
 
 from Cryptodome.Cipher import AES as AES_CIPHER
 from django.apps import apps as django_apps
 from django.core.exceptions import ObjectDoesNotExist
 
-from .constants import (
-    AES,
-    CIPHER_PREFIX,
-    ENCODING,
-    HASH_ALGORITHM,
-    HASH_PREFIX,
-    HASH_ROUNDS,
-    PRIVATE,
-    RSA,
-    SALT,
-)
+from .cipher import Cipher, CipherParser
+from .constants import AES, CIPHER_PREFIX, ENCODING, HASH_PREFIX, PRIVATE, RSA, SALT
 from .cryptor import Cryptor
-from .exceptions import (
-    CipherError,
-    EncryptionError,
-    EncryptionKeyError,
-    InvalidEncryptionAlgorithm,
-)
+from .exceptions import EncryptionError, EncryptionKeyError, InvalidEncryptionAlgorithm
 from .keys import encryption_keys
-from .utils import (
-    get_crypt_model_cls,
-    has_valid_value_or_raise,
-    is_valid_ciphertext_or_raise,
-    safe_decode,
-    safe_encode_utf8,
-)
+from .utils import get_crypt_model_cls, make_hash, safe_decode, safe_encode_utf8
 
 if TYPE_CHECKING:
     from .models import Crypt
@@ -52,6 +30,8 @@ class FieldCryptor:
     """
 
     crypt_model = "django_crypto_fields.crypt"
+    cryptor_cls = Cryptor
+    cipher_cls = Cipher
 
     def __init__(self, algorithm: str, access_mode: str):
         self._using = None
@@ -62,7 +42,7 @@ class FieldCryptor:
         self.cipher_buffer_key = f"{self.algorithm}_{self.access_mode}"
         self.cipher_buffer = {self.cipher_buffer_key: {}}
         self.keys = encryption_keys
-        self.cryptor = Cryptor()
+        self.cryptor = self.cryptor_cls(algorithm=algorithm, access_mode=access_mode)
         self.hash_size: int = len(self.hash("Foo"))
 
     def __repr__(self) -> str:
@@ -80,6 +60,9 @@ class FieldCryptor:
                 f"Invalid encryption algorithm. Expected 'aes' or 'rsa'. Got {value}"
             )
 
+    def hash(self, value):
+        return make_hash(value, self.salt_key)
+
     @property
     def salt_key(self):
         attr = "_".join([SALT, self.access_mode, PRIVATE])
@@ -96,21 +79,11 @@ class FieldCryptor:
         """
         return get_crypt_model_cls()
 
-    def hash(self, plaintext):
-        """Returns a hexified hash of a plaintext value (as bytes).
-
-        The hashed value is used as a signature of the "secret".
-        """
-        plaintext = safe_encode_utf8(plaintext)
-        dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, plaintext, self.salt_key, HASH_ROUNDS)
-        return binascii.hexlify(dk)
-
     def encrypt(self, value: str | bytes | None, update: bool | None = None):
-        """Returns ciphertext as byte data using either an
-        RSA or AES cipher.
+        """Returns either an RSA or AES cipher.
 
         * 'value' is either plaintext or ciphertext
-        * 'ciphertext' is a byte value of hash_prefix
+        * 'cipher' is a byte value of hash_prefix
           + hashed_value + cipher_prefix + secret.
           For example:
             enc1:::234234ed234a24enc2::\x0e\xb9\xae\x13s\x8d
@@ -118,31 +91,28 @@ class FieldCryptor:
         * 'value' is not re-encrypted if already encrypted and properly
           formatted 'ciphertext'.
         """
-        ciphertext = None
+        cipher = None
         update = True if update is None else update
-        value = safe_encode_utf8(value)
-        if value is not None and value != b"" and not self.is_encrypted(value):
-            ciphertext = self.get_ciphertext(value)
+        encoded_value = safe_encode_utf8(value)
+        if encoded_value and not self.is_encrypted(encoded_value):
+            cipher = self.cipher_cls(value, self.salt_key, encrypt=self.cryptor.encrypt)
             if update:
-                self.update_crypt(ciphertext)
-        return ciphertext
+                self.update_crypt(cipher)
+        return getattr(cipher, "cipher", encoded_value)
 
-    def decrypt(self, hash_with_prefix: str):
+    def decrypt(self, hash_with_prefix: str | bytes):
         """Returns decrypted secret or None.
 
-        Secret is retrieved from `Crypt` using the hash.
+        Secret is retrieved from `Crypt` using the hash_with_prefix
+        coming from the field of the user model.
 
-        hash_with_prefix = hash_prefix+hash.
+        hash_with_prefix = hash_prefix+hash_value.
         """
-        plaintext = None
         hash_with_prefix = safe_encode_utf8(hash_with_prefix)
-        if self.is_encrypted(hash_with_prefix):
+        if hash_with_prefix and self.is_encrypted(hash_with_prefix):
             if secret := self.fetch_secret(hash_with_prefix):
-                if self.algorithm == AES:
-                    plaintext = self.cryptor.aes_decrypt(secret, self.access_mode)
-                elif self.algorithm == RSA:
-                    plaintext = self.cryptor.rsa_decrypt(secret, self.access_mode)
-        return plaintext
+                return self.cryptor.decrypt(secret)
+        return None
 
     @property
     def using(self):
@@ -151,102 +121,83 @@ class FieldCryptor:
             self._using = app_config.crypt_model_using
         return self._using
 
-    def update_crypt(self, ciphertext):
-        """Updates cipher model (Crypt) and temporary buffer."""
-        if is_valid_ciphertext_or_raise(ciphertext, self.hash_size):
-            hashed_value = self.get_hash(ciphertext)
-            secret = self.get_secret(ciphertext)
-            self.cipher_buffer[self.cipher_buffer_key].update({hashed_value: secret})
-            try:
-                crypt = self.crypt_model_cls.objects.using(self.using).get(
-                    hash=hashed_value, algorithm=self.algorithm, mode=self.access_mode
-                )
-                crypt.secret = secret
-                crypt.save()
-            except ObjectDoesNotExist:
-                self.crypt_model_cls.objects.using(self.using).create(
-                    hash=hashed_value,
-                    secret=secret,
-                    algorithm=self.algorithm,
-                    cipher_mode=self.aes_encryption_mode,
-                    mode=self.access_mode,
-                )
+    def update_crypt(self, cipher: Cipher):
+        """Updates Crypt model and cipher_buffer."""
+        self.cipher_buffer[self.cipher_buffer_key].update({cipher.hashed_value: cipher.secret})
+        try:
+            crypt = self.crypt_model_cls.objects.using(self.using).get(
+                hash=cipher.hashed_value, algorithm=self.algorithm, mode=self.access_mode
+            )
+            crypt.secret = cipher.secret
+            crypt.save()
+        except ObjectDoesNotExist:
+            self.crypt_model_cls.objects.using(self.using).create(
+                hash=cipher.hashed_value,
+                secret=cipher.secret,
+                algorithm=self.algorithm,
+                cipher_mode=self.aes_encryption_mode,
+                mode=self.access_mode,
+            )
 
     def get_prep_value(self, value: str | bytes | None) -> str | bytes | None:
-        """Returns the prefix + hash as stored in the DB table column of
+        """Returns the prefix + hash_value as stored in the DB table column of
         your model's "encrypted" field.
 
         Used by get_prep_value()
         """
+        hash_with_prefix = None
         if value is None or value in ["", b""]:
             pass  # return None or empty string/byte
         else:
-            ciphertext = self.encrypt(value)
-            value = ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[0]
-            value = safe_decode(value)
-        return value
-
-    def get_ciphertext(self, value):
-        cipher = None
-        if self.algorithm == AES:
-            cipher = self.cryptor.aes_encrypt
-        elif self.algorithm == RSA:
-            cipher = self.cryptor.rsa_encrypt
-        ciphertext = (
-            HASH_PREFIX.encode(ENCODING)
-            + self.hash(value)
-            + CIPHER_PREFIX.encode(ENCODING)
-            + cipher(value, self.access_mode)
-        )
-        return is_valid_ciphertext_or_raise(ciphertext, self.hash_size)
-
-    def get_hash(self, ciphertext: bytes) -> bytes | None:
-        """Returns the hashed_value given a ciphertext or None."""
-        ciphertext = safe_encode_utf8(ciphertext)
-        return ciphertext[len(HASH_PREFIX) :][: self.hash_size] or None
-
-    def get_secret(self, ciphertext: bytes) -> bytes | None:
-        """Returns the secret given a ciphertext."""
-        if ciphertext is None:
-            secret = None
-        elif self.is_encrypted(ciphertext):
-            secret = ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
-        else:
-            raise CipherError("Expected a ciphertext or None")
-        return secret
+            cipher = self.encrypt(value)
+            hash_with_prefix = cipher.split(CIPHER_PREFIX.encode(ENCODING))[0]
+            hash_with_prefix = safe_decode(hash_with_prefix)
+        return hash_with_prefix or value
 
     def fetch_secret(self, hash_with_prefix: bytes):
-        hashed_value = self.get_hash(hash_with_prefix)
+        """Fetch the secret from the DB or the buffer using
+        the hashed_value as the lookup.
+
+        If not found in buffer, lookup in DB and update the buffer.
+
+        A secret is the segment to follow the `enc2:::`.
+        """
+        hash_with_prefix = safe_encode_utf8(hash_with_prefix)
+        hashed_value = hash_with_prefix[len(HASH_PREFIX) :][: self.hash_size] or None
         secret = self.cipher_buffer[self.cipher_buffer_key].get(hashed_value)
         if not secret:
             try:
-                cipher = (
+                data = (
                     self.crypt_model_cls.objects.using(self.using)
                     .values("secret")
                     .get(hash=hashed_value, algorithm=self.algorithm, mode=self.access_mode)
                 )
-                secret = cipher.get("secret")
+                secret = data.get("secret")
                 self.cipher_buffer[self.cipher_buffer_key].update({hashed_value: secret})
             except ObjectDoesNotExist:
                 raise EncryptionError(
-                    f"Failed to get secret for given {self.algorithm} "
-                    f"{self.access_mode} hash. Got '{hash_with_prefix}'"
+                    f"EncryptionError. Failed to get secret for given {self.algorithm} "
+                    f"{self.access_mode} hash. Got '{str(hash_with_prefix)}'"
                 )
         return secret
 
     def is_encrypted(self, value: str | bytes | None) -> bool:
         """Returns True if value is encrypted.
-        Value can be:
-            * a string value
+
+        An encrypted value starts with the hash_prefix.
+
+        Inspects a value that is:
+            * a string value -> False
             * a well-formed hash
-            * a well-formed hash+secret.
+            * a well-formed hash_prefix + hash -> True
+            * a well-formed hash + secret.
         """
         is_encrypted = False
         if value is not None:
             value = safe_encode_utf8(value)
-            if value[: len(HASH_PREFIX)] == HASH_PREFIX.encode(ENCODING):
-                has_secret = value[: len(CIPHER_PREFIX)] == CIPHER_PREFIX.encode(ENCODING)
-                has_valid_value_or_raise(value, self.hash_size, has_secret=has_secret)
+            if value.startswith(safe_encode_utf8(HASH_PREFIX)):
+                p = CipherParser(value, self.salt_key)
+                p.validate_hashed_value()
                 is_encrypted = True
         return is_encrypted
 

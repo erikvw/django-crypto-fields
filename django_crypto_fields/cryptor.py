@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from Cryptodome import Random
 from Cryptodome.Cipher import AES as AES_CIPHER
 
-from .constants import AES, ENCODING, PRIVATE, PUBLIC, RSA
+from .constants import AES, ENCODING, LOCAL_MODE, PRIVATE, PUBLIC, RSA
 from .exceptions import EncryptionError
 from .keys import encryption_keys
 from .utils import get_keypath_from_settings
@@ -14,8 +14,6 @@ from .utils import get_keypath_from_settings
 if TYPE_CHECKING:
     from Cryptodome.Cipher._mode_cbc import CbcMode
     from Cryptodome.Cipher.PKCS1_OAEP import PKCS1OAEP_Cipher
-
-    from .keys import Keys
 
 
 class Cryptor:
@@ -26,9 +24,17 @@ class Cryptor:
     of this except the filenames are replaced with the actual keys.
     """
 
-    def __init__(self):
+    def __init__(self, algorithm: AES | RSA, access_mode: PRIVATE | LOCAL_MODE = None) -> None:
+        self.algorithm = algorithm
         self.aes_encryption_mode: int = AES_CIPHER.MODE_CBC
-        self.keys: Keys = encryption_keys
+        aes_key_attr: str = "_".join([AES, access_mode, PRIVATE, "key"])
+        self.aes_key: bytes = getattr(encryption_keys, aes_key_attr)
+        rsa_key_attr = "_".join([RSA, access_mode, PUBLIC, "key"])
+        self.rsa_public_key: PKCS1OAEP_Cipher = getattr(encryption_keys, rsa_key_attr)
+        rsa_key_attr = "_".join([RSA, access_mode, PRIVATE, "key"])
+        self.rsa_private_key: PKCS1OAEP_Cipher = getattr(encryption_keys, rsa_key_attr)
+        self.encrypt = getattr(self, f"_{self.algorithm.lower()}_encrypt")
+        self.decrypt = getattr(self, f"_{self.algorithm.lower()}_decrypt")
 
     def get_with_padding(self, plaintext: str | bytes, block_size: int) -> bytes:
         """Return string padded so length is a multiple of the block size.
@@ -73,42 +79,34 @@ class Cryptor:
             return plaintext[:-1]
         return plaintext[:-padding_length]
 
-    def aes_encrypt(self, plaintext: str | bytes, mode: str) -> bytes:
-        aes_key_attr: str = "_".join([AES, mode, PRIVATE, "key"])
-        aes_key: bytes = getattr(self.keys, aes_key_attr)
+    def _aes_encrypt(self, plaintext: str | bytes) -> bytes:
         iv: bytes = Random.new().read(AES_CIPHER.block_size)
-        cipher: CbcMode = AES_CIPHER.new(aes_key, self.aes_encryption_mode, iv)
+        cipher: CbcMode = AES_CIPHER.new(self.aes_key, self.aes_encryption_mode, iv)
         padded_plaintext = self.get_with_padding(plaintext, cipher.block_size)
         return iv + cipher.encrypt(padded_plaintext)
 
-    def aes_decrypt(self, ciphertext: bytes, mode: str) -> str:
-        aes_key_attr: str = "_".join([AES, mode, PRIVATE, "key"])
-        aes_key: bytes = getattr(self.keys, aes_key_attr)
+    def _aes_decrypt(self, ciphertext: bytes) -> str:
         iv = ciphertext[: AES_CIPHER.block_size]
-        cipher: CbcMode = AES_CIPHER.new(aes_key, self.aes_encryption_mode, iv)
+        cipher: CbcMode = AES_CIPHER.new(self.aes_key, self.aes_encryption_mode, iv)
         plaintext = cipher.decrypt(ciphertext)[AES_CIPHER.block_size :]
         return self.get_without_padding(plaintext).decode()
 
-    def rsa_encrypt(self, plaintext: str | bytes, mode: int) -> bytes:
-        rsa_key_attr = "_".join([RSA, mode, PUBLIC, "key"])
-        rsa_key: PKCS1OAEP_Cipher = getattr(self.keys, rsa_key_attr)
+    def _rsa_encrypt(self, plaintext: str | bytes) -> bytes:
         try:
             plaintext = plaintext.encode(ENCODING)
         except AttributeError:
             pass
         try:
-            ciphertext = rsa_key.encrypt(plaintext)
+            ciphertext = self.rsa_public_key.encrypt(plaintext)
         except (ValueError, TypeError) as e:
             raise EncryptionError(f"RSA encryption failed for value. Got '{e}'")
         return ciphertext
 
-    def rsa_decrypt(self, ciphertext: bytes, mode: str) -> str:
-        rsa_key_attr = "_".join([RSA, mode, PRIVATE, "key"])
-        rsa_key: PKCS1OAEP_Cipher = getattr(self.keys, rsa_key_attr)
+    def _rsa_decrypt(self, ciphertext: bytes) -> str:
         try:
-            plaintext = rsa_key.decrypt(ciphertext)
+            plaintext = self.rsa_private_key.decrypt(ciphertext)
         except ValueError as e:
             raise EncryptionError(
-                f"{e} Using {rsa_key_attr} from key_path=`{get_keypath_from_settings()}`."
+                f"{e} Using RSA from key_path=`{get_keypath_from_settings()}`."
             )
         return plaintext.decode(ENCODING)

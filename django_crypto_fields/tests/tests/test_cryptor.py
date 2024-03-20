@@ -23,73 +23,73 @@ class TestCryptor(TestCase):
 
     def test_encrypt_rsa(self):
         """Assert successful RSA roundtrip."""
-        cryptor = Cryptor()
-        plaintext = "erik is a pleeb!!"
         for mode in encryption_keys.rsa_modes_supported:
-            ciphertext = cryptor.rsa_encrypt(plaintext, mode)
-            self.assertEqual(plaintext, cryptor.rsa_decrypt(ciphertext, mode))
+            cryptor = Cryptor(algorithm=RSA, access_mode=mode)
+            plaintext = "erik is a pleeb!!"
+            ciphertext = cryptor.encrypt(plaintext)
+            self.assertEqual(plaintext, cryptor.decrypt(ciphertext))
 
     def test_encrypt_aes(self):
         """Assert successful AES roundtrip."""
-        cryptor = Cryptor()
-        plaintext = "erik is a pleeb!!"
         for mode in encryption_keys.aes_modes_supported:
-            ciphertext = cryptor.aes_encrypt(plaintext, mode)
-            self.assertEqual(plaintext, cryptor.aes_decrypt(ciphertext, mode))
+            cryptor = Cryptor(algorithm=AES, access_mode=mode)
+            plaintext = "erik is a pleeb!!"
+            ciphertext = cryptor.encrypt(plaintext)
+            self.assertEqual(plaintext, cryptor.decrypt(ciphertext))
 
     def test_encrypt_rsa_length(self):
         """Assert RSA raises EncryptionError if plaintext is too long."""
-        cryptor = Cryptor()
         for mode in encryption_keys.rsa_modes_supported:
+            cryptor = Cryptor(algorithm=RSA, access_mode=mode)
             max_length = encryption_keys.rsa_key_info[mode]["max_message_length"]
             plaintext = "".join(["a" for _ in range(0, max_length)])
-            cryptor.rsa_encrypt(plaintext, mode)
-            self.assertRaises(EncryptionError, cryptor.rsa_encrypt, plaintext + "a", mode)
+            cryptor.encrypt(plaintext)
+            self.assertRaises(EncryptionError, cryptor.encrypt, plaintext + "a")
 
     def test_rsa_encoding(self):
         """Assert successful RSA roundtrip of byte return str."""
-        cryptor = Cryptor()
+        cryptor = Cryptor(algorithm=RSA, access_mode=LOCAL_MODE)
         plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç".encode("utf-8")
-        ciphertext = cryptor.rsa_encrypt(plaintext, LOCAL_MODE)
-        t2 = type(cryptor.rsa_decrypt(ciphertext, LOCAL_MODE))
+        ciphertext = cryptor.encrypt(plaintext)
+        t2 = type(cryptor.decrypt(ciphertext))
         self.assertTrue(type(t2), "str")
 
     def test_rsa_type(self):
         """Assert fails for anything but str and byte."""
-        cryptor = Cryptor()
+        cryptor = Cryptor(algorithm=RSA, access_mode=LOCAL_MODE)
         plaintext = 1
-        self.assertRaises(EncryptionError, cryptor.rsa_encrypt, plaintext, LOCAL_MODE)
+        self.assertRaises(EncryptionError, cryptor.encrypt, plaintext)
         plaintext = 1.0
-        self.assertRaises(EncryptionError, cryptor.rsa_encrypt, plaintext, LOCAL_MODE)
+        self.assertRaises(EncryptionError, cryptor.encrypt, plaintext)
         plaintext = datetime.today()
-        self.assertRaises(EncryptionError, cryptor.rsa_encrypt, plaintext, LOCAL_MODE)
+        self.assertRaises(EncryptionError, cryptor.encrypt, plaintext)
 
     def test_no_re_encrypt(self):
         """Assert raise error if attempting to encrypt a cipher."""
-        cryptor = Cryptor()
+        cryptor = Cryptor(algorithm=RSA, access_mode=LOCAL_MODE)
         plaintext = "erik is a pleeb!!"
-        ciphertext1 = cryptor.rsa_encrypt(plaintext, LOCAL_MODE)
-        self.assertRaises(EncryptionError, cryptor.rsa_encrypt, ciphertext1, LOCAL_MODE)
+        ciphertext1 = cryptor.encrypt(plaintext)
+        self.assertRaises(EncryptionError, cryptor.encrypt, ciphertext1)
 
     def test_rsa_roundtrip(self):
-        cryptor = Cryptor()
         plaintext = (
             "erik is a pleeb! ERIK IS A PLEEB 0123456789!@#$%^&*()" "_-+={[}]|\"':;>.<,?/~`±§"
         )
-        for mode in cryptor.keys.get(RSA):
+        for mode in encryption_keys.rsa_modes_supported:
+            cryptor = Cryptor(algorithm=RSA, access_mode=mode)
             try:
-                ciphertext = cryptor.rsa_encrypt(plaintext, mode)
+                ciphertext = cryptor.encrypt(plaintext)
             except (AttributeError, TypeError) as e:
                 self.fail(f"Failed encrypt: {mode} public ({e})\n")
-            self.assertTrue(plaintext == cryptor.rsa_decrypt(ciphertext, mode))
+            self.assertTrue(plaintext == cryptor.decrypt(ciphertext))
 
     def test_aes_roundtrip(self):
-        cryptor = Cryptor()
         plaintext = (
             "erik is a pleeb!\nERIK IS A PLEEB\n0123456789!@#$%^&*()_"
             "-+={[}]|\"':;>.<,?/~`±§\n"
         )
-        for mode in cryptor.keys.get(AES):
-            ciphertext = cryptor.aes_encrypt(plaintext, mode)
+        for mode in encryption_keys.aes_modes_supported:
+            cryptor = Cryptor(algorithm=AES, access_mode=mode)
+            ciphertext = cryptor.encrypt(plaintext)
             self.assertTrue(plaintext != ciphertext)
-            self.assertTrue(plaintext == cryptor.aes_decrypt(ciphertext, mode))
+            self.assertTrue(plaintext == cryptor.decrypt(ciphertext))

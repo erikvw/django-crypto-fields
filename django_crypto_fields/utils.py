@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import binascii
+import hashlib
 import sys
 from typing import TYPE_CHECKING, Type
 
@@ -7,7 +9,7 @@ from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from .constants import CIPHER_PREFIX, ENCODING, HASH_PREFIX
+from .constants import CIPHER_PREFIX, ENCODING, HASH_ALGORITHM, HASH_PREFIX, HASH_ROUNDS
 from .exceptions import MalformedCiphertextError
 
 if TYPE_CHECKING:
@@ -103,15 +105,9 @@ def has_valid_hash_or_raise(ciphertext: bytes, hash_size: int) -> bool:
     raises an exception if not OK.
     """
     ciphertext = safe_encode_utf8(ciphertext)
-    hash_prefix = HASH_PREFIX.encode(ENCODING)
-    if ciphertext == HASH_PREFIX.encode(ENCODING):
-        raise MalformedCiphertextError(f"Ciphertext has not hash. Got {ciphertext}")
-    if not ciphertext[: len(hash_prefix)] == hash_prefix:
-        raise MalformedCiphertextError(
-            f"Ciphertext must start with {hash_prefix}. "
-            f"Got {ciphertext[:len(hash_prefix)]}"
-        )
-    hash_value = ciphertext[len(hash_prefix) :].split(CIPHER_PREFIX.encode(ENCODING))[0]
+    hash_value = ciphertext[len(safe_encode_utf8(HASH_PREFIX)) :].split(
+        safe_encode_utf8(CIPHER_PREFIX)
+    )[0]
     if len(hash_value) != hash_size:
         raise MalformedCiphertextError(
             "Expected hash prefix to be followed by a hash. Got something else or nothing"
@@ -119,57 +115,11 @@ def has_valid_hash_or_raise(ciphertext: bytes, hash_size: int) -> bool:
     return True
 
 
-def has_valid_value_or_raise(
-    value: str | bytes, hash_size: int, has_secret=None
-) -> str | bytes:
-    """Encodes the value, validates its format, and returns it
-    or raises an exception.
+def make_hash(value, salt_key) -> bytes:
+    """Returns a hexified hash of a plaintext value (as bytes).
 
-    A value is either a value that can be encrypted or one that
-    already is encrypted.
-
-    * A value cannot just be equal to HASH_PREFIX or CIPHER_PREFIX;
-    * A value prefixed with HASH_PREFIX must be followed by a
-      valid hash (by length);
-    * A value prefixed with HASH_PREFIX + hashed_value +
-      CIPHER_PREFIX must be followed by some text;
-    * A value prefix by CIPHER_PREFIX must be followed by
-      some text;
+    The hashed value is used as a signature of the "secret".
     """
-    has_secret = True if has_secret is None else has_secret
     encoded_value = safe_encode_utf8(value)
-    if encoded_value is not None and encoded_value != b"":
-        if encoded_value in [
-            HASH_PREFIX.encode(ENCODING),
-            CIPHER_PREFIX.encode(ENCODING),
-        ]:
-            raise MalformedCiphertextError("Expected a value, got just the encryption prefix.")
-        has_valid_hash_or_raise(encoded_value, hash_size)
-        if has_secret:
-            is_valid_ciphertext_or_raise(encoded_value)
-    return value  # note, is original passed value
-
-
-def is_valid_ciphertext_or_raise(ciphertext: bytes, hash_size: int | None = None):
-    """Returns an unchanged ciphertext after verifying format hash_prefix +
-    hash + cipher_prefix + secret.
-    """
-    try:
-        ciphertext.split(HASH_PREFIX.encode(ENCODING))[1]
-    except IndexError:
-        raise MalformedCiphertextError(
-            f"Malformed ciphertext. Expected prefixes {HASH_PREFIX}"
-        )
-    try:
-        ciphertext.split(CIPHER_PREFIX.encode(ENCODING))[1]
-    except IndexError:
-        raise MalformedCiphertextError(
-            f"Malformed ciphertext. Expected prefixes {CIPHER_PREFIX}"
-        )
-    if ciphertext[: len(HASH_PREFIX)] != HASH_PREFIX.encode(ENCODING):
-        raise MalformedCiphertextError(
-            f"Malformed ciphertext. Expected hash prefix {HASH_PREFIX}"
-        )
-    if hash_size is not None:
-        has_valid_hash_or_raise(ciphertext, hash_size)
-    return ciphertext
+    dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, encoded_value, salt_key, HASH_ROUNDS)
+    return binascii.hexlify(dk)
