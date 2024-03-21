@@ -39,10 +39,12 @@ class Cipher:
 
     @property
     def cipher(self) -> bytes:
-        return self.hash_prefix + self.hashed_value + self.cipher_prefix + self.secret
+        return self.hash_with_prefix + self.secret_with_prefix
 
+    @property
     def hash_with_prefix(self) -> bytes:
         return self.hash_prefix + self.hashed_value
 
+    @property
     def secret_with_prefix(self) -> bytes:
         return self.cipher_prefix + self.secret
