@@ -1,5 +1,7 @@
 from .base_rsa_field import BaseRsaField
 
+__all__ = ["EncryptedIntegerField"]
+
 
 class EncryptedIntegerField(BaseRsaField):
     description = "local-rsa encrypted field for 'IntegerField'"

@@ -14,8 +14,6 @@ from .key_path import KeyPath
 
 __all__ = ["persist_key_path_or_raise"]
 
-style = color_style()
-
 
 def persist_key_path_or_raise() -> None:
     expected_folder: Path = Path(KeyPath().path)
@@ -23,6 +21,7 @@ def persist_key_path_or_raise() -> None:
     if not last_used_folder:
         last_used_folder = write_last_used(filepath)
     if last_used_folder != expected_folder:
+        style = color_style()
         raise DjangoCryptoFieldsKeyPathChangeError(
             style.ERROR(
                 "Key path changed since last startup! You must resolve "
@@ -56,6 +55,7 @@ def read_last_used(folder: Path) -> tuple[PurePath | None, Path]:
                 last_used_path = PurePath(row.get("path"))
                 break
     if last_used_path and not Path(last_used_path).exists():
+        style = color_style()
         raise DjangoCryptoFieldsKeyPathError(
             style.ERROR(
                 "Last path used to access encryption keys is invalid. "

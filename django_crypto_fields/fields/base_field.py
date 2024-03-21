@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from django.conf import settings
-from django.core.management.color import color_style
 from django.db import models
 from django.forms import widgets
 
@@ -15,11 +14,12 @@ from ..exceptions import (
 )
 from ..field_cryptor import FieldCryptor
 from ..keys import encryption_keys
+from ..utils import safe_encode_utf8
 
 if TYPE_CHECKING:
     from ..keys import Keys
 
-style = color_style()
+__all__ = ["BaseField"]
 
 
 class BaseField(models.Field):
@@ -57,6 +57,12 @@ class BaseField(models.Field):
         kwargs.setdefault("blank", True)
         super().__init__(*args, **kwargs)
 
+    def get_internal_type(self):
+        """This is a `CharField` as we only ever store the
+        hash_prefix + hash, which is a fixed length char.
+        """
+        return "CharField"
+
     def deconstruct(self):
         name, path, args, kwargs = super(BaseField, self).deconstruct()
         kwargs["help_text"] = self.help_text
@@ -74,23 +80,16 @@ class BaseField(models.Field):
             defaults.update(kwargs)
         return super(BaseField, self).formfield(**defaults)
 
-    def decrypt(self, value):
-        if value is None or value in ["", b""]:
-            decrypted_value = value
-        else:
-            decrypted_value = self.field_cryptor.decrypt(value)
-        return decrypted_value
-
-    def from_db_value(self, value, *args):
-        if value is None or value in ["", b""]:
-            return value
-        return self.decrypt(value)
+    def from_db_value(self, value: bytes | None, *args) -> bytes | str | None:
+        """Returns the decrypted value, an empty string, or None."""
+        value = safe_encode_utf8(value)
+        if value == b"":
+            return ""
+        return self.field_cryptor.decrypt(value) if value else None
 
     def get_prep_value(self, value):
-        """Returns the encrypted value, including prefix, as the
-        query value (to query the db).
-
-        db is queried using the hash
+        """Returns prefix + hash_value, an empty string, or None
+        for use as a parameter in a query.
 
         Note: partial matches do not work. See get_prep_lookup().
         """
@@ -132,12 +131,6 @@ class BaseField(models.Field):
         for value in values:
             hashed_values.append(HASH_PREFIX.encode(ENCODING) + self.field_cryptor.hash(value))
         return hashed_values
-
-    def get_internal_type(self):
-        """This is a `CharField` as we only ever store the hash,
-        which is a fixed length char.
-        """
-        return "CharField"
 
     def mask(self, value, mask=None):
         return self.field_cryptor.mask(value, mask)

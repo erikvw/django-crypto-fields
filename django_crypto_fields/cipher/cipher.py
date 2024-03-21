@@ -10,9 +10,13 @@ __all__ = ["Cipher"]
 
 class Cipher:
     """A class that given a value builds a cipher of the format
-    hash_prefix + hashed_value + cipher_prefix + secret.
+        hash_prefix + hashed_value + cipher_prefix + secret.
+    .
+      For example:
+        enc1:::234234ed234a24enc2::\x0e\xb9\xae\x13s\x8d
+              \xe7O\xbb\r\x99.
 
-    The secret is encrypted using the passed `encrypt` callable.
+        The secret is encrypted using the passed `encrypt` callable.
     """
 
     def __init__(

@@ -9,7 +9,7 @@ from django.apps import apps as django_apps
 from django.conf import settings
 
 from .constants import CIPHER_PREFIX, ENCODING, HASH_ALGORITHM, HASH_PREFIX, HASH_ROUNDS
-from .exceptions import MalformedCiphertextError
+from .exceptions import EncryptionError, MalformedCiphertextError
 
 if TYPE_CHECKING:
     from django.db import models
@@ -110,3 +110,46 @@ def make_hash(value, salt_key) -> bytes:
     encoded_value = safe_encode_utf8(value)
     dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, encoded_value, salt_key, HASH_ROUNDS)
     return binascii.hexlify(dk)
+
+
+def remove_padding(encoded_value: bytes) -> bytes:
+    """Return original bytes value without padding.
+
+    value: a decrypted bytes value with padding
+
+    Length of padding is stored in last two characters of
+    value.
+    """
+    try:
+        padding_length = int(binascii.b2a_hex(encoded_value[-1:]))
+    except ValueError:
+        pass
+    else:
+        if not padding_length:
+            encoded_value = encoded_value[:-1]
+        else:
+            encoded_value = encoded_value[:-padding_length]
+    return encoded_value
+
+
+def append_padding(encoded_value: bytes, block_size: int) -> bytes:
+    """Return an encoded string padded so length is a multiple of
+    the block size.
+
+    * store length of padding as the last hex value.
+    * if padding is 0, pad as if padding is 16.
+    """
+    padding_length = (block_size - len(encoded_value) % block_size) % block_size
+    padding_length = padding_length or 16
+    encoded_value = (
+        encoded_value
+        + (b"\x00" * (padding_length - 1))
+        + binascii.a2b_hex(str(padding_length).zfill(2))
+    )
+    if len(encoded_value) % block_size > 0:
+        multiple = len(encoded_value) / block_size
+        raise EncryptionError(
+            f"Padding error, got padded string not a multiple "
+            f"of {block_size}. Got {multiple}"
+        )
+    return encoded_value
