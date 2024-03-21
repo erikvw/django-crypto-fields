@@ -3,11 +3,15 @@
 django-crypto-fields
 --------------------
 
-version <= 0.3.8:
+version < 0.3.8:
     Python 3.8, 3.9, 3.10 Django 3.2, 4.0, 4.1 using mysql
 
-version >= 0.3.8:
+version >= 0.3.8 < 0.4.0
     Python 3.11+ Django 4.2+ using mysql
+
+version 0.4.0+
+    Python 3.11+ Django 4.2+ using mysql, cache framework
+
 
 * Uses ``pycryptodomex``
 * This module has known problems with `postgres`. (I hope to address this soon)

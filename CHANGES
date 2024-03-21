@@ -17,6 +17,14 @@ CHANGES
   (settings.AUTO_CREATE_KEYS will still work)
 - use pathlib instead of os
 - remove system checks, instead raise exceptions when Keys is instantiated.
+- correctly decode hash_value before storing in DB
+- add migration to remove "b'" from hash_values stored in the DB.
+  You need to run the migration! The migration fixes previously
+  saved `hash_values` by removing the `b'` prefix and the `'` at the
+  end. This only applies to `hash_values` in the `Crypt` model.
+- use Django cache to store hash/secret pairs in runtime, prefix
+  cache keys with `django-crypto-fields`.
+- add typing hints, reduce complexity.
 
 0.3.10
 ------
