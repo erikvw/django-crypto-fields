@@ -1,14 +1,12 @@
 from django import template
 
+from ..constants import LOCAL_MODE, RSA
 from ..field_cryptor import FieldCryptor
 
 register = template.Library()
 
 
 @register.filter(name="encrypted")
-def encrypted(value):
-    retval = value
-    field_cryptor = FieldCryptor("rsa", "local")
-    if field_cryptor.is_encrypted(value, has_secret=False):
-        retval = field_cryptor.mask(value)
-    return retval
+def encrypted(value: str):
+    field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
+    return field_cryptor.mask(value)

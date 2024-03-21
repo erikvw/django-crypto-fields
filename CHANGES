@@ -1,5 +1,31 @@
 CHANGES
 
+0.4.0
+-----
+- merge functionality of key_creator and key_files into keys module,
+  simplify and refactor.
+- refactor KeyPath
+- initialize / create encryption_keys in constructor of Keys class.
+- load keys before import_models from AppConfig
+- set Keys instance in keys module and import from there instead of
+  from AppConfig.
+- name global Keys instance 'encryption_keys'.
+- change settings.KEY_PATH to settings.DJANGO_CRYPTO_FIELDS_KEY_PATH.
+  (settings.KEY_PATH will still work)
+- change settings.AUTO_CREATE_KEYS to
+  settings.DJANGO_CRYPTO_FIELDS_AUTO_CREATE.
+  (settings.AUTO_CREATE_KEYS will still work)
+- use pathlib instead of os
+- remove system checks, instead raise exceptions when Keys is instantiated.
+- correctly decode hash_value before storing in DB
+- add migration to remove "b'" from hash_values stored in the DB.
+  You need to run the migration! The migration fixes previously
+  saved `hash_values` by removing the `b'` prefix and the `'` at the
+  end. This only applies to `hash_values` in the `Crypt` model.
+- use Django cache to store hash/secret pairs in runtime, prefix
+  cache keys with `django-crypto-fields`.
+- add typing hints, reduce complexity.
+
 0.3.10
 ------
 - update testing matrix to include DJ50. Drop DJ41.

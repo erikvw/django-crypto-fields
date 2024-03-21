@@ -3,10 +3,18 @@
 django-crypto-fields
 --------------------
 
-Python 3.8, 3.9, 3.10, Django 3.2, 4.0, 4.1 using mysql
+version < 0.3.8:
+    Python 3.8, 3.9, 3.10 Django 3.2, 4.0, 4.1 using mysql
+
+version >= 0.3.8 < 0.4.0
+    Python 3.11+ Django 4.2+ using mysql
+
+version 0.4.0+
+    Python 3.11+ Django 4.2+ using mysql, cache framework
+
 
 * Uses ``pycryptodomex``
-* This module has known problems with `postgres`.
+* This module has known problems with `postgres`. (I hope to address this soon)
 
 Add encrypted field classes to your Django models where ``unique=True`` and ``unique_together`` attributes work as expected.
 
@@ -45,13 +53,13 @@ add to INSTALLED_APPS:
 	    ...
 	)
 
-Add KEY_PATH to the folder in settings:
+Add DJANGO_CRYPTO_FIELDS_KEY_PATH to the folder in settings:
 
 .. code-block:: python
 
     # folder where the encryption keys are stored
     # Do not set for tests
-    KEY_PATH = '/etc/myproject/django_crypto_fields')
+    DJANGO_CRYPTO_FIELDS_KEY_PATH = '/etc/myproject/django_crypto_fields')
 
 Add KEY_PREFIX (optional, the default is "user"):
 
@@ -72,7 +80,18 @@ Encryption keys
 
 Take care of the encryption keys!
 
-In your tests you can set ``settings.DEBUG = True`` and ``settings.AUTO_CREATE_KEYS = True`` so that keys are generated for your tests. Encryption keys to will not automatically generate on a production system (``DEBUG=False``). See ``AppConfig.auto_create_keys``.
+In your tests you can set ``settings.DEBUG = True`` and ``settings.AUTO_CREATE_KEYS = True`` so that keys are generated for your tests. Encryption keys will not automatically generate on a production system (``DEBUG=False``) unless ``settings.AUTO_CREATE_KEYS = True``.
+
+By default assumes your test module is ``runtests.py``. You can changes this by setting ``settings.DJANGO_CRYPTO_FIELDS_TEST_MODULE``.
+
+When are encryption keys loaded?
+================================
+
+The encryption keys are loaded as a side effect of accessing the ``keys`` module.
+The keys module is imported in this apps AppConfig just before ``import_models``.
+During runtime the encryption keys are stored in the ``encryption_keys`` global.
+
+See module ``apps.py``, module ``keys.py`` and ``fields.BaseField`` constructor.
 
 History
 =======
@@ -122,7 +141,7 @@ Contribute
 .. |downloads| image:: https://pepy.tech/badge/django-crypto-fields
    :target: https://pepy.tech/project/django-crypto-fields
 
-.. |maintainability| image:: https://api.codeclimate.com/v1/badges/e08f2bbee238af7bfdc7/maintainability
+.. |maintainability| image:: https://api.codeclimate.com/v1/badges/34293a3ec19da8d7fb16/maintainability
    :target: https://codeclimate.com/github/erikvw/django-crypto-fields/maintainability
    :alt: Maintainability
 

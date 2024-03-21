@@ -1,12 +1,17 @@
 from django.db import models
 from django.utils import timezone
-from edc_model.models import BaseModel
 
-from ..fields import EncryptedTextField, FirstnameField, IdentityField, LastnameField
-from ..models import CryptoMixin
+from django_crypto_fields.fields import (
+    EncryptedTextField,
+    FirstnameField,
+    IdentityField,
+    LastnameField,
+)
+from django_crypto_fields.models import CryptoMixin
 
 
-class TestModel(CryptoMixin, BaseModel):
+class TestModel(CryptoMixin, models.Model):
+
     firstname = FirstnameField(verbose_name="First Name", null=True)
 
     lastname = LastnameField(verbose_name="Last Name", null=True)

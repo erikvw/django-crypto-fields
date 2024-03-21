@@ -6,12 +6,12 @@ version_file="_version.py"
 
 [tool.black]
 line-length = 95
-target-version = ["py311"]
+target-version = ["py312"]
 extend-exclude = '''^(.*\/)*\b(migrations)\b($|\/.*$)'''
 
 [tool.isort]
 profile = "black"
-py_version = "311"
+py_version = "312"
 skip = [".tox", ".eggs", "migrations"]
 
 [tool.coverage.run]
@@ -54,16 +54,18 @@ DJANGO =
 
 [testenv]
 deps =
-    -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/tox.txt
-    -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/test_utils.txt
-    -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/edc.txt
-    -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/third_party_dev.txt
-    dj42: Django>=4.2,<5.0
+    pre-commit
+    edc-test-utils
+    edc-test-settings==0.1.2
+    coverage[toml]
+    tox
+    tox-gh-actions
+    dj42: Django==4.2.11
     dj50: Django>=5.0
     djdev: https://github.com/django/django/tarball/main
 
 commands =
-    pip install -U pip coverage[toml]
+    pip install -U pip
     pip --version
     pip freeze
     coverage run -a runtests.py
