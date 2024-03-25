@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from Cryptodome.Cipher import AES as AES_CIPHER
 from django.apps import apps as django_apps
+from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -142,7 +143,14 @@ class FieldCryptor:
     def cache_key_prefix(self) -> bytes:
         algorithm = safe_encode_utf8(self.algorithm)
         access_mode = safe_encode_utf8(self.access_mode)
-        return b"django-crypto-fields-" + algorithm + b"-" + access_mode + b"-"
+        prefix = safe_encode_utf8(
+            getattr(
+                settings,
+                "CACHE_CRYPTO_KEY_PREFIX",
+                "crypto",
+            )
+        )
+        return prefix + algorithm + b"-" + access_mode + b"-"
 
     def update_crypt(self, cipher: Cipher) -> None:
         """Updates Crypt model and the cache.
