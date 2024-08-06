@@ -3,13 +3,16 @@ from __future__ import annotations
 import binascii
 import hashlib
 import sys
+from datetime import date, datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING, Type
 
 from django.apps import apps as django_apps
 from django.conf import settings
 
-from .constants import CIPHER_PREFIX, ENCODING, HASH_ALGORITHM, HASH_PREFIX, HASH_ROUNDS
-from .exceptions import EncryptionError, MalformedCiphertextError
+from .constants import HASH_ALGORITHM, HASH_ROUNDS
+from .encoding import safe_encode_date
+from .exceptions import DjangoCryptoFieldsError, EncryptionError
 
 if TYPE_CHECKING:
     from django.db import models
@@ -71,44 +74,21 @@ def get_key_prefix_from_settings() -> str:
     return getattr(settings, "DJANGO_CRYPTO_FIELDS_KEY_PREFIX", "user")
 
 
-def safe_encode_utf8(value) -> bytes:
-    try:
-        value = value.encode(ENCODING)
-    except AttributeError:
-        pass
-    return value
-
-
-def safe_decode(value) -> bytes:
-    try:
-        value.decode()
-    except AttributeError:
-        pass
-    return value
-
-
-def has_valid_hash_or_raise(ciphertext: bytes, hash_size: int) -> bool:
-    """Verifies hash segment of ciphertext (bytes) and
-    raises an exception if not OK.
-    """
-    ciphertext = safe_encode_utf8(ciphertext)
-    hash_value = ciphertext[len(safe_encode_utf8(HASH_PREFIX)) :].split(
-        safe_encode_utf8(CIPHER_PREFIX)
-    )[0]
-    if len(hash_value) != hash_size:
-        raise MalformedCiphertextError(
-            "Expected hash prefix to be followed by a hash. Got something else or nothing"
-        )
-    return True
-
-
-def make_hash(value, salt_key) -> bytes:
+def make_hash(
+    value: str | date | datetime | int | float | Decimal, salt_key: bytes
+) -> bytes | None:
     """Returns a hexified hash of a plaintext value (as bytes).
 
     The hashed value is used as a signature of the "secret".
     """
-    encoded_value = safe_encode_utf8(value)
-    dk = hashlib.pbkdf2_hmac(HASH_ALGORITHM, encoded_value, salt_key, HASH_ROUNDS)
+    if value is None:
+        raise DjangoCryptoFieldsError("Cannot hash None value")
+    else:
+        if type(value) in [date, datetime]:
+            encoded_value = safe_encode_date(value)
+        else:
+            encoded_value = value.encode()
+        dk: bytes = hashlib.pbkdf2_hmac(HASH_ALGORITHM, encoded_value, salt_key, HASH_ROUNDS)
     return binascii.hexlify(dk)
 
 

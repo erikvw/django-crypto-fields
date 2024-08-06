@@ -1,10 +1,13 @@
-from datetime import datetime
+from datetime import date, datetime
 
-from django.test import TestCase
+from django.test import TestCase, tag
 
 from django_crypto_fields.constants import AES, LOCAL_MODE, RESTRICTED_MODE, RSA
 from django_crypto_fields.cryptor import Cryptor
-from django_crypto_fields.exceptions import EncryptionError
+from django_crypto_fields.exceptions import (
+    DjangoCryptoFieldsEncodingError,
+    EncryptionError,
+)
 from django_crypto_fields.keys import encryption_keys
 
 
@@ -46,30 +49,31 @@ class TestCryptor(TestCase):
             cryptor.encrypt(plaintext)
             self.assertRaises(EncryptionError, cryptor.encrypt, plaintext + "a")
 
+    @tag("1")
     def test_rsa_encoding(self):
         """Assert successful RSA roundtrip of byte return str."""
         cryptor = Cryptor(algorithm=RSA, access_mode=LOCAL_MODE)
-        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç".encode("utf-8")
+        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
         ciphertext = cryptor.encrypt(plaintext)
         t2 = type(cryptor.decrypt(ciphertext))
         self.assertTrue(type(t2), "str")
 
     def test_rsa_type(self):
-        """Assert fails for anything but str and byte."""
         cryptor = Cryptor(algorithm=RSA, access_mode=LOCAL_MODE)
-        plaintext = 1
-        self.assertRaises(EncryptionError, cryptor.encrypt, plaintext)
-        plaintext = 1.0
-        self.assertRaises(EncryptionError, cryptor.encrypt, plaintext)
-        plaintext = datetime.today()
-        self.assertRaises(EncryptionError, cryptor.encrypt, plaintext)
+        for value in ["", 1, 1.0, date.today(), datetime.today()]:
+            with self.subTest(value=value):
+                try:
+                    cryptor.encrypt(value)
+                except EncryptionError as e:
+                    self.fail(e)
 
+    @tag("1")
     def test_no_re_encrypt(self):
         """Assert raise error if attempting to encrypt a cipher."""
         cryptor = Cryptor(algorithm=RSA, access_mode=LOCAL_MODE)
         plaintext = "erik is a pleeb!!"
         ciphertext1 = cryptor.encrypt(plaintext)
-        self.assertRaises(EncryptionError, cryptor.encrypt, ciphertext1)
+        self.assertRaises(DjangoCryptoFieldsEncodingError, cryptor.encrypt, ciphertext1)
 
     def test_rsa_roundtrip(self):
         plaintext = (

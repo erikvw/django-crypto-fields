@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..constants import CIPHER_PREFIX, HASH_PREFIX
 from ..exceptions import MalformedCiphertextError
-from ..utils import make_hash, safe_encode_utf8
+from ..utils import make_hash
 
 __all__ = ["CipherParser"]
 
@@ -13,7 +13,7 @@ class CipherParser:
         self._hash_prefix = None
         self._hashed_value = None
         self._secret = None
-        self.cipher = safe_encode_utf8(cipher)
+        self.cipher = cipher
         self.salt_key = salt_key
         self.validate_hashed_value()
         self.validate_secret()
@@ -21,14 +21,14 @@ class CipherParser:
     @property
     def hash_prefix(self) -> bytes | None:
         if self.cipher:
-            hash_prefix = safe_encode_utf8(HASH_PREFIX)
+            hash_prefix = HASH_PREFIX.encode()
             self._hash_prefix = hash_prefix if self.cipher.startswith(hash_prefix) else None
         return self._hash_prefix
 
     @property
     def cipher_prefix(self) -> bytes | None:
         if self.cipher:
-            cipher_prefix = safe_encode_utf8(CIPHER_PREFIX)
+            cipher_prefix = CIPHER_PREFIX.encode()
             self._cipher_prefix = cipher_prefix if cipher_prefix in self.cipher else None
         return self._cipher_prefix
 
@@ -42,7 +42,7 @@ class CipherParser:
 
     @property
     def secret(self) -> bytes | None:
-        if self.cipher and safe_encode_utf8(CIPHER_PREFIX) in self.cipher:
+        if self.cipher and CIPHER_PREFIX.encode() in self.cipher:
             self._secret = self.cipher.split(self.cipher_prefix)[1]
         return self._secret
 

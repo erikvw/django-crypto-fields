@@ -2,6 +2,7 @@ _version.py
 .etc/
 .env/
 django_crypto_fields/tests/etc/django_crypto_fields
+django_crypto_fields/tests/crypto_keys/django_crypto_fields
 .pypirc
 .settings
 .project

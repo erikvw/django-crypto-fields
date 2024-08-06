@@ -5,15 +5,11 @@ from typing import TYPE_CHECKING
 from Cryptodome import Random
 from Cryptodome.Cipher import AES as AES_CIPHER
 
-from .constants import AES, ENCODING, PRIVATE, PUBLIC, RSA
+from .constants import AES, PRIVATE, PUBLIC, RSA
+from .encoding import safe_encode
 from .exceptions import EncryptionError
 from .keys import encryption_keys
-from .utils import (
-    append_padding,
-    get_keypath_from_settings,
-    remove_padding,
-    safe_encode_utf8,
-)
+from .utils import append_padding, get_keypath_from_settings, remove_padding
 
 if TYPE_CHECKING:
     from Cryptodome.Cipher._mode_cbc import CbcMode
@@ -43,7 +39,7 @@ class Cryptor:
         self.decrypt = getattr(self, f"_{self.algorithm.lower()}_decrypt")
 
     def _aes_encrypt(self, value: str | bytes) -> bytes:
-        encoded_value = safe_encode_utf8(value)
+        encoded_value = safe_encode(value)
         iv: bytes = Random.new().read(AES_CIPHER.block_size)
         cipher: CbcMode = AES_CIPHER.new(self.aes_key, self.aes_encryption_mode, iv)
         encoded_value = append_padding(encoded_value, cipher.block_size)
@@ -55,13 +51,11 @@ class Cryptor:
         cipher: CbcMode = AES_CIPHER.new(self.aes_key, self.aes_encryption_mode, iv)
         encoded_value = cipher.decrypt(secret)[AES_CIPHER.block_size :]
         encoded_value = remove_padding(encoded_value)
-        value = encoded_value.decode()
-        return value
+        return encoded_value.decode() if encoded_value is not None else None
 
     def _rsa_encrypt(self, value: str | bytes) -> bytes:
-        encoded_value = safe_encode_utf8(value)
         try:
-            secret = self.rsa_public_key.encrypt(encoded_value)
+            secret = self.rsa_public_key.encrypt(safe_encode(value))
         except (ValueError, TypeError) as e:
             raise EncryptionError(f"RSA encryption failed for value. Got '{e}'")
         return secret
@@ -73,4 +67,4 @@ class Cryptor:
             raise EncryptionError(
                 f"{e} Using RSA from key_path=`{get_keypath_from_settings()}`."
             )
-        return encoded_value.decode(ENCODING)
+        return encoded_value.decode() if encoded_value is not None else None
