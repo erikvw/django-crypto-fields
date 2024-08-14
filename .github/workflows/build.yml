@@ -5,20 +5,16 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: build (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }})
+    name: |
+      build (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }}, ${{ matrix.database-engine }})
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         python-version: ['3.11', '3.12']
-        django-version: ['4.2', '5.0', 'dev']
-
-        exclude:
-          - python-version: '3.12'
-            django-version: '4.2'
-          - python-version: '3.11'
-            django-version: 'dev'
+        django-version: ['4.2', '5.0', '5.1', 'dev']
+        database-engine: ["mysql", "postgres"]
     services:
       mysql:
         image: mysql:latest
@@ -28,6 +24,17 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - name: Install pycups and words dependency
@@ -36,9 +43,9 @@ jobs:
           sudo apt-get -y update
           sudo apt-get install libcups2-dev wamerican
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -48,7 +55,7 @@ jobs:
           echo "dir=$(pip cache dir)" >>$GITHUB_OUTPUT
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pip-cache.outputs.dir }}
           key:
