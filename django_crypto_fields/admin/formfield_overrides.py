@@ -6,6 +6,7 @@ from django_crypto_fields.fields import (
     EncryptedDateField,
     EncryptedDateTimeField,
     EncryptedIntegerField,
+    EncryptedTextField,
 )
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS.update(
@@ -14,6 +15,7 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS.update(
         EncryptedDateField: FORMFIELD_FOR_DBFIELD_DEFAULTS[models.DateField],
         EncryptedDateTimeField: FORMFIELD_FOR_DBFIELD_DEFAULTS[models.DateTimeField],
         EncryptedIntegerField: FORMFIELD_FOR_DBFIELD_DEFAULTS[models.IntegerField],
+        EncryptedTextField: FORMFIELD_FOR_DBFIELD_DEFAULTS[models.TextField],
     }
 )
 
