@@ -8,6 +8,8 @@ unreleased
     EncryptedDateTimeField
 - empty strings are now encrypted. Only None values are ignored.
 - refactor signatures and typing between encrypt and decrypt
+- tighten up handling of str/bytes data and typing of signatures for
+  methods receiving str and/or bytes data.
 
 0.4.1
 -----
