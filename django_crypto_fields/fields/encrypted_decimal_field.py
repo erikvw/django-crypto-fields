@@ -1,4 +1,6 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+
+from django.core.exceptions import ValidationError
 
 from .base_rsa_field import BaseRsaField
 
@@ -8,56 +10,33 @@ __all__ = ["EncryptedDecimalField"]
 class EncryptedDecimalField(BaseRsaField):
     description = "local-rsa encrypted field for 'IntegerField'"
 
-    def __init__(self, *args, **kwargs):
-        self.validate_max_digits(kwargs)
-        self.validate_decimal_places(kwargs)
-        decimal_decimal_places = int(kwargs.get("decimal_places"))
-        decimal_max_digits = int(kwargs.get("max_digits"))
-        del kwargs["decimal_places"]
-        del kwargs["max_digits"]
+    def __init__(self, *args, max_digits=None, decimal_places=None, **kwargs):
+        self.decimal_places = int(decimal_places or 2)
+        self.max_digits = int(max_digits or 8)
         super().__init__(*args, **kwargs)
-        self.decimal_decimal_places = decimal_decimal_places
-        self.decimal_max_digits = decimal_max_digits
 
-    def to_string(self, value):
-        if isinstance(value, (str,)):
-            raise TypeError("Expected basestring. Got {0}".format(value))
-        return str(value)
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        kwargs["decimal_places"] = self.decimal_places
+        kwargs["max_digits"] = self.max_digits
+        return name, path, args, kwargs
 
-    def to_python(self, value):
-        """Returns as integer"""
-        retval = super(EncryptedDecimalField, self).to_python(value)
-        if retval:
-            if not self.field_cryptor.is_encrypted(retval):
-                retval = Decimal(retval).to_eng_string()
-        return retval
+    def get_prep_value(self, value: Decimal | None) -> str | None:
+        if value is not None:
+            value = str(value)
+        return super().get_prep_value(value)
 
-    @staticmethod
-    def validate_max_digits(kwargs):
-        if "max_digits" not in kwargs:
-            raise AttributeError(
-                "EncryptedDecimalField requires attribute 'max_digits. " "Got none"
+    def to_python(self, value: str | Decimal | None) -> Decimal | None:
+        if value is None:
+            return value
+        if isinstance(value, Decimal):
+            return value
+        try:
+            value = Decimal(value)
+        except InvalidOperation:
+            raise ValidationError(
+                "Invalid value. Expected a decimal",
+                code="invalid",
+                params={"value": value},
             )
-        elif "max_digits" in kwargs:
-            try:
-                int(kwargs.get("max_digits"))
-            except (TypeError, ValueError):
-                raise ValueError(
-                    f"EncryptedDecimalField attribute 'max_digits must be an "
-                    f'integer. Got {kwargs.get("max_digits")}'
-                )
-
-    @staticmethod
-    def validate_decimal_places(kwargs):
-        if "decimal_places" not in kwargs:
-            raise AttributeError(
-                "EncryptedDecimalField requires attribute 'decimal_places. " "Got none"
-            )
-        elif "decimal_places" in kwargs:
-            try:
-                int(kwargs.get("decimal_places"))
-            except (TypeError, ValueError):
-                raise ValueError(
-                    f"EncryptedDecimalField attribute 'decimal_places must be an "
-                    f'integer. Got {kwargs.get("decimal_places")}'
-                )
+        return value

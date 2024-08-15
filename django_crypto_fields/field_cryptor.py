@@ -10,7 +10,6 @@ from .cipher import Cipher
 from .constants import (
     AES,
     CIPHER_PREFIX,
-    ENCODING,
     HASH_PREFIX,
     LOCAL_MODE,
     PRIVATE,
@@ -19,9 +18,14 @@ from .constants import (
     SALT,
 )
 from .cryptor import Cryptor
-from .exceptions import EncryptionError, EncryptionKeyError, InvalidEncryptionAlgorithm
+from .exceptions import (
+    DjangoCryptoFieldsError,
+    EncryptionError,
+    EncryptionKeyError,
+    InvalidEncryptionAlgorithm,
+)
 from .keys import encryption_keys
-from .utils import get_crypt_model_cls, make_hash, safe_decode, safe_encode_utf8
+from .utils import get_crypt_model_cls, make_hash
 
 __all__ = ["FieldCryptor"]
 
@@ -41,20 +45,32 @@ class FieldCryptor:
     cryptor_cls = Cryptor
     cipher_cls = Cipher
 
-    def __init__(self, algorithm: str, access_mode: str):
+    def __init__(
+        self,
+        algorithm: str,
+        access_mode: str,
+    ):
         self._using = None
         self._algorithm = None
         self._access_mode = None
+        self._cryptor = None
         self.algorithm = algorithm
         self.access_mode = access_mode
         self.cipher_buffer_key = b"{self.algorithm}_{self.access_mode}"
         self.cipher_buffer = {self.cipher_buffer_key: {}}
         self.keys = encryption_keys
-        self.cryptor = self.cryptor_cls(algorithm=algorithm, access_mode=access_mode)
         self.hash_size: int = len(self.hash("Foo"))
 
     def __repr__(self) -> str:
         return f"FieldCryptor(algorithm='{self.algorithm}', mode='{self.access_mode}')"
+
+    @property
+    def cryptor(self) -> Cryptor:
+        if not self._cryptor:
+            self._cryptor = self.cryptor_cls(
+                algorithm=self.algorithm, access_mode=self.access_mode
+            )
+        return self._cryptor
 
     @property
     def algorithm(self) -> str:
@@ -81,25 +97,22 @@ class FieldCryptor:
                 f"'{LOCAL_MODE}' or '{PRIVATE}' or {RESTRICTED_MODE}. Got {value}."
             )
 
-    def hash(self, value) -> bytes:
+    def hash(self, value: str) -> bytes:
         return make_hash(value, self.salt_key)
 
     @property
-    def salt_key(self):
-        attr = "_".join([SALT, self.access_mode, PRIVATE])
+    def salt_key(self) -> bytes:
+        attr: str = "_".join([SALT, self.access_mode, PRIVATE])
         try:
-            salt = getattr(self.keys, attr)
+            salt: bytes = getattr(self.keys, attr)
         except AttributeError as e:
             raise EncryptionKeyError(f"Invalid key. Got {attr}. {e}")
         return salt
 
-    def encrypt(self, value: bytes | None, update: bool | None = None) -> bytes:
+    def encrypt(self, value: str | None, update: bool | None = None) -> bytes:
         """Returns either an RSA or AES cipher of the format
         hash_prefix + hashed_value + cipher_prefix + secret.
-
-        * 'value' may or may not be encoded
         * 'update' if True updates the value in the Crypt model
-
         * `cipher.cipher` instance formats the cipher. For example:
           enc1:::234234ed234a24enc2::\x0e\xb9\xae\x13s\x8d\xe7O\xbb\r\x99.
         * 'value' is not re-encrypted if already encrypted and properly
@@ -107,14 +120,11 @@ class FieldCryptor:
         """
         cipher = None
         update = True if update is None else update
-        encoded_value = safe_encode_utf8(value)
-        if encoded_value and not self.is_encrypted(encoded_value):
-            cipher = self.cipher_cls(
-                encoded_value, self.salt_key, encrypt=self.cryptor.encrypt
-            )
+        if value is not None and not self.is_encrypted(value):
+            cipher = self.cipher_cls(value, self.salt_key, encrypt=self.cryptor.encrypt)
             if update:
                 self.update_crypt(cipher)
-        return getattr(cipher, "cipher", encoded_value)
+        return getattr(cipher, "cipher", value)
 
     def decrypt(self, hash_with_prefix: bytes) -> str | None:
         """Returns decrypted secret or None.
@@ -141,15 +151,9 @@ class FieldCryptor:
 
     @property
     def cache_key_prefix(self) -> bytes:
-        algorithm = safe_encode_utf8(self.algorithm)
-        access_mode = safe_encode_utf8(self.access_mode)
-        prefix = safe_encode_utf8(
-            getattr(
-                settings,
-                "CACHE_CRYPTO_KEY_PREFIX",
-                "crypto",
-            )
-        )
+        algorithm = self.algorithm.encode()
+        access_mode = self.access_mode.encode()
+        prefix = getattr(settings, "CACHE_CRYPTO_KEY_PREFIX", "crypto").encode()
         return prefix + algorithm + b"-" + access_mode + b"-"
 
     def update_crypt(self, cipher: Cipher) -> None:
@@ -170,24 +174,17 @@ class FieldCryptor:
             )
         cache.set(self.cache_key_prefix + cipher.hashed_value, cipher.secret)
 
-    def get_prep_value(self, value: str | bytes | None) -> str | bytes | None:
+    def get_prep_value(self, value: str | None) -> str | None:
         """Returns the prefix + hash_value, an empty string, or None
-        as stored in the DB table column of your model's "encrypted"
+        prepared for saving into the column of your model's "encrypted"
         field.
 
         Used by field_cls.get_prep_value()
         """
-        hash_with_prefix = None
-        encoded_value = safe_encode_utf8(value)
-        if encoded_value == b"":
-            encoded_value = ""
-        elif encoded_value is None:
-            pass
-        else:
-            cipher = self.encrypt(encoded_value)
-            hash_with_prefix = cipher.split(CIPHER_PREFIX.encode(ENCODING))[0]
-            hash_with_prefix = safe_decode(hash_with_prefix)
-        return hash_with_prefix or encoded_value
+        if value is not None:
+            cipher = self.encrypt(value)
+            return cipher.split(CIPHER_PREFIX.encode())[0].decode()
+        return value
 
     def fetch_secret(self, hash_with_prefix: bytes) -> bytes | None:
         """Fetch the secret from the DB or the buffer using
@@ -198,7 +195,9 @@ class FieldCryptor:
         A secret is the segment to follow the `enc2:::`.
         """
         secret = None
-        hash_with_prefix = safe_encode_utf8(hash_with_prefix)
+        # hash_with_prefix = self.safe_encode(hash_with_prefix.encode()
+        if type(hash_with_prefix) is not bytes:
+            raise DjangoCryptoFieldsError("hash_with_prefix must be bytes")
         if hashed_value := hash_with_prefix[len(HASH_PREFIX) :][: self.hash_size] or None:
             secret = cache.get(self.cache_key_prefix + hashed_value, None)
             if not secret:
@@ -224,13 +223,14 @@ class FieldCryptor:
         return secret
 
     @staticmethod
-    def is_encrypted(value: bytes | None) -> bool:
+    def is_encrypted(value: str | bytes | None) -> bool:
         """Returns True if value is encrypted.
 
         An encrypted value starts with the hash_prefix.
         """
-        encoded_value = safe_encode_utf8(value)
-        if encoded_value and encoded_value.startswith(safe_encode_utf8(HASH_PREFIX)):
+        if type(value) is not bytes:
+            value = value.encode() if value is not None else value
+        if value and value.startswith(HASH_PREFIX.encode()):
             return True
         return False
 

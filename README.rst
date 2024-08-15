@@ -3,18 +3,21 @@
 django-crypto-fields
 --------------------
 
-version < 0.3.8:
-    Python 3.8, 3.9, 3.10 Django 3.2, 4.0, 4.1 using mysql
-
-version >= 0.3.8 < 0.4.0
-    Python 3.11+ Django 4.2+ using mysql
-
-version 0.4.0+
-    Python 3.11+ Django 4.2+ using mysql, cache framework
-
++-------------------------+----------------+---------------+----------+-----------+
+| Version                 | Python         | Django        | DB       | Cache     |
++=========================+================+===============+==========+===========+
+| < 0.3.7                 | 3.8, 3.9, 3.10 | 3.2, 4.0, 4.1 | mysql    | N/A       |
++-------------------------+----------------+---------------+----------+-----------+
+| 0.3.8 - 0.3.9           | 3.11+          | 4.2+          | mysql    | N/A       |
++-------------------------+----------------+---------------+----------+-----------+
+| 0.4.0 - 0.4.1           | 3.11+          | 4.2+          | mysql    | cache     |
+|                         |                |               |          | framework |
++-------------------------+----------------+---------------+----------+-----------+
+| 0.4.2+                  | 3.11+          | 4.2+          | mysql    | cache     |
+|                         |                |               | postgres | framework |
++-------------------------+----------------+---------------+----------+-----------+
 
 * Uses ``pycryptodomex``
-* This module has known problems with `postgres`. (I hope to address this soon)
 
 Add encrypted field classes to your Django models where ``unique=True`` and ``unique_together`` attributes work as expected.
 
@@ -67,6 +70,7 @@ Add KEY_PREFIX (optional, the default is "user"):
 
 	# optional filename prefix for encryption keys files:
 	KEY_PREFIX = 'bhp066'
+
 
 Run ``migrate`` to create the ``django_crypto_fields.crypt`` table:
 

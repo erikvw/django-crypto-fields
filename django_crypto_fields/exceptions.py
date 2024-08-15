@@ -34,6 +34,14 @@ class DjangoCryptoFieldsKeyPathDoesNotExist(Exception):
     pass
 
 
+class DjangoCryptoFieldsEncodingError(Exception):
+    pass
+
+
+class DjangoCryptoFieldsDecodingError(Exception):
+    pass
+
+
 class EncryptionError(Exception):
     pass
 

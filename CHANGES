@@ -1,5 +1,21 @@
 CHANGES
 
+0.4.2
+-----
+- add support for postgreSQL
+- add field classes for additional datatypes:
+    EncryptedIntegerField, EncryptedDecimalField, EncryptedDateField
+    EncryptedDateTimeField
+- empty strings are now encrypted. Only None values are ignored.
+- refactor signatures and typing between encrypt and decrypt
+- tighten up handling of str/bytes data and typing of signatures for
+  methods receiving str and/or bytes data.
+
+0.4.1
+-----
+- CACHE_CRYPTO_KEY_PREFIX, settings attribute to customize the
+  cache prefix.
+
 0.4.0
 -----
 - merge functionality of key_creator and key_files into keys module,

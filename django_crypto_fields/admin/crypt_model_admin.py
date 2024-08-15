@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .admin_site import encryption_admin
-from .utils import get_crypt_model_cls
+from ..admin_site import encryption_admin
+from ..utils import get_crypt_model_cls
 
 
 @admin.register(get_crypt_model_cls(), site=encryption_admin)

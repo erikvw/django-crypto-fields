@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Callable
 
 from ..constants import CIPHER_PREFIX, HASH_PREFIX
-from ..utils import make_hash, safe_encode_utf8
+from ..utils import make_hash
 
 __all__ = ["Cipher"]
 
@@ -25,17 +25,17 @@ class Cipher:
         salt_key: bytes,
         encrypt: Callable[[bytes], bytes] | None = None,
     ):
-        encoded_value = safe_encode_utf8(value)
+        # encoded_value = safe_encode(value)
         self.hash_prefix = b""
         self.hashed_value = b""
         self.cipher_prefix = b""
         self.secret = b""
         if salt_key:
-            self.hash_prefix: bytes = safe_encode_utf8(HASH_PREFIX)
-            self.hashed_value: bytes = make_hash(encoded_value, salt_key)
+            self.hash_prefix: bytes = HASH_PREFIX.encode()
+            self.hashed_value: bytes = make_hash(value, salt_key)
         if encrypt:
-            self.secret = encrypt(encoded_value)
-            self.cipher_prefix: bytes = safe_encode_utf8(CIPHER_PREFIX)
+            self.secret = encrypt(value)
+            self.cipher_prefix: bytes = CIPHER_PREFIX.encode()
 
     @property
     def cipher(self) -> bytes:
