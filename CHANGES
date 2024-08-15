@@ -1,7 +1,7 @@
 CHANGES
 
-unreleased
-----------
+0.4.2
+-----
 - add support for postgreSQL
 - add field classes for additional datatypes:
     EncryptedIntegerField, EncryptedDecimalField, EncryptedDateField
