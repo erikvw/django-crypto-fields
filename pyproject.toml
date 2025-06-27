@@ -35,33 +35,29 @@ exclude_lines = [
 legacy_tox_ini = """
 [tox]
 envlist =
-    py{311}-dj{42,50},
-    py{312}-dj{50,dev},
+    py{312}-dj{52,dev},
     lint
 
 isolated_build = true
 
 [gh-actions]
 python =
-    3.11: py311
     3.12: py312, lint
 
 [gh-actions:env]
 DJANGO =
-    4.2: dj42
-    5.0: dj50
+    5.2: dj52
     dev: djdev, lint
 
 [testenv]
 deps =
     pre-commit
     edc-test-utils
-    edc-test-settings==0.1.2
+    edc-test-settings
     coverage[toml]
     tox
     tox-gh-actions
-    dj42: Django==4.2.11
-    dj50: Django>=5.0
+    dj52: Django>=5.2
     djdev: https://github.com/django/django/tarball/main
 
 commands =
