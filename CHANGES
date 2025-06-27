@@ -1,5 +1,10 @@
 CHANGES
 
+1.0.0
+-----
+- add system check previously in edc_appconfig
+- import KeyPath first in app_config.ready()
+
 0.4.2
 -----
 - add support for postgreSQL
