@@ -2,6 +2,18 @@
 
 django-crypto-fields
 --------------------
+Add encrypted field classes to your Django models where ``unique=True`` and ``unique_together`` attributes work as expected.
+
+Current version
+
++-------------------------+----------------+---------------+----------+-----------+
+| Version                 | Python         | Django        | DB       | Cache     |
++=========================+================+===============+==========+===========+
+| 1.0.0+                  | 3.12+          | 5.2+          | mysql    | cache     |
+|                         |                |               | postgres | framework |
++-------------------------+----------------+---------------+----------+-----------+
+
+Older versions
 
 +-------------------------+----------------+---------------+----------+-----------+
 | Version                 | Python         | Django        | DB       | Cache     |
@@ -17,13 +29,12 @@ django-crypto-fields
 |                         |                |               | postgres | framework |
 +-------------------------+----------------+---------------+----------+-----------+
 
-* Uses ``pycryptodomex``
-
-Add encrypted field classes to your Django models where ``unique=True`` and ``unique_together`` attributes work as expected.
 
 
-For example:
+``django-crypto-fields`` uses ``pycryptodomex``
 
+Usage
+=====
 .. code-block:: python
 
 
