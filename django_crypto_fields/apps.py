@@ -2,9 +2,8 @@ import os
 import sys
 
 from django.apps import AppConfig as DjangoAppConfig
+from django.core.checks.registry import Tags, register
 from django.core.management.color import color_style
-
-from .key_path import KeyPath
 
 
 class AppConfig(DjangoAppConfig):
@@ -19,7 +18,11 @@ class AppConfig(DjangoAppConfig):
         return super().import_models()
 
     def ready(self):
+        from .key_path import KeyPath
+        from .system_checks import check_key_path
+
         style = color_style()
+        register(check_key_path, Tags.security, deploy=True)
         path = KeyPath().path
         sys.stdout.write(f"Loading {self.verbose_name} ...\n")
         sys.stdout.write(f" * Keys are in folder {path}\n")
