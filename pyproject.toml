@@ -110,7 +110,7 @@ deps =
     coverage[toml]
     tox
     tox-gh-actions
-    dj52: Django>=5.2
+    dj52: Django>=5.2,<5.3
     djdev: https://github.com/django/django/tarball/main
 
 commands =
