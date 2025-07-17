@@ -88,7 +88,9 @@ def make_hash(
             encoded_value = safe_encode_date(value)
         else:
             encoded_value = value.encode()
-        dk: bytes = hashlib.pbkdf2_hmac(HASH_ALGORITHM, encoded_value, salt_key, HASH_ROUNDS)
+        dk: bytes = hashlib.pbkdf2_hmac(
+            HASH_ALGORITHM, encoded_value, salt_key, HASH_ROUNDS
+        )
     return binascii.hexlify(dk)
 
 

@@ -198,7 +198,10 @@ class FieldCryptor:
         # hash_with_prefix = self.safe_encode(hash_with_prefix.encode()
         if type(hash_with_prefix) is not bytes:
             raise DjangoCryptoFieldsError("hash_with_prefix must be bytes")
-        if hashed_value := hash_with_prefix[len(HASH_PREFIX) :][: self.hash_size] or None:
+        if (
+            hashed_value := hash_with_prefix[len(HASH_PREFIX) :][: self.hash_size]
+            or None
+        ):
             secret = cache.get(self.cache_key_prefix + hashed_value, None)
             if not secret:
                 try:
@@ -214,8 +217,9 @@ class FieldCryptor:
                     )
                 except ObjectDoesNotExist:
                     raise EncryptionError(
-                        f"EncryptionError. Failed to get secret for given {self.algorithm} "
-                        f"{self.access_mode} hash. Got '{str(hash_with_prefix)}'"
+                        "EncryptionError. Failed to get secret for given "
+                        f"{self.algorithm} {self.access_mode} hash. "
+                        f"Got '{str(hash_with_prefix)}'"
                     )
                 else:
                     secret = data.get("secret")

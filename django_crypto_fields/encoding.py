@@ -12,7 +12,9 @@ DATETIME_STRING = "%Y-%m-%d %H:%M:%S %z"
 DATE_STRING = "%Y-%m-%d"
 
 
-def safe_encode(value: str | int | Decimal | float | date | datetime | bytes) -> bytes | None:
+def safe_encode(
+    value: str | int | Decimal | float | date | datetime | bytes,
+) -> bytes | None:
     if value is None:
         return None
     if type(value) in [str, int, Decimal, float]:
@@ -50,7 +52,8 @@ def safe_decode_date(value: bytes) -> [date, datetime]:
             value = datetime.strptime(value, "%Y-%m-%d")
         except ValueError:
             raise DjangoCryptoFieldsDecodingError(
-                f"Decoded string value must be in ISO date or datetime format. Got {value}"
+                "Decoded string value must be in ISO date or datetime format. "
+                f"Got {value}"
             )
     return value
 

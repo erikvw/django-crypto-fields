@@ -279,7 +279,9 @@ class TestFieldCryptor(TestCase):
         firstname = "erik"
         identity = "123456789"
         comment = "erik is a pleeb!!∂ƒ˜∫˙ç"
-        TestModel.objects.create(firstname=firstname, identity=identity, comment=comment)
+        TestModel.objects.create(
+            firstname=firstname, identity=identity, comment=comment
+        )
         firstname2 = "erik2"
         comment2 = "erik was a pleeb!!∂ƒ˜∫˙ç"
         with transaction.atomic():

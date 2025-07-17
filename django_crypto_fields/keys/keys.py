@@ -102,20 +102,26 @@ class Keys:
         """Generates RSA and AES keys as per `filenames`."""
         if key_files_exist(self.path, self.key_prefix):
             raise DjangoCryptoFieldsKeyAlreadyExist(
-                f"Not creating new keys. Encryption keys already exist. See {self.path}."
+                "Not creating new keys. Encryption keys already exist. "
+                f"See {self.path}."
             )
-        write_msg(self.verbose, style.WARNING(" * Generating new encryption keys ...\n"))
+        write_msg(
+            self.verbose, style.WARNING(" * Generating new encryption keys ...\n")
+        )
         self._create_rsa()
         self._create_aes()
         self._create_salt()
         write_msg(self.verbose, f"   Your new encryption keys are in {self.path}.\n")
-        write_msg(self.verbose, style.ERROR("   DON'T FORGET TO BACKUP YOUR NEW KEYS!!\n"))
+        write_msg(
+            self.verbose, style.ERROR("   DON'T FORGET TO BACKUP YOUR NEW KEYS!!\n")
+        )
         write_msg(self.verbose, " Done generating new encryption keys.\n")
 
     def load_keys(self) -> None:
         """Loads all keys defined in self.filenames."""
         write_msg(
-            self.verbose, style.WARNING(f" * Loading encryption keys from {self.path}\n")
+            self.verbose,
+            style.WARNING(f" * Loading encryption keys from {self.path}\n"),
         )
         if self.loaded:
             raise DjangoCryptoFieldsKeysAlreadyLoaded(
@@ -139,7 +145,9 @@ class Keys:
                     self.keys[RSA][access_mode][key] = rsa_key
                     self.update_rsa_key_info(rsa_key, access_mode)
                 setattr(self, RSA + "_" + access_mode + "_" + key + "_key", rsa_key)
-                write_msg(self.verbose, f"   - loading {RSA}.{access_mode}.{key} ... Done.\n")
+                write_msg(
+                    self.verbose, f"   - loading {RSA}.{access_mode}.{key} ... Done.\n"
+                )
 
     def load_aes_keys(self) -> None:
         """Decrypts and loads AES keys into _keys.
@@ -183,7 +191,9 @@ class Keys:
         k = number.ceil_div(mod_bits, 8)
         self.rsa_key_info[access_mode].update({"bytes": k})
         h_len = rsa_key._hashObj.digest_size
-        self.rsa_key_info[access_mode].update({"max_message_length": k - (2 * h_len) - 2})
+        self.rsa_key_info[access_mode].update(
+            {"max_message_length": k - (2 * h_len) - 2}
+        )
 
     def _create_rsa(self) -> None:
         """Creates RSA keys."""
@@ -194,18 +204,24 @@ class Keys:
             try:
                 with path.open(mode="xb") as f1:
                     f1.write(pub.exportKey("PEM"))
-                write_msg(self.verbose, f"   - Created new RSA {access_mode} key {path}\n")
+                write_msg(
+                    self.verbose, f"   - Created new RSA {access_mode} key {path}\n"
+                )
                 path = Path(self.keys.get(RSA).get(access_mode).get(PRIVATE))
                 with open(path, "xb") as f2:
                     f2.write(key.exportKey("PEM"))
-                write_msg(self.verbose, f"   - Created new RSA {access_mode} key {path}\n")
+                write_msg(
+                    self.verbose, f"   - Created new RSA {access_mode} key {path}\n"
+                )
             except FileExistsError as e:
                 raise DjangoCryptoFieldsKeyError(f"RSA key already exists. Got {e}")
 
     def _create_aes(self) -> None:
         """Creates AES keys and RSA encrypts them."""
         for access_mode in self.keys.get(AES):
-            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(mode="rb") as f:
+            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(
+                mode="rb"
+            ) as f:
                 rsa_key = RSA_PUBLIC_KEY.importKey(f.read())
             rsa_key = PKCS1_OAEP.new(rsa_key)
             aes_key = Random.new().read(16)
@@ -217,7 +233,9 @@ class Keys:
     def _create_salt(self) -> None:
         """Creates a salt and RSA encrypts it."""
         for access_mode in self.keys.get(SALT):
-            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(mode="rb") as f:
+            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(
+                mode="rb"
+            ) as f:
                 rsa_key = RSA_PUBLIC_KEY.importKey(f.read())
             rsa_key = PKCS1_OAEP.new(rsa_key)
             salt = Random.new().read(8)

@@ -41,7 +41,9 @@ class BaseField(models.Field):
         max_length: int = kwargs.get("max_length", min_length)
         self.max_length: int = min_length if max_length < min_length else max_length
         if self.algorithm == RSA:
-            max_message_length: int = self.keys.rsa_key_info[self.mode]["max_message_length"]
+            max_message_length: int = self.keys.rsa_key_info[self.mode][
+                "max_message_length"
+            ]
             if self.max_length > max_message_length:
                 raise EncryptionError(
                     "{} attribute 'max_length' cannot exceed {} for RSA. Got {}. "

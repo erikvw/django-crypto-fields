@@ -1,11 +1,69 @@
 [build-system]
 requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 version_file="_version.py"
 
+[tool.setuptools.packages.find]
+include = ["django_crypto_fields*", "django_crypto_fields/locale/*/LC_MESSAGES/*"]
+exclude = [
+    "examples*",
+    "tools*",
+    "docs*",
+    "bin*",
+    "image*",
+]
+namespaces = false  # true by default
+
+[project]
+name = "django_crypto_fields"
+dynamic = ["version"]
+description = "Add encrypted field classes and more to your Django models"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+keywords = ["django", "clinicedc", "edc", "clinical trials", "research", "data management", "esource", "encryption", "security"]
+authors = [
+    { name = "Erik van Widenfelt", email = "ew2789@gmail.com" },
+]
+maintainers = [
+    { name = "Erik van Widenfelt", email = "ew2789@gmail.com" },
+]
+classifiers = [
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 5.2",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+license = "GPL-3.0-or-later"
+license-files = ["LICEN[CS]E*"]
+requires-python = '>=3.12'
+dependencies = [
+    "pycryptodomex",
+    "django-audit-fields",
+    "edc-utils",
+    "edc-model-fields",
+    "django-extensions",
+    "django-revision",
+]
+
+[project.urls]
+Homepage = "https://github.com/erikvw/django-crypto-fields"
+Documentation = "https://github.com/erikvw/django-crypto-fields/blob/develop/README.rst"
+Repository = "https://github.com/erikvw/django-crypto-fields.git"
+Changelog = "https://github.com/erikvw/django-crypto-fields/blob/main/CHANGES"
+
+[project.optional-dependencies]
+test = [
+    "edc-test-settings",
+]
+
 [tool.black]
-line-length = 95
+line-length = 88
 target-version = ["py312"]
 extend-exclude = '''^(.*\/)*\b(migrations)\b($|\/.*$)'''
 
@@ -57,7 +115,7 @@ deps =
     coverage[toml]
     tox
     tox-gh-actions
-    dj52: Django>=5.2
+    dj52: Django>=5.2,<5.3
     djdev: https://github.com/django/django/tarball/main
 
 commands =

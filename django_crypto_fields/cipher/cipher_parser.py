@@ -22,14 +22,18 @@ class CipherParser:
     def hash_prefix(self) -> bytes | None:
         if self.cipher:
             hash_prefix = HASH_PREFIX.encode()
-            self._hash_prefix = hash_prefix if self.cipher.startswith(hash_prefix) else None
+            self._hash_prefix = (
+                hash_prefix if self.cipher.startswith(hash_prefix) else None
+            )
         return self._hash_prefix
 
     @property
     def cipher_prefix(self) -> bytes | None:
         if self.cipher:
             cipher_prefix = CIPHER_PREFIX.encode()
-            self._cipher_prefix = cipher_prefix if cipher_prefix in self.cipher else None
+            self._cipher_prefix = (
+                cipher_prefix if cipher_prefix in self.cipher else None
+            )
         return self._cipher_prefix
 
     @property
@@ -49,7 +53,9 @@ class CipherParser:
     def validate_hashed_value(self) -> None:
         if self.hash_prefix and not self.hashed_value:
             raise MalformedCiphertextError("Invalid hashed_value. Got None.")
-        elif self.salt_key and len(self.hashed_value) != len(make_hash("Foo", self.salt_key)):
+        elif self.salt_key and len(self.hashed_value) != len(
+            make_hash("Foo", self.salt_key)
+        ):
             raise MalformedCiphertextError("Invalid hashed_value. Incorrect size.")
 
     def validate_secret(self) -> None:
