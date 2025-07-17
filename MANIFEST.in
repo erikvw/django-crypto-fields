@@ -1,3 +1,4 @@
-include AUTHORS CHANGES LICENSE VERSION
+include AUTHORS CHANGES LICENSE
 include MANIFEST.in
 include *.rst
+include */locale/*/LC_MESSAGES/*.mo

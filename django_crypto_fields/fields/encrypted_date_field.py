@@ -16,7 +16,8 @@ class EncryptedDateField(DateTimeCheckMixin, BaseRsaField):
     description = "local-rsa encrypted field for 'DateField'"
     default_error_messages = {
         "invalid": _(
-            "“%(value)s” value has an invalid date format. It must be " "in YYYY-MM-DD format."
+            "“%(value)s” value has an invalid date format. It must be "
+            "in YYYY-MM-DD format."
         ),
         "invalid_date": _(
             "“%(value)s” value has the correct format (YYYY-MM-DD) "

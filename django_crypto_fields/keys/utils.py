@@ -15,7 +15,9 @@ __all__ = [
 ]
 
 
-def get_template(path: PurePath, key_prefix: str) -> dict[str, dict[str, dict[str, PurePath]]]:
+def get_template(
+    path: PurePath, key_prefix: str
+) -> dict[str, dict[str, dict[str, PurePath]]]:
     """Returns the data structure to store encryption keys.
 
     The Keys class will replace the filenames with the actual keys.

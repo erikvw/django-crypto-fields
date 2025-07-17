@@ -43,7 +43,9 @@ class TestKeyCreator(TestCase):
         for file in encryption_keys.filenames:
             self.assertTrue(Path(file).exists())
 
-    @override_settings(DEBUG=False, DJANGO_CRYPTO_FIELDS_KEY_PATH="/blah/blah/blah/blah")
+    @override_settings(
+        DEBUG=False, DJANGO_CRYPTO_FIELDS_KEY_PATH="/blah/blah/blah/blah"
+    )
     def test_create_keys_defaults_to_non_production_path_and_raises(self):
         self.assertRaises(DjangoCryptoFieldsKeyPathDoesNotExist, KeyPath)
 
@@ -74,7 +76,9 @@ class TestKeyCreator(TestCase):
     def test_create_keys_does_not_overwrite_production_keys(self):
         keys = Keys(verbose=False)
         keys.reset()
-        self.assertRaises(DjangoCryptoFieldsKeyAlreadyExist, keys.create_new_keys_or_raise)
+        self.assertRaises(
+            DjangoCryptoFieldsKeyAlreadyExist, keys.create_new_keys_or_raise
+        )
 
     @override_settings(
         DEBUG=False,
@@ -107,4 +111,6 @@ class TestKeyCreator(TestCase):
     def test_key_filenames_path_per_key_type(self):
         for mode in encryption_keys.template.values():
             for key_type in mode.values():
-                self.assertIn(str(encryption_keys.path), str(list(key_type.values())[0]))
+                self.assertIn(
+                    str(encryption_keys.path), str(list(key_type.values())[0])
+                )

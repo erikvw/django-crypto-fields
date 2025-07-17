@@ -60,15 +60,29 @@ class TestModels(TestCase):
         self.assertEqual(1, TestModel.objects.filter(firstname__exact="Erik1").count())
 
     def test_in(self):
-        TestModel.objects.create(firstname="Erik1", identity="11111111", comment="no comment")
-        TestModel.objects.create(firstname="Erik2", identity="11111112", comment="no comment")
-        TestModel.objects.create(firstname="Erik3", identity="11111113", comment="no comment")
-        TestModel.objects.create(firstname="Erik4", identity="11111114", comment="no comment")
-        self.assertEqual(2, TestModel.objects.filter(firstname__in=["Erik1", "Erik2"]).count())
+        TestModel.objects.create(
+            firstname="Erik1", identity="11111111", comment="no comment"
+        )
+        TestModel.objects.create(
+            firstname="Erik2", identity="11111112", comment="no comment"
+        )
+        TestModel.objects.create(
+            firstname="Erik3", identity="11111113", comment="no comment"
+        )
+        TestModel.objects.create(
+            firstname="Erik4", identity="11111114", comment="no comment"
+        )
+        self.assertEqual(
+            2, TestModel.objects.filter(firstname__in=["Erik1", "Erik2"]).count()
+        )
 
     def test_unique(self):
-        TestModel.objects.create(firstname="Erik1", identity="11111111", comment="no comment")
-        TestModel.objects.create(firstname="Erik2", identity="11111112", comment="no comment")
+        TestModel.objects.create(
+            firstname="Erik1", identity="11111111", comment="no comment"
+        )
+        TestModel.objects.create(
+            firstname="Erik2", identity="11111112", comment="no comment"
+        )
         self.assertRaises(
             IntegrityError,
             TestModel.objects.create,

@@ -21,8 +21,12 @@ class TestCryptor(TestCase):
         encryption_keys.reset_and_delete_keys(verbose=False)
 
     def test_mode_support(self):
-        self.assertEqual(encryption_keys.rsa_modes_supported, [LOCAL_MODE, RESTRICTED_MODE])
-        self.assertEqual(encryption_keys.aes_modes_supported, [LOCAL_MODE, RESTRICTED_MODE])
+        self.assertEqual(
+            encryption_keys.rsa_modes_supported, [LOCAL_MODE, RESTRICTED_MODE]
+        )
+        self.assertEqual(
+            encryption_keys.aes_modes_supported, [LOCAL_MODE, RESTRICTED_MODE]
+        )
 
     def test_encrypt_rsa(self):
         """Assert successful RSA roundtrip."""
@@ -77,7 +81,8 @@ class TestCryptor(TestCase):
 
     def test_rsa_roundtrip(self):
         plaintext = (
-            "erik is a pleeb! ERIK IS A PLEEB 0123456789!@#$%^&*()" "_-+={[}]|\"':;>.<,?/~`±§"
+            "erik is a pleeb! ERIK IS A PLEEB 0123456789!@#$%^&*()"
+            "_-+={[}]|\"':;>.<,?/~`±§"
         )
         for mode in encryption_keys.rsa_modes_supported:
             cryptor = Cryptor(algorithm=RSA, access_mode=mode)

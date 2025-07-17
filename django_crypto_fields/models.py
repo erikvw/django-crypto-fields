@@ -5,7 +5,7 @@ from .fields import BaseField
 
 
 class CryptoMixin(models.Model):
-    """Model mixin for a user model that need to list it's
+    """Model mixin for a user model that needs to list it's
     encrypted fields.
     """
 
@@ -23,7 +23,7 @@ class CryptModelManager(models.Manager):
 
 
 class Crypt(AuditUuidModelMixin, models.Model):
-    """A secrets lookup model searchable by hash."""
+    """A `secrets` lookup model searchable by hash."""
 
     hash = models.CharField(verbose_name="Hash", max_length=128, db_index=True)
 

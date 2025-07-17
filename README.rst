@@ -33,6 +33,8 @@ Older versions
 
 ``django-crypto-fields`` uses ``pycryptodomex``
 
+We use this module in projects built with the `ClinicEDC`_: A clinical trials data management framework.
+
 Usage
 =====
 .. code-block:: python
@@ -62,9 +64,9 @@ add to INSTALLED_APPS:
 .. code-block:: python
 
 	INSTALLED_APPS = (
-		...
+		# ...
 	    'django_crypto_fields.apps.AppConfig',
-	    ...
+	    # ...
 	)
 
 Add DJANGO_CRYPTO_FIELDS_KEY_PATH to the folder in settings:
@@ -73,7 +75,7 @@ Add DJANGO_CRYPTO_FIELDS_KEY_PATH to the folder in settings:
 
     # folder where the encryption keys are stored
     # Do not set for tests
-    DJANGO_CRYPTO_FIELDS_KEY_PATH = '/etc/myproject/django_crypto_fields')
+    DJANGO_CRYPTO_FIELDS_KEY_PATH = '/etc/myproject/django_crypto_fields'
 
 Add KEY_PREFIX (optional, the default is "user"):
 
@@ -85,7 +87,7 @@ Add KEY_PREFIX (optional, the default is "user"):
 
 Run ``migrate`` to create the ``django_crypto_fields.crypt`` table:
 
-.. code-block:: python
+.. code-block:: bash
 
     python manage.py migrate django_crypto_fields
 
@@ -143,6 +145,8 @@ Contribute
 
 - Issue Tracker: github.com/erikvw/django-crypto-fields/issues
 - Source Code: github.com/erikvw/django-crypto-fields
+
+.. _ClinicEDC: https://github.com/clinicedc
 
 .. |pypi| image:: https://img.shields.io/pypi/v/django-crypto-fields.svg
     :target: https://pypi.python.org/pypi/django-crypto-fields
