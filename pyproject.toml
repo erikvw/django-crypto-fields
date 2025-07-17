@@ -20,7 +20,6 @@ namespaces = false  # true by default
 name = "django_crypto_fields"
 dynamic = ["version"]
 description = "Add encrypted field classes and more to your Django models"
-url = "https://github.com/erikvw/django-crypto-fields"
 readme = {file = "README.rst", content-type = "text/x-rst"}
 keywords = ["django", "clinicedc", "edc", "clinical trials", "research", "data management", "esource", "encryption", "security"]
 authors = [
@@ -51,6 +50,12 @@ dependencies = [
     "django-extensions",
     "django-revision",
 ]
+
+[project.urls]
+Homepage = "https://github.com/erikvw/django-crypto-fields"
+Documentation = "https://github.com/erikvw/django-crypto-fields/blob/develop/README.rst"
+Repository = "https://github.com/erikvw/django-crypto-fields.git"
+Changelog = "https://github.com/erikvw/django-crypto-fields/blob/main/CHANGES"
 
 [project.optional-dependencies]
 test = [
