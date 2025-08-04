@@ -4,6 +4,8 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-root = "src"
+source-exclude = ["bin"]
+namespace = false
 
 [project]
 name = "django_crypto_fields"
@@ -78,12 +80,17 @@ test = [
 [tool.black]
 line-length = 88
 target-version = ["py312"]
-extend-exclude = '''^(.*\/)*\b(migrations)\b($|\/.*$)'''
+extend-exclude = '''
+/(
+    migrations
+  | \.venv
+)/
+'''
 
 [tool.isort]
 profile = "black"
 py_version = "312"
-skip = [".tox", ".eggs", "migrations", "_version.py"]
+skip = [".tox", ".eggs", "migrations", "_version.py", ".venv"]
 
 [tool.coverage.run]
 parallel = false
