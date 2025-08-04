@@ -10,7 +10,17 @@ name = "django_crypto_fields"
 version = "1.0.1"
 description = "Add encrypted field classes and more to your Django models"
 readme = {file = "README.rst", content-type = "text/x-rst"}
-keywords = ["django", "clinicedc", "edc", "clinical trials", "research", "data management", "esource", "encryption", "security"]
+keywords = [
+    "django",
+    "clinicedc",
+    "edc",
+    "clinical trials",
+    "research",
+    "data management",
+    "esource",
+    "encryption",
+    "security"
+]
 authors = [
     { name = "Erik van Widenfelt", email = "ew2789@gmail.com" },
 ]
@@ -18,12 +28,10 @@ maintainers = [
     { name = "Erik van Widenfelt", email = "ew2789@gmail.com" },
 ]
 classifiers = [
-    "Environment :: Web Environment",
+    "Development Status :: 5 - Production/Stable",
     "Framework :: Django",
     "Framework :: Django :: 5.2",
-    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -32,12 +40,12 @@ license = "GPL-3.0-or-later"
 license-files = ["LICEN[CS]E*"]
 requires-python = '>=3.12,<3.14'
 dependencies = [
-    "pycryptodomex",
-    "django-audit-fields",
-    "edc-utils",
-    "edc-model-fields",
-    "django-extensions",
-    "django-revision",
+    "django-audit-fields>=1.1.0",
+    "django-extensions>=4.1",
+    "django-revision>=1.0.0",
+    "edc-model-fields>=1.0.0",
+    "edc-utils>=1.1.1",
+    "pycryptodomex>=3.23.0",
 ]
 
 [project.urls]
@@ -47,6 +55,20 @@ Repository = "https://github.com/erikvw/django-crypto-fields.git"
 Changelog = "https://github.com/erikvw/django-crypto-fields/blob/main/CHANGES"
 
 [dependency-groups]
+lint = [
+    "black>=25.1.0",
+    "deptry>=0.23.0",
+    "flake8>=7.3.0",
+    "isort>=6.0.1",
+    "ruff>=0.12.5",
+]
+
+docs = [
+    "furo>=2025.7.19",
+    "sphinx>=8.2.3",
+    "sphinx-design>=0.6.1",
+    "sphinx-inline-tabs>=2023.4.21",
+]
 test = [
     "coverage>=7.10.1",
     "tox-uv>=1.26.2",
@@ -79,47 +101,3 @@ exclude_lines = [
   "pragma: no cover",
   "if TYPE_CHECKING:",
 ]
-
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist =
-    py{312}-dj{52,dev},
-    lint
-
-isolated_build = true
-
-[gh-actions]
-python =
-    3.12: py312, lint
-
-[gh-actions:env]
-DJANGO =
-    5.2: dj52
-    dev: djdev, lint
-
-[testenv]
-deps =
-    pre-commit
-    edc-test-utils
-    edc-test-settings
-    coverage[toml]
-    tox
-    tox-gh-actions
-    dj52: Django>=5.2,<5.3
-    djdev: https://github.com/django/django/tarball/main
-
-commands =
-    pip install -U pip
-    pip --version
-    pip freeze
-    coverage run -a runtests.py
-    coverage report
-
-[testenv:lint]
-deps = -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/lint.txt
-commands =
-    isort --profile=black --check --diff .
-    black --check --diff .
-    flake8 .
-"""

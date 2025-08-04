@@ -2,14 +2,12 @@
 _version.py
 .etc/
 .env/
-django_crypto_fields/tests/etc/django_crypto_fields
-django_crypto_fields/tests/crypto_keys/django_crypto_fields
 .pypirc
 .settings
 .project
 .pydevproject
 db.sqlite3
-
+tests/crypto_keys/django_crypto_fields
 
 # Swap
 [._]*.s[a-v][a-z]
