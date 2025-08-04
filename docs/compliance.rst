@@ -8,7 +8,7 @@ This module adds features that enable your system with field-level database encr
 See also:
 
 * HIPPA
-* 21 CFR part 11
+* `21 CFR part 11 <https://www.ecfr.gov/current/title-21/chapter-I/subchapter-A/part-11>`_
 * `NIAID Electronic Information Systems Policy (EIS) <https://www.niaid.nih.gov/sites/default/files/electronic-info-systems-policy-faq-july2024.pdf>`_
 * GDPR
 * UKGDPR
