@@ -8,6 +8,8 @@ django-crypto-fields documentation
 
 |pypi| |clinicedc|
 
+Homepage: https://github.com/erikvw/django-crypto-fields
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:

@@ -1,24 +1,13 @@
 [build-system]
-requires = ["setuptools>=64", "setuptools-scm>=8"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.8.2,<0.9.0"]
+build-backend = "uv_build"
 
-[tool.setuptools_scm]
-version_file="_version.py"
-
-[tool.setuptools.packages.find]
-include = ["django_crypto_fields*", "django_crypto_fields/locale/*/LC_MESSAGES/*"]
-exclude = [
-    "examples*",
-    "tools*",
-    "docs*",
-    "bin*",
-    "image*",
-]
-namespaces = false  # true by default
+[tool.uv.build-backend]
+module-root = "src"
 
 [project]
 name = "django_crypto_fields"
-dynamic = ["version"]
+version = "1.0.1"
 description = "Add encrypted field classes and more to your Django models"
 readme = {file = "README.rst", content-type = "text/x-rst"}
 keywords = ["django", "clinicedc", "edc", "clinical trials", "research", "data management", "esource", "encryption", "security"]
@@ -41,7 +30,7 @@ classifiers = [
 ]
 license = "GPL-3.0-or-later"
 license-files = ["LICEN[CS]E*"]
-requires-python = '>=3.12'
+requires-python = '>=3.12,<3.14'
 dependencies = [
     "pycryptodomex",
     "django-audit-fields",
@@ -53,12 +42,14 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/erikvw/django-crypto-fields"
-Documentation = "https://github.com/erikvw/django-crypto-fields/blob/develop/README.rst"
+Documentation = "https://django-crypto-fields.readthedocs.io/en/latest/"
 Repository = "https://github.com/erikvw/django-crypto-fields.git"
 Changelog = "https://github.com/erikvw/django-crypto-fields/blob/main/CHANGES"
 
-[project.optional-dependencies]
+[dependency-groups]
 test = [
+    "coverage>=7.10.1",
+    "tox-uv>=1.26.2",
     "edc-test-settings",
 ]
 

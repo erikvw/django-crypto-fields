@@ -15,6 +15,7 @@ jobs:
         python-version: ['3.12', '3.13']
         django-version: ['5.2', 'dev']
         database-engine: ["mysql", "postgres"]
+
     services:
       mysql:
         image: mysql:latest
@@ -44,38 +45,39 @@ jobs:
           sudo apt-get install libcups2-dev wamerican
 
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
-      - name: Get pip cache dir
-        id: pip-cache
+#      - name: Get uv cache dir
+#        id: uv-cache
+#        run: echo "dir=$(uv run pip cache dir)" >> $GITHUB_OUTPUT
+#
+#      - name: Cache uv dependencies
+#        uses: actions/cache@v4
+#        with:
+#          path: ${{ steps.uv-cache.outputs.dir }}
+#          key: uv-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}-${{ hashFiles('**/tox.ini') }}
+#          restore-keys: |
+#            uv-${{ matrix.python-version }}-
+
+      - name: Install tox
         run: |
-          echo "dir=$(pip cache dir)" >>$GITHUB_OUTPUT
+          uv tool install tox --with tox-uv
 
-      - name: Cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pip-cache.outputs.dir }}
-          key:
-            ${{ matrix.python-version }}-v1-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/tox.ini') }}
-          restore-keys: |
-            ${{ matrix.python-version }}-v1-
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/tox.txt
-
+      - name: Verify tox plugins
+        run: uv run --active --group test --no-sources tox --version
 
       - name: Tox tests
         run: |
-          tox -v
+          uv run --active --group test --no-sources tox
         env:
           DJANGO: ${{ matrix.django-version }}
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v3
         with:
           name: Python ${{ matrix.python-version }}

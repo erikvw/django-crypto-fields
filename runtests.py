@@ -4,7 +4,7 @@ import os
 import sys
 
 if __name__ == "__main__":
-    os.environ["DJANGO_SETTINGS_MODULE"] = "django_crypto_fields.tests.test_settings"
+    os.environ["DJANGO_SETTINGS_MODULE"] = "tests.test_settings"
     import django
 
     django.setup()
