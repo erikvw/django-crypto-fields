@@ -14,6 +14,7 @@ django-crypto-fields documentation
 
    overview
    considerations
+   compliance
    key_management
    history
 
