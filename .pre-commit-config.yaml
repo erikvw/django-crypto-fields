@@ -53,3 +53,4 @@ repos:
     rev: v6.2.5
     hooks:
       - id: rstcheck
+        additional_dependencies: ['rstcheck[sphinx,toml]']

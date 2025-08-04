@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path, PurePath
@@ -20,7 +21,7 @@ __all__ = ["KeyPath"]
 class KeyPath:
     """A class to set/determine the correct key_path.
 
-    if this is called during a test, the value of `settings.DEBUG` sets
+    If this is called during a test, the value of `settings.DEBUG` sets
     the value of settings.DJANGO_CRYPTO_FIELDS_KEY_PATH to a tempdir
     if not set explicitly.
     """
@@ -40,7 +41,10 @@ class KeyPath:
             )
         if (
             not settings.DEBUG
-            and get_test_module_from_settings() not in sys.argv
+            and (
+                get_test_module_from_settings()
+                not in list(itertools.chain(*[x.split("/") for x in sys.argv]))
+            )
             and str(settings.BASE_DIR) in str(path)
         ):
             raise DjangoCryptoFieldsKeyPathError(

@@ -43,7 +43,7 @@ def write_last_used(filepath: Path) -> Path:
 
 
 def read_last_used(folder: Path) -> tuple[PurePath | None, Path]:
-    """Opens file `django_crypto_fields` and read last path."""
+    """Opens file `django_crypto_fields` and reads the last path."""
     last_used_path = None
     filepath = Path(folder / "django_crypto_fields")
     if "runtests.py" in sys.argv:
@@ -59,6 +59,7 @@ def read_last_used(folder: Path) -> tuple[PurePath | None, Path]:
         raise DjangoCryptoFieldsKeyPathError(
             style.ERROR(
                 "Last path used to access encryption keys is invalid. "
+                f"Check file `django_crypto_fields` in the key folder. "
                 f"See file `{filepath}`. Got `{last_used_path}`"
             )
         )
