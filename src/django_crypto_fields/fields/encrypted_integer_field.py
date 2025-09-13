@@ -1,8 +1,12 @@
+from gettext import gettext as _
+
 from django.core.exceptions import ValidationError
 
 from .base_rsa_field import BaseRsaField
 
 __all__ = ["EncryptedIntegerField"]
+
+INVALID_VALUE = _("Invalid value. Expected a whole number (integer)")
 
 
 class EncryptedIntegerField(BaseRsaField):
@@ -20,10 +24,8 @@ class EncryptedIntegerField(BaseRsaField):
             return value
         try:
             value = int(value)
-        except ValueError:
+        except ValueError as e:
             raise ValidationError(
-                "Invalid value. Expected a whole number (integer)",
-                code="invalid",
-                params={"value": value},
-            )
+                INVALID_VALUE, code="invalid", params={"value": value}
+            ) from e
         return value

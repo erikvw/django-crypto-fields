@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 
 import django_extensions.db.fields
 import django_revision.revision_field
-import edc_model_fields.fields.hostname_modification_field
-import edc_model_fields.fields.userfield
+import django_audit_fields.fields.hostname_modification_field
+import django_audit_fields.fields.userfield
 from django.db import migrations, models
 
 
@@ -41,13 +41,13 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "user_created",
-                    edc_model_fields.fields.userfield.UserField(
+                    django_audit_fields.fields.userfield.UserField(
                         editable=False, max_length=50, verbose_name="user created"
                     ),
                 ),
                 (
                     "user_modified",
-                    edc_model_fields.fields.userfield.UserField(
+                    django_audit_fields.fields.userfield.UserField(
                         editable=False, max_length=50, verbose_name="user modified"
                     ),
                 ),
@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "hostname_modified",
-                    edc_model_fields.fields.hostname_modification_field.HostnameModificationField(
+                    django_audit_fields.fields.hostname_modification_field.HostnameModificationField(
                         editable=False,
                         help_text="System field. (modified on every save)",
                         max_length=50,

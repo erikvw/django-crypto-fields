@@ -20,6 +20,16 @@ if TYPE_CHECKING:
 
 __all__ = ["BaseField"]
 
+INVALID_LENGTH_FOR_RSA = (
+    "Maximum length exxeeded. {class_name} attribute 'max_length' cannot exceed "
+    "{max_message_length} for RSA. Got {max_length}. "
+    "Try setting 'algorithm' = 'aes'."
+)
+INVALID_FIELD_TYPE = (
+    "Field type only supports supports '{supported_lookups}' lookups. Got '{lookup_type}'"
+)
+KEYS_NOT_LOADED = "Encryption keys not loaded. You need to run initialize()"
+
 
 class BaseField(models.Field):
     description = "Field class that stores values as encrypted"
@@ -39,16 +49,15 @@ class BaseField(models.Field):
 
         min_length: int = len(HASH_PREFIX) + self.field_cryptor.hash_size
         max_length: int = kwargs.get("max_length", min_length)
-        self.max_length: int = min_length if max_length < min_length else max_length
+        self.max_length: int = max(max_length, min_length)
         if self.algorithm == RSA:
-            max_message_length: int = self.keys.rsa_key_info[self.mode][
-                "max_message_length"
-            ]
+            max_message_length: int = self.keys.rsa_key_info[self.mode]["max_message_length"]
             if self.max_length > max_message_length:
                 raise EncryptionError(
-                    "{} attribute 'max_length' cannot exceed {} for RSA. Got {}. "
-                    "Try setting 'algorithm' = 'aes'.".format(
-                        self.__class__.__name__, max_message_length, self.max_length
+                    INVALID_LENGTH_FOR_RSA.format(
+                        class_name=self.__class__.__name__,
+                        max_message_length=max_message_length,
+                        max_length=self.max_length,
                     )
                 )
 
@@ -62,9 +71,7 @@ class BaseField(models.Field):
     def keys(self) -> Keys:
         if not self._keys:
             if not encryption_keys.loaded:
-                raise DjangoCryptoFieldsKeysNotLoaded(
-                    "Encryption keys not loaded. You need to run initialize()"
-                )
+                raise DjangoCryptoFieldsKeysNotLoaded(KEYS_NOT_LOADED)
             self._keys = encryption_keys
         return self._keys
 
@@ -81,7 +88,7 @@ class BaseField(models.Field):
         return "CharField"
 
     def deconstruct(self):
-        name, path, args, kwargs = super(BaseField, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
         kwargs["help_text"] = self.help_text
         kwargs["max_length"] = self.max_length
         return name, path, args, kwargs
@@ -91,7 +98,7 @@ class BaseField(models.Field):
             kwargs.update({"disabled": True, "widget": widgets.PasswordInput})
         return super().formfield(**kwargs)
 
-    def from_db_value(self, value: str | None, *args) -> str | None:
+    def from_db_value(self, value: str | None, *args) -> str | None:  # noqa: ARG002
         """Returns the decrypted value, an empty string, or None."""
         value = value.encode() if value is not None else value
         if value == b"":
@@ -132,8 +139,9 @@ class BaseField(models.Field):
         supported_lookups = ["iexact", "exact", "in", "isnull"]
         if lookup_type not in supported_lookups:
             raise EncryptionLookupError(
-                f"Field type only supports supports '{supported_lookups}' "
-                f"lookups. Got '{lookup_type}'"
+                INVALID_FIELD_TYPE.format(
+                    supported_lookups=supported_lookups, lookup_type=lookup_type
+                )
             )
 
     def get_isnull_as_lookup(self, value):
@@ -142,7 +150,7 @@ class BaseField(models.Field):
     def get_in_as_lookup(self, values):
         hashed_values = []
         for value in values:
-            hashed_values.append(HASH_PREFIX.encode() + self.field_cryptor.hash(value))
+            hashed_values.append(HASH_PREFIX.encode() + self.field_cryptor.hash(value))  # noqa: PERF401
         return hashed_values
 
     def mask(self, value, mask=None):

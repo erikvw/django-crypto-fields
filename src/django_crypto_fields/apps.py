@@ -18,8 +18,8 @@ class AppConfig(DjangoAppConfig):
         return super().import_models()
 
     def ready(self):
-        from .key_path import KeyPath
-        from .system_checks import check_key_path
+        from .key_path import KeyPath  # noqa: PLC0415
+        from .system_checks import check_key_path  # noqa: PLC0415
 
         style = color_style()
         register(check_key_path, Tags.security, deploy=True)

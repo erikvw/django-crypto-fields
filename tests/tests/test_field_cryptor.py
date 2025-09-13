@@ -1,12 +1,12 @@
-from datetime import date
-
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.test import TestCase, tag
+from django.utils import timezone
 
 from django_crypto_fields.cipher import CipherParser
 from django_crypto_fields.constants import AES, HASH_PREFIX, LOCAL_MODE, RSA
 from django_crypto_fields.cryptor import Cryptor
+from django_crypto_fields.encoding import safe_encode
 from django_crypto_fields.exceptions import (
     DjangoCryptoFieldsError,
     MalformedCiphertextError,
@@ -15,7 +15,6 @@ from django_crypto_fields.field_cryptor import FieldCryptor
 from django_crypto_fields.keys import encryption_keys
 from django_crypto_fields.utils import get_crypt_model_cls
 
-from ...encoding import safe_encode
 from ..models import TestModel
 
 
@@ -67,7 +66,7 @@ class TestFieldCryptor(TestCase):
 
     def test_rsa_field_encryption_update_secret(self):
         """Assert successful RSA field roundtrip for same value."""
-        value = "erik is a pleeb!!∂ƒ˜∫˙ç"
+        value = "erik is a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
         for mode in encryption_keys.get(RSA):
             field_cryptor = FieldCryptor(RSA, mode)
             cipher1 = field_cryptor.encrypt(value)
@@ -86,7 +85,7 @@ class TestFieldCryptor(TestCase):
 
     def test_rsa_field_encryption_encoded(self):
         """Assert successful RSA field roundtrip."""
-        value = "erik is a pleeb!!∂ƒ˜∫˙ç"
+        value = "erik is a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
         for mode in encryption_keys.get(RSA):
             field_cryptor = FieldCryptor(RSA, mode)
             ciphertext = field_cryptor.encrypt(value)
@@ -94,7 +93,7 @@ class TestFieldCryptor(TestCase):
 
     def test_aes_field_encryption_encoded(self):
         """Assert successful AES field roundtrip."""
-        value = "erik is a pleeb!!∂ƒ˜∫˙ç"
+        value = "erik is a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
         for mode in encryption_keys.get(AES):
             field_cryptor = FieldCryptor(AES, mode)
             ciphertext = field_cryptor.encrypt(value)
@@ -102,7 +101,7 @@ class TestFieldCryptor(TestCase):
 
     def test_aes_field_encryption_update_secret(self):
         """Assert successful AES field roundtrip for same value."""
-        value = "erik is a pleeb!!∂ƒ˜∫˙ç"
+        value = "erik is a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
         for mode in encryption_keys.get(AES):
             field_cryptor = FieldCryptor(AES, mode)
             ciphertext1 = field_cryptor.encrypt(value)
@@ -115,7 +114,7 @@ class TestFieldCryptor(TestCase):
         """Asserts plaintext can be encrypted, saved to model,
         retrieved by hash, and decrypted.
         """
-        value = "erik is a pleeb!!∂ƒ˜∫˙ç"
+        value = "erik is a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
         cryptor = Cryptor(algorithm=RSA, access_mode=LOCAL_MODE)
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
         hashed_value = field_cryptor.hash(value)
@@ -128,7 +127,7 @@ class TestFieldCryptor(TestCase):
         """Asserts plaintext can be encrypted, saved to model,
         retrieved by hash, and decrypted.
         """
-        value = "erik is a pleeb!!∂ƒ˜∫˙ç"
+        value = "erik is a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
         field_cryptor = FieldCryptor(AES, LOCAL_MODE)
         field_cryptor.encrypt(value, update=True)
         hashed_value = field_cryptor.hash(value)
@@ -161,7 +160,7 @@ class TestFieldCryptor(TestCase):
     def test_get_secret(self):
         self.assertEqual(get_crypt_model_cls().objects.all().count(), 0)
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
-        value = "erik is a pleeb!!∂ƒ˜∫˙ç"
+        value = "erik is a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
         cipher = field_cryptor.encrypt(value, update=True)
         p = CipherParser(cipher)
         self.assertIsNotNone(p.secret)
@@ -208,13 +207,13 @@ class TestFieldCryptor(TestCase):
 
     def test_rsa_field_with_date(self):
         field_cryptor = FieldCryptor(RSA, LOCAL_MODE)
-        value = safe_encode(date.today()).decode()
+        value = safe_encode(timezone.now().date()).decode()
         cipher = field_cryptor.encrypt(value)
         self.assertEqual(value, field_cryptor.decrypt(cipher))
 
     def test_aes_field_with_date(self):
         field_cryptor = FieldCryptor(AES, LOCAL_MODE)
-        value = safe_encode(date.today()).decode()
+        value = safe_encode(timezone.now().date()).decode()
         cipher = field_cryptor.encrypt(value)
         self.assertEqual(value, field_cryptor.decrypt(cipher))
 
@@ -224,7 +223,7 @@ class TestFieldCryptor(TestCase):
         data = dict(
             firstname="erik",
             identity="123456789",
-            comment="erik is a pleeb!!∂ƒ˜∫˙ç",
+            comment="erik is a pleeb!!∂ƒ˜∫˙ç",  # noqa: RUF001
         )
         TestModel.objects.create(**data)
         for attr, value in data.items():
@@ -278,12 +277,10 @@ class TestFieldCryptor(TestCase):
         """
         firstname = "erik"
         identity = "123456789"
-        comment = "erik is a pleeb!!∂ƒ˜∫˙ç"
-        TestModel.objects.create(
-            firstname=firstname, identity=identity, comment=comment
-        )
+        comment = "erik is a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
+        TestModel.objects.create(firstname=firstname, identity=identity, comment=comment)
         firstname2 = "erik2"
-        comment2 = "erik was a pleeb!!∂ƒ˜∫˙ç"
+        comment2 = "erik was a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
         with transaction.atomic():
             self.assertRaises(
                 IntegrityError,

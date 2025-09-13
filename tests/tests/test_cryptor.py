@@ -1,6 +1,5 @@
-from datetime import date, datetime
-
 from django.test import TestCase, tag
+from django.utils import timezone
 
 from django_crypto_fields.constants import AES, LOCAL_MODE, RESTRICTED_MODE, RSA
 from django_crypto_fields.cryptor import Cryptor
@@ -21,12 +20,8 @@ class TestCryptor(TestCase):
         encryption_keys.reset_and_delete_keys(verbose=False)
 
     def test_mode_support(self):
-        self.assertEqual(
-            encryption_keys.rsa_modes_supported, [LOCAL_MODE, RESTRICTED_MODE]
-        )
-        self.assertEqual(
-            encryption_keys.aes_modes_supported, [LOCAL_MODE, RESTRICTED_MODE]
-        )
+        self.assertEqual(encryption_keys.rsa_modes_supported, [LOCAL_MODE, RESTRICTED_MODE])
+        self.assertEqual(encryption_keys.aes_modes_supported, [LOCAL_MODE, RESTRICTED_MODE])
 
     def test_encrypt_rsa(self):
         """Assert successful RSA roundtrip."""
@@ -57,14 +52,14 @@ class TestCryptor(TestCase):
     def test_rsa_encoding(self):
         """Assert successful RSA roundtrip of byte return str."""
         cryptor = Cryptor(algorithm=RSA, access_mode=LOCAL_MODE)
-        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"
+        plaintext = "erik is a pleeb!!∂ƒ˜∫˙ç"  # noqa: RUF001
         ciphertext = cryptor.encrypt(plaintext)
         t2 = type(cryptor.decrypt(ciphertext))
         self.assertTrue(type(t2), "str")
 
     def test_rsa_type(self):
         cryptor = Cryptor(algorithm=RSA, access_mode=LOCAL_MODE)
-        for value in ["", 1, 1.0, date.today(), datetime.today()]:
+        for value in ["", 1, 1.0, timezone.now().date(), timezone.now()]:
             with self.subTest(value=value):
                 try:
                     cryptor.encrypt(value)
@@ -81,8 +76,7 @@ class TestCryptor(TestCase):
 
     def test_rsa_roundtrip(self):
         plaintext = (
-            "erik is a pleeb! ERIK IS A PLEEB 0123456789!@#$%^&*()"
-            "_-+={[}]|\"':;>.<,?/~`±§"
+            "erik is a pleeb! ERIK IS A PLEEB 0123456789!@#$%^&*()_-+={[}]|\"':;>.<,?/~`±§"
         )
         for mode in encryption_keys.rsa_modes_supported:
             cryptor = Cryptor(algorithm=RSA, access_mode=mode)
@@ -94,8 +88,7 @@ class TestCryptor(TestCase):
 
     def test_aes_roundtrip(self):
         plaintext = (
-            "erik is a pleeb!\nERIK IS A PLEEB\n0123456789!@#$%^&*()_"
-            "-+={[}]|\"':;>.<,?/~`±§\n"
+            "erik is a pleeb!\nERIK IS A PLEEB\n0123456789!@#$%^&*()_-+={[}]|\"':;>.<,?/~`±§\n"
         )
         for mode in encryption_keys.aes_modes_supported:
             cryptor = Cryptor(algorithm=AES, access_mode=mode)

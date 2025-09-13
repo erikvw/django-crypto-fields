@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from tempfile import mkdtemp
 
@@ -43,9 +42,7 @@ class TestKeyCreator(TestCase):
         for file in encryption_keys.filenames:
             self.assertTrue(Path(file).exists())
 
-    @override_settings(
-        DEBUG=False, DJANGO_CRYPTO_FIELDS_KEY_PATH="/blah/blah/blah/blah"
-    )
+    @override_settings(DEBUG=False, DJANGO_CRYPTO_FIELDS_KEY_PATH="/blah/blah/blah/blah")
     def test_create_keys_defaults_to_non_production_path_and_raises(self):
         self.assertRaises(DjangoCryptoFieldsKeyPathDoesNotExist, KeyPath)
 
@@ -60,9 +57,7 @@ class TestKeyCreator(TestCase):
     @override_settings(
         DEBUG=False,
         DJANGO_CRYPTO_FIELDS_TEST_MODULE="blah.py",
-        DJANGO_CRYPTO_FIELDS_KEY_PATH=os.path.join(
-            settings.BASE_DIR, "this/path/does/not/exist"
-        ),
+        DJANGO_CRYPTO_FIELDS_KEY_PATH=Path(settings.BASE_DIR) / "this/path/does/not/exist",
     )
     def test_invalid_production_path_raises(self):
         self.assertRaises(DjangoCryptoFieldsKeyPathDoesNotExist, KeyPath)
@@ -76,9 +71,7 @@ class TestKeyCreator(TestCase):
     def test_create_keys_does_not_overwrite_production_keys(self):
         keys = Keys(verbose=False)
         keys.reset()
-        self.assertRaises(
-            DjangoCryptoFieldsKeyAlreadyExist, keys.create_new_keys_or_raise
-        )
+        self.assertRaises(DjangoCryptoFieldsKeyAlreadyExist, keys.create_new_keys_or_raise)
 
     @override_settings(
         DEBUG=False,
@@ -93,7 +86,7 @@ class TestKeyCreator(TestCase):
     def test_path(self):
         path = get_keypath_from_settings()
         key_path = KeyPath()
-        self.assertEqual(str(key_path.path), path)
+        self.assertEqual(str(key_path.path), str(path))
 
     def test_key_filenames_modes(self):
         self.assertEqual(len(list(encryption_keys.template.keys())), 3)
@@ -111,6 +104,4 @@ class TestKeyCreator(TestCase):
     def test_key_filenames_path_per_key_type(self):
         for mode in encryption_keys.template.values():
             for key_type in mode.values():
-                self.assertIn(
-                    str(encryption_keys.path), str(list(key_type.values())[0])
-                )
+                self.assertIn(str(encryption_keys.path), str(next(iter(key_type.values()))))

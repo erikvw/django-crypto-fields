@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from dateutil.parser import parse
+from dateutil.tz import UTC
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models.fields import DateTimeCheckMixin
@@ -15,14 +17,13 @@ __all__ = ["EncryptedDateTimeField"]
 
 class EncryptedDateTimeField(DateTimeCheckMixin, BaseRsaField):
     description = "local-rsa encrypted field for 'DateTimeField'"
-    default_error_messages = {
+    default_error_messages = {  # noqa: RUF012
         "invalid": _(
             "“%(value)s” value has an invalid format. It must be in "
             "YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format."
         ),
         "invalid_date": _(
-            "“%(value)s” value has the correct format "
-            "(YYYY-MM-DD) but it is an invalid date."
+            "“%(value)s” value has the correct format (YYYY-MM-DD) but it is an invalid date."
         ),
         "invalid_datetime": _(
             "“%(value)s” value has the correct format "
@@ -51,14 +52,14 @@ class EncryptedDateTimeField(DateTimeCheckMixin, BaseRsaField):
             return self._check_if_value_fixed(value)
         return []
 
-    def from_db_value(self, value: str | None, *args) -> datetime | None:
+    def from_db_value(self, value: str | None, *args) -> datetime | None:  # noqa: ARG002
         """Returns the decrypted value, an empty string, or None."""
         if value is None:
             return None
         date_string = self.field_cryptor.decrypt(value.encode())
         if not date_string:
             return None
-        return datetime.strptime(date_string, DATETIME_STRING)
+        return parse(date_string, DATETIME_STRING).replace(tzinfo=UTC)
 
     def get_prep_value(self, value: date | None) -> str | None:
         if value:
@@ -74,12 +75,12 @@ class EncryptedDateTimeField(DateTimeCheckMixin, BaseRsaField):
             parsed = parse_date(value)
             if parsed is not None:
                 return parsed
-        except ValueError:
+        except ValueError as e:
             raise ValidationError(
                 self.error_messages["invalid_date"],
                 code="invalid_date",
                 params={"value": value},
-            )
+            ) from e
         raise ValidationError(
             self.error_messages["invalid"],
             code="invalid",
@@ -91,8 +92,7 @@ class EncryptedDateTimeField(DateTimeCheckMixin, BaseRsaField):
             value = timezone.now()
             setattr(model_instance, self.attname, value)
             return value
-        else:
-            return super().pre_save(model_instance, add)
+        return super().pre_save(model_instance, add)
 
     def formfield(self, **kwargs):
         kwargs.update(form_class=forms.SplitDateTimeField)

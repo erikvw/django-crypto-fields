@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "django-crypto-fields"
-copyright = "2025, erik van widenfelt"
+copyright = "2025, erik van widenfelt"  # noqa: A001
 author = "erik van widenfelt"
 release = "1.0.1"
 

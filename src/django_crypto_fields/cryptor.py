@@ -18,6 +18,14 @@ if TYPE_CHECKING:
 __all__ = ["Cryptor"]
 
 
+RSA_ENCRYPT_FAILED = (
+    "RSA encrypt failed for value. Using RSA from key_path=`{key_path}`. Got `{err}`"
+)
+RSA_DECRYPT_FAILED = (
+    "RSA decrypt failed for value. Using RSA from key_path=`{key_path}`. Got `{err}`"
+)
+
+
 class Cryptor:
     """Base class for all classes providing RSA and AES encryption
     methods.
@@ -43,8 +51,7 @@ class Cryptor:
         iv: bytes = Random.new().read(AES_CIPHER.block_size)
         cipher: CbcMode = AES_CIPHER.new(self.aes_key, self.aes_encryption_mode, iv)
         encoded_value = append_padding(encoded_value, cipher.block_size)
-        secret = iv + cipher.encrypt(encoded_value)
-        return secret
+        return iv + cipher.encrypt(encoded_value)
 
     def _aes_decrypt(self, secret: bytes) -> str:
         iv = secret[: AES_CIPHER.block_size]
@@ -57,7 +64,9 @@ class Cryptor:
         try:
             secret = self.rsa_public_key.encrypt(safe_encode(value))
         except (ValueError, TypeError) as e:
-            raise EncryptionError(f"RSA encryption failed for value. Got '{e}'")
+            raise EncryptionError(
+                RSA_ENCRYPT_FAILED.format(key_path=get_keypath_from_settings(), err=str(e))
+            ) from e
         return secret
 
     def _rsa_decrypt(self, secret: bytes) -> str:
@@ -65,6 +74,6 @@ class Cryptor:
             encoded_value = self.rsa_private_key.decrypt(secret)
         except ValueError as e:
             raise EncryptionError(
-                f"{e} Using RSA from key_path=`{get_keypath_from_settings()}`."
-            )
+                RSA_DECRYPT_FAILED.format(key_path=get_keypath_from_settings(), err=str(e))
+            ) from e
         return encoded_value.decode() if encoded_value is not None else None

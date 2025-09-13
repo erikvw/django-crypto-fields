@@ -9,12 +9,12 @@ class CryptoMixin(models.Model):
     encrypted fields.
     """
 
+    class Meta:
+        abstract = True
+
     @classmethod
     def encrypted_fields(cls):
         return [fld.name for fld in cls._meta.fields if isinstance(fld, BaseField)]
-
-    class Meta:
-        abstract = True
 
 
 class CryptModelManager(models.Manager):
@@ -30,9 +30,9 @@ class Crypt(AuditUuidModelMixin, models.Model):
     # causes problems with Postgres!!
     secret = models.BinaryField(verbose_name="Secret")
 
-    algorithm = models.CharField(max_length=25, db_index=True, null=True)
+    algorithm = models.CharField(max_length=25, db_index=True)
 
-    mode = models.CharField(max_length=25, db_index=True, null=True)
+    mode = models.CharField(max_length=25, db_index=True)
 
     cipher_mode = models.IntegerField(
         null=True, help_text="pycryptodomex AES cipher mode (e.g. MODE_CBC)"
@@ -40,14 +40,14 @@ class Crypt(AuditUuidModelMixin, models.Model):
 
     objects = CryptModelManager()
 
+    class Meta:
+        verbose_name = "Crypt"
+        unique_together = (("hash", "algorithm", "mode"),)
+        indexes = (models.Index(fields=["hash", "algorithm", "mode"]),)
+
     def natural_key(self):
         return (
             self.hash,
             self.algorithm,
             self.mode,
         )
-
-    class Meta:
-        verbose_name = "Crypt"
-        unique_together = (("hash", "algorithm", "mode"),)
-        indexes = [models.Index(fields=["hash", "algorithm", "mode"])]

@@ -6,6 +6,10 @@ from ..utils import make_hash
 
 __all__ = ["CipherParser"]
 
+HASHED_VALUE_IS_NONE = "Invalid hash. Got None."
+HASHED_VALUE_LENGTH_MISMATCH = "Invalid hash. Incorrect size."
+INVALID_SECRET = "Invalid secret. Got None."  # noqa: S105
+
 
 class CipherParser:
     def __init__(self, cipher: bytes, salt_key: bytes | None = None):
@@ -22,18 +26,14 @@ class CipherParser:
     def hash_prefix(self) -> bytes | None:
         if self.cipher:
             hash_prefix = HASH_PREFIX.encode()
-            self._hash_prefix = (
-                hash_prefix if self.cipher.startswith(hash_prefix) else None
-            )
+            self._hash_prefix = hash_prefix if self.cipher.startswith(hash_prefix) else None
         return self._hash_prefix
 
     @property
     def cipher_prefix(self) -> bytes | None:
         if self.cipher:
             cipher_prefix = CIPHER_PREFIX.encode()
-            self._cipher_prefix = (
-                cipher_prefix if cipher_prefix in self.cipher else None
-            )
+            self._cipher_prefix = cipher_prefix if cipher_prefix in self.cipher else None
         return self._cipher_prefix
 
     @property
@@ -52,12 +52,10 @@ class CipherParser:
 
     def validate_hashed_value(self) -> None:
         if self.hash_prefix and not self.hashed_value:
-            raise MalformedCiphertextError("Invalid hashed_value. Got None.")
-        elif self.salt_key and len(self.hashed_value) != len(
-            make_hash("Foo", self.salt_key)
-        ):
-            raise MalformedCiphertextError("Invalid hashed_value. Incorrect size.")
+            raise MalformedCiphertextError(HASHED_VALUE_IS_NONE)
+        if self.salt_key and len(self.hashed_value) != len(make_hash("Foo", self.salt_key)):
+            raise MalformedCiphertextError(HASHED_VALUE_LENGTH_MISMATCH)
 
     def validate_secret(self) -> None:
         if self.cipher_prefix and not self.secret:
-            raise MalformedCiphertextError("Invalid secret. Got None.")
+            raise MalformedCiphertextError(INVALID_SECRET)

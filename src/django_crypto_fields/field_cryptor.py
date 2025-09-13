@@ -29,6 +29,19 @@ from .utils import get_crypt_model_cls, make_hash
 
 __all__ = ["FieldCryptor"]
 
+INVALID_KEY = "Invalid key. Got {key}. {err}"
+INVALID_ALGORITHM = "Invalid encryption algorithm. Expected 'aes' or 'rsa'. Got {value}"
+INVALID_ACCESS_MODE = (
+    "Invalid encryption access mode. Expected "
+    "'{local_mode}' or '{private_mode}' or {restricted_mode}. Got {value}."
+)
+SECRET_NOT_FOUND = (
+    "EncryptionError. Failed to get secret for given "  # noqa: S105
+    "{algorithm} {self.access_mode} hash. "
+    "Got '{hash_with_prefix!s}'"
+)
+HASH_PREFIX_MUST_BE_BYTES = "hash_with_prefix must be bytes"
+
 
 class FieldCryptor:
     """Base class for django field classes with encryption.
@@ -80,9 +93,7 @@ class FieldCryptor:
     def algorithm(self, value: str):
         self._algorithm = value
         if value not in [AES, RSA]:
-            raise InvalidEncryptionAlgorithm(
-                f"Invalid encryption algorithm. Expected 'aes' or 'rsa'. Got {value}"
-            )
+            raise InvalidEncryptionAlgorithm(INVALID_ALGORITHM.format(value=value))
 
     @property
     def access_mode(self) -> str:
@@ -93,8 +104,12 @@ class FieldCryptor:
         self._access_mode = value
         if value not in [LOCAL_MODE, PRIVATE, RESTRICTED_MODE]:
             raise InvalidEncryptionAlgorithm(
-                "Invalid encryption access mode. Expected "
-                f"'{LOCAL_MODE}' or '{PRIVATE}' or {RESTRICTED_MODE}. Got {value}."
+                INVALID_ACCESS_MODE.format(
+                    local_mode=LOCAL_MODE,
+                    private_mode=PRIVATE,
+                    restricted_mode=RESTRICTED_MODE,
+                    value=value,
+                )
             )
 
     def hash(self, value: str) -> bytes:
@@ -106,7 +121,7 @@ class FieldCryptor:
         try:
             salt: bytes = getattr(self.keys, attr)
         except AttributeError as e:
-            raise EncryptionKeyError(f"Invalid key. Got {attr}. {e}")
+            raise EncryptionKeyError(INVALID_KEY.format(key=attr, err=str(e))) from e
         return salt
 
     def encrypt(self, value: str | None, update: bool | None = None) -> bytes:
@@ -197,11 +212,8 @@ class FieldCryptor:
         secret = None
         # hash_with_prefix = self.safe_encode(hash_with_prefix.encode()
         if type(hash_with_prefix) is not bytes:
-            raise DjangoCryptoFieldsError("hash_with_prefix must be bytes")
-        if (
-            hashed_value := hash_with_prefix[len(HASH_PREFIX) :][: self.hash_size]
-            or None
-        ):
+            raise DjangoCryptoFieldsError(HASH_PREFIX_MUST_BE_BYTES)
+        if hashed_value := hash_with_prefix[len(HASH_PREFIX) :][: self.hash_size] or None:
             secret = cache.get(self.cache_key_prefix + hashed_value, None)
             if not secret:
                 try:
@@ -215,12 +227,14 @@ class FieldCryptor:
                             mode=self.access_mode,
                         )
                     )
-                except ObjectDoesNotExist:
+                except ObjectDoesNotExist as e:
                     raise EncryptionError(
-                        "EncryptionError. Failed to get secret for given "
-                        f"{self.algorithm} {self.access_mode} hash. "
-                        f"Got '{str(hash_with_prefix)}'"
-                    )
+                        SECRET_NOT_FOUND.format(
+                            algorithm=self.algorithm,
+                            access_mode=self.access_mode,
+                            hash_with_prefix=hash_with_prefix,
+                        )
+                    ) from e
                 else:
                     secret = data.get("secret")
                     cache.set(self.cache_key_prefix + hashed_value, secret)
@@ -234,9 +248,7 @@ class FieldCryptor:
         """
         if type(value) is not bytes:
             value = value.encode() if value is not None else value
-        if value and value.startswith(HASH_PREFIX.encode()):
-            return True
-        return False
+        return value and value.startswith(HASH_PREFIX.encode())
 
     def mask(self, value, mask=None):
         """Returns 'mask' if value is encrypted."""

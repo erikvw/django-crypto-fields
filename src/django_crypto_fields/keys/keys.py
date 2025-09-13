@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from copy import deepcopy
 from pathlib import Path
+from types import MappingProxyType
 
 from Cryptodome import Random
 from Cryptodome.Cipher import PKCS1_OAEP
@@ -24,6 +25,19 @@ from .utils import get_filenames, get_template, key_files_exist, write_msg
 
 style = color_style()
 
+KEYS_DO_NOT_EXIST = (
+    "Failed to find any encryption keys in key path. "
+    "If this is your first time loading "
+    "the project, set settings.AUTO_CREATE_KEYS=True and restart. "
+    "Make sure the folder is writeable. Got `{path}`"
+)
+KEYS_ALREADY_EXIST = "Not creating new keys. Encryption keys already exist. See `{path}`."
+KEYS_ALREADY_LOADED = "Encryption keys already loaded."
+KEY_PATH_NOT_WRITABLE = (
+    "Cannot auto-create encryption keys. Folder is not writeable. Got `{path}`"
+)
+RSA_KEY_ALREADY_EXISTS = "RSA key already exists. Got {err}"
+
 
 class Keys:
     """
@@ -33,15 +47,14 @@ class Keys:
         * Keys are create through the AppConfig __init__ method, if necessary.
     """
 
-    rsa_key_info: dict = {}
-    key_prefix: str = get_key_prefix_from_settings()
-
-    def __init__(self, verbose: bool = None):
-        self.keys = None
-        self.loaded = False
+    def __init__(self, verbose: bool | None = None):
         self.verbose = True if verbose is None else verbose
+        self.loaded = False
         self.rsa_modes_supported = None
         self.aes_modes_supported = None
+        self.key_prefix: str = get_key_prefix_from_settings()
+        self.rsa_key_info: dict | MappingProxyType = {}
+        self.keys: dict | MappingProxyType | None = None
         self.path = KeyPath().path
         self.template = get_template(self.path, self.key_prefix)
         self.filenames = get_filenames(self.path, self.key_prefix)
@@ -50,6 +63,7 @@ class Keys:
     def initialize(self):
         """Load keys and create if necessary."""
         write_msg(self.verbose, "Loading encryption keys\n")
+        self.rsa_key_info = {}
         self.keys = deepcopy(self.template)
         persist_key_path_or_raise()
         if not key_files_exist(self.path, self.key_prefix):
@@ -57,6 +71,8 @@ class Keys:
         self.load_keys()
         self.rsa_modes_supported = sorted([k for k in self.keys[RSA]])
         self.aes_modes_supported = sorted([k for k in self.keys[AES]])
+        self.rsa_key_info = MappingProxyType(self.rsa_key_info)
+        self.keys = MappingProxyType(self.keys)
 
     def reset(self):
         """For use in tests."""
@@ -81,40 +97,25 @@ class Keys:
         """Calls create after checking if allowed."""
         if auto_create_keys := get_auto_create_keys_from_settings():
             if not os.access(self.path, os.W_OK):
-                raise DjangoCryptoFieldsError(
-                    "Cannot auto-create encryption keys. Folder is not writeable."
-                    f"Got {self.path}"
-                )
+                raise DjangoCryptoFieldsError(KEY_PATH_NOT_WRITABLE.format(path=self.path))
             write_msg(
                 self.verbose,
                 style.SUCCESS(f" * settings.AUTO_CREATE_KEYS={auto_create_keys}.\n"),
             )
             self._create()
         else:
-            raise DjangoCryptoFieldsKeysDoNotExist(
-                f"Failed to find any encryption keys in path {self.path}. "
-                "If this is your first time loading "
-                "the project, set settings.AUTO_CREATE_KEYS=True and restart. "
-                "Make sure the folder is writeable."
-            )
+            raise DjangoCryptoFieldsKeysDoNotExist(KEYS_DO_NOT_EXIST.format(path=self.path))
 
     def _create(self) -> None:
         """Generates RSA and AES keys as per `filenames`."""
         if key_files_exist(self.path, self.key_prefix):
-            raise DjangoCryptoFieldsKeyAlreadyExist(
-                "Not creating new keys. Encryption keys already exist. "
-                f"See {self.path}."
-            )
-        write_msg(
-            self.verbose, style.WARNING(" * Generating new encryption keys ...\n")
-        )
+            raise DjangoCryptoFieldsKeyAlreadyExist(KEYS_ALREADY_EXIST.format(path=self.path))
+        write_msg(self.verbose, style.WARNING(" * Generating new encryption keys ...\n"))
         self._create_rsa()
         self._create_aes()
         self._create_salt()
         write_msg(self.verbose, f"   Your new encryption keys are in {self.path}.\n")
-        write_msg(
-            self.verbose, style.ERROR("   DON'T FORGET TO BACKUP YOUR NEW KEYS!!\n")
-        )
+        write_msg(self.verbose, style.ERROR("   DON'T FORGET TO BACKUP YOUR NEW KEYS!!\n"))
         write_msg(self.verbose, " Done generating new encryption keys.\n")
 
     def load_keys(self) -> None:
@@ -124,9 +125,7 @@ class Keys:
             style.WARNING(f" * Loading encryption keys from {self.path}\n"),
         )
         if self.loaded:
-            raise DjangoCryptoFieldsKeysAlreadyLoaded(
-                f"Encryption keys have already been loaded. Path='{self.path}'."
-            )
+            raise DjangoCryptoFieldsKeysAlreadyLoaded(KEYS_ALREADY_LOADED)
         self.load_rsa_keys()
         self.load_aes_keys()
         self.load_salt_keys()
@@ -145,9 +144,7 @@ class Keys:
                     self.keys[RSA][access_mode][key] = rsa_key
                     self.update_rsa_key_info(rsa_key, access_mode)
                 setattr(self, RSA + "_" + access_mode + "_" + key + "_key", rsa_key)
-                write_msg(
-                    self.verbose, f"   - loading {RSA}.{access_mode}.{key} ... Done.\n"
-                )
+                write_msg(self.verbose, f"   - loading {RSA}.{access_mode}.{key} ... Done.\n")
 
     def load_aes_keys(self) -> None:
         """Decrypts and loads AES keys into _keys.
@@ -158,10 +155,7 @@ class Keys:
         for access_mode in self.keys[AES]:
             write_msg(self.verbose, f"   - loading {AES}.{access_mode} ...\r")
             rsa_key = self.keys[RSA][access_mode][key]
-            try:
-                path = Path(self.keys[AES][access_mode][key])
-            except KeyError:
-                raise
+            path = Path(self.keys[AES][access_mode][key])
             with path.open(mode="rb") as f:
                 aes_key = rsa_key.decrypt(f.read())
             self.keys[AES][access_mode][key] = aes_key
@@ -183,17 +177,13 @@ class Keys:
     def update_rsa_key_info(self, rsa_key, access_mode: str) -> None:
         """Stores info about the RSA key."""
         if self.loaded:
-            raise DjangoCryptoFieldsKeysAlreadyLoaded(
-                "Encryption keys have already been loaded."
-            )
+            raise DjangoCryptoFieldsKeysAlreadyLoaded(KEYS_ALREADY_LOADED)
         mod_bits = number.size(rsa_key._key.n)
         self.rsa_key_info[access_mode] = {"bits": mod_bits}
         k = number.ceil_div(mod_bits, 8)
         self.rsa_key_info[access_mode].update({"bytes": k})
         h_len = rsa_key._hashObj.digest_size
-        self.rsa_key_info[access_mode].update(
-            {"max_message_length": k - (2 * h_len) - 2}
-        )
+        self.rsa_key_info[access_mode].update({"max_message_length": k - (2 * h_len) - 2})
 
     def _create_rsa(self) -> None:
         """Creates RSA keys."""
@@ -204,24 +194,18 @@ class Keys:
             try:
                 with path.open(mode="xb") as f1:
                     f1.write(pub.exportKey("PEM"))
-                write_msg(
-                    self.verbose, f"   - Created new RSA {access_mode} key {path}\n"
-                )
+                write_msg(self.verbose, f"   - Created new RSA {access_mode} key {path}\n")
                 path = Path(self.keys.get(RSA).get(access_mode).get(PRIVATE))
-                with open(path, "xb") as f2:
+                with path.open("xb") as f2:
                     f2.write(key.exportKey("PEM"))
-                write_msg(
-                    self.verbose, f"   - Created new RSA {access_mode} key {path}\n"
-                )
+                write_msg(self.verbose, f"   - Created new RSA {access_mode} key {path}\n")
             except FileExistsError as e:
-                raise DjangoCryptoFieldsKeyError(f"RSA key already exists. Got {e}")
+                raise DjangoCryptoFieldsKeyError(RSA_KEY_ALREADY_EXISTS.format(str(e))) from e
 
     def _create_aes(self) -> None:
         """Creates AES keys and RSA encrypts them."""
         for access_mode in self.keys.get(AES):
-            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(
-                mode="rb"
-            ) as f:
+            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(mode="rb") as f:
                 rsa_key = RSA_PUBLIC_KEY.importKey(f.read())
             rsa_key = PKCS1_OAEP.new(rsa_key)
             aes_key = Random.new().read(16)
@@ -233,9 +217,7 @@ class Keys:
     def _create_salt(self) -> None:
         """Creates a salt and RSA encrypts it."""
         for access_mode in self.keys.get(SALT):
-            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(
-                mode="rb"
-            ) as f:
+            with Path(self.keys.get(RSA).get(access_mode).get(PUBLIC)).open(mode="rb") as f:
                 rsa_key = RSA_PUBLIC_KEY.importKey(f.read())
             rsa_key = PKCS1_OAEP.new(rsa_key)
             salt = Random.new().read(8)

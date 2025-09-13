@@ -3,11 +3,10 @@
 import _socket
 import django_audit_fields.fields.uuid_auto_field
 import django_revision.revision_field
-import edc_model_fields.fields.hostname_modification_field
-import edc_model_fields.fields.userfield
+import django_audit_fields.fields.hostname_modification_field
+import django_audit_fields.fields.userfield
 
-# import django_audit_fields.fields.uuid_auto_field
-import edc_utils
+from django.utils import timezone
 from django.db import migrations, models
 
 
@@ -46,21 +45,21 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "created",
-                    models.DateTimeField(blank=True, default=edc_utils.date.get_utcnow),
+                    models.DateTimeField(blank=True, default=timezone.now),
                 ),
                 (
                     "modified",
-                    models.DateTimeField(blank=True, default=edc_utils.date.get_utcnow),
+                    models.DateTimeField(blank=True, default=timezone.now),
                 ),
                 (
                     "user_created",
-                    edc_model_fields.fields.userfield.UserField(
+                    django_audit_fields.fields.userfield.UserField(
                         blank=True, max_length=50, verbose_name="user created"
                     ),
                 ),
                 (
                     "user_modified",
-                    edc_model_fields.fields.userfield.UserField(
+                    django_audit_fields.fields.userfield.UserField(
                         blank=True, max_length=50, verbose_name="user modified"
                     ),
                 ),
@@ -75,7 +74,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "hostname_modified",
-                    edc_model_fields.fields.hostname_modification_field.HostnameModificationField(
+                    django_audit_fields.fields.hostname_modification_field.HostnameModificationField(
                         blank=True,
                         help_text="System field. (modified on every save)",
                         max_length=50,
@@ -124,7 +123,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="crypt",
             name="user_created",
-            field=edc_model_fields.fields.userfield.UserField(
+            field=django_audit_fields.fields.userfield.UserField(
                 blank=True,
                 help_text="Updated by admin.save_model",
                 max_length=50,
@@ -134,7 +133,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="crypt",
             name="user_modified",
-            field=edc_model_fields.fields.userfield.UserField(
+            field=django_audit_fields.fields.userfield.UserField(
                 blank=True,
                 help_text="Updated by admin.save_model",
                 max_length=50,

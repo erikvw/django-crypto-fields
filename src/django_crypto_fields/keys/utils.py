@@ -1,23 +1,21 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Iterator
 from pathlib import Path, PurePath
-from typing import Iterator
 
 from ..constants import AES, LOCAL_MODE, PRIVATE, PUBLIC, RESTRICTED_MODE, RSA, SALT
 
 __all__ = [
-    "get_template",
     "get_filenames",
+    "get_template",
+    "get_values_from_nested_dict",
     "key_files_exist",
     "write_msg",
-    "get_values_from_nested_dict",
 ]
 
 
-def get_template(
-    path: PurePath, key_prefix: str
-) -> dict[str, dict[str, dict[str, PurePath]]]:
+def get_template(path: PurePath, key_prefix: str) -> dict[str, dict[str, dict[str, PurePath]]]:
     """Returns the data structure to store encryption keys.
 
     The Keys class will replace the filenames with the actual keys.
@@ -49,19 +47,12 @@ def get_template(
 
 
 def get_filenames(path: PurePath, key_prefix: str) -> list[PurePath]:
-    filenames = []
-    for value in get_values_from_nested_dict(get_template(path, key_prefix)):
-        filenames.append(value)
-    return filenames
+    return [v for v in get_values_from_nested_dict(get_template(path, key_prefix))]
 
 
 def key_files_exist(path: PurePath, key_prefix: str) -> bool:
     """Return True if all key files exist in the key path."""
-    not_exists = []
-    for filename in get_filenames(path, key_prefix):
-        if not Path(filename).exists():
-            not_exists.append(filename)
-    return len(not_exists) == 0
+    return len([f for f in get_filenames(path, key_prefix) if not Path(f).exists()]) == 0
 
 
 def write_msg(verbose, msg: str) -> None:
@@ -71,7 +62,7 @@ def write_msg(verbose, msg: str) -> None:
 
 def get_values_from_nested_dict(nested_dict: dict) -> Iterator:
     """Recursively traverse nested dictionary to yield values."""
-    for key, value in nested_dict.items():
+    for value in nested_dict.values():
         if isinstance(value, dict):
             yield from get_values_from_nested_dict(value)
         else:

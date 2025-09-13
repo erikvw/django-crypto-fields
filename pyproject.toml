@@ -42,12 +42,12 @@ license = "GPL-3.0-or-later"
 license-files = ["LICEN[CS]E*"]
 requires-python = '>=3.12,<3.14'
 dependencies = [
-    "django-audit-fields>=1.1.0",
+    "django-audit-fields>=2.0.0",
     "django-extensions>=4.1",
     "django-revision>=1.0.0",
-    "edc-model-fields>=1.0.0",
-    "edc-utils>=1.1.1",
     "pycryptodomex>=3.23.0",
+    "python-dateutil>=2.9.0.post0",
+    "tqdm>=4.67.1",
 ]
 
 [project.urls]
@@ -58,11 +58,7 @@ Changelog = "https://github.com/erikvw/django-crypto-fields/blob/main/CHANGES"
 
 [dependency-groups]
 lint = [
-    "black>=25.1.0",
-    # "deptry>=0.23.0",
-    "flake8>=7.3.0",
-    "isort>=6.0.1",
-    "ruff>=0.12.5",
+    "ruff>=0.12.5"
 ]
 
 docs = [
@@ -77,20 +73,56 @@ test = [
     "edc-test-settings",
 ]
 
-[tool.black]
-line-length = 88
-target-version = ["py312"]
-extend-exclude = '''
-/(
-    migrations
-  | \.venv
-)/
-'''
+[tool.ruff]
+line-length = 95
+indent-width = 4
+target-version = "py312"
+exclude = ["migrations", ".tox", ".venv"]
 
-[tool.isort]
-profile = "black"
-py_version = "312"
-skip = [".tox", ".eggs", "migrations", "_version.py", ".venv"]
+[tool.ruff.lint]
+select = [
+    "A",
+    "ARG",
+    "B",
+    "C90",
+    "COM",
+    "DJ",
+    "DTZ",
+    "E",
+    "F",
+    "FA",
+    "FURB",
+    "I",
+    "INT",
+    "N",
+    "PD",
+    "PERF",
+    "PL",
+    "PLR",
+    "PTH",
+    "RET",
+    "RUF",
+    "S",
+    "SIM",
+    "T20",
+    "TRY",
+    "UP",
+    "W",
+    # "FIX",
+]
+ignore = ["DJ008", "DJ007", "DJ006", "COM812", "PLC0206"]
+
+[tool.ruff.lint.per-file-ignores]
+    "__init__.py" = ["F401"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.coverage.run]
 parallel = false
@@ -108,3 +140,8 @@ exclude_lines = [
   "pragma: no cover",
   "if TYPE_CHECKING:",
 ]
+
+[tool.uv.sources]
+django-crypto-fields = { workspace = true }
+django-audit-fields = { path = "../django-audit-fields", editable = true }
+django-revision = { path = "../django-revision", editable = true }

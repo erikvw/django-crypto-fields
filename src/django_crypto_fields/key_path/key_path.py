@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import sys
 from dataclasses import dataclass, field
-from pathlib import Path, PurePath
+from pathlib import PurePath
 from tempfile import mkdtemp
 
 from django.conf import settings
@@ -15,6 +15,23 @@ from ..exceptions import (
 from ..utils import get_keypath_from_settings, get_test_module_from_settings
 
 __all__ = ["KeyPath"]
+
+KEY_PATH_DOES_NOT_EXIST = (
+    "Path to encryption keys does not exist. "
+    "See settings.DJANGO_CRYPTO_FIELDS_KEY_PATH. "
+    "Got '{invalid_path}'."
+)
+KEY_PATH_IN_APP_FOLDER = (
+    "Invalid path to encryption keys. Path cannot be in an app folder. "
+    "See settings.DJANGO_CRYPTO_FIELDS_KEY_PATH. "
+    "Got '{invalid_path}'."
+)
+
+KEY_PATH_IS_NONE = (
+    "Path may not be none. Production or debug systems must explicitly "
+    "set a valid path to the encryption keys. "
+    "See settings.DJANGO_CRYPTO_FIELDS_KEY_PATH."
+)
 
 
 @dataclass
@@ -32,12 +49,9 @@ class KeyPath:
         path = get_keypath_from_settings()
         if not path:
             path = self.create_folder_for_tests_or_raise()
-        elif not Path(path).exists():
+        elif not path.exists():
             raise DjangoCryptoFieldsKeyPathDoesNotExist(
-                "Path to encryption keys does not exist. "
-                "settings.DJANGO_CRYPTO_FIELDS_KEY_PATH='"
-                f"{get_keypath_from_settings()}'. "
-                f"Got '{path}'."
+                KEY_PATH_DOES_NOT_EXIST.format(invalid_path=str(path))
             )
         if (
             not settings.DEBUG
@@ -48,9 +62,7 @@ class KeyPath:
             and str(settings.BASE_DIR) in str(path)
         ):
             raise DjangoCryptoFieldsKeyPathError(
-                "Invalid production path. Path cannot be in an app folder. "
-                "See settings.DJANGO_CRYPTO_FIELDS_KEY_PATH. "
-                f"Got '{path}'."
+                KEY_PATH_IN_APP_FOLDER.format(invalid_path=str(path))
             )
         self.path = PurePath(path)
 
@@ -59,12 +71,10 @@ class KeyPath:
 
     @staticmethod
     def create_folder_for_tests_or_raise() -> PurePath:
-        if get_test_module_from_settings() in sys.argv:
+        if get_test_module_from_settings() in list(
+            itertools.chain(*[x.split("/") for x in sys.argv])
+        ):
             path = PurePath(mkdtemp())
         else:
-            raise DjangoCryptoFieldsKeyPathError(
-                "Path may not be none. Production or debug systems must explicitly "
-                "set a valid path to the encryption keys. "
-                "See settings.DJANGO_CRYPTO_FIELDS_KEY_PATH."
-            )
+            raise DjangoCryptoFieldsKeyPathError(KEY_PATH_IS_NONE)
         return path

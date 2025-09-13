@@ -2,15 +2,15 @@ class DjangoCryptoFieldsKeyError(Exception):
     pass
 
 
-class DjangoCryptoFieldsKeyAlreadyExist(Exception):
+class DjangoCryptoFieldsKeyAlreadyExist(Exception):  # noqa: N818
     pass
 
 
-class DjangoCryptoFieldsKeysAlreadyLoaded(Exception):
+class DjangoCryptoFieldsKeysAlreadyLoaded(Exception):  # noqa: N818
     pass
 
 
-class DjangoCryptoFieldsKeysNotLoaded(Exception):
+class DjangoCryptoFieldsKeysNotLoaded(Exception):  # noqa: N818
     pass
 
 
@@ -18,7 +18,7 @@ class DjangoCryptoFieldsError(Exception):
     pass
 
 
-class DjangoCryptoFieldsKeysDoNotExist(Exception):
+class DjangoCryptoFieldsKeysDoNotExist(Exception):  # noqa: N818
     pass
 
 
@@ -30,7 +30,7 @@ class DjangoCryptoFieldsKeyPathChangeError(Exception):
     pass
 
 
-class DjangoCryptoFieldsKeyPathDoesNotExist(Exception):
+class DjangoCryptoFieldsKeyPathDoesNotExist(Exception):  # noqa: N818
     pass
 
 
@@ -62,5 +62,5 @@ class MalformedCiphertextError(Exception):
     pass
 
 
-class InvalidEncryptionAlgorithm(Exception):
+class InvalidEncryptionAlgorithm(Exception):  # noqa: N818
     pass

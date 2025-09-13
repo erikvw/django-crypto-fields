@@ -3,6 +3,7 @@ from datetime import date, datetime
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models.fields import DateTimeCheckMixin, _to_naive
+from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext as _
 
@@ -14,14 +15,12 @@ __all__ = ["EncryptedDateField"]
 
 class EncryptedDateField(DateTimeCheckMixin, BaseRsaField):
     description = "local-rsa encrypted field for 'DateField'"
-    default_error_messages = {
+    default_error_messages = {  # noqa: RUF012
         "invalid": _(
-            "“%(value)s” value has an invalid date format. It must be "
-            "in YYYY-MM-DD format."
+            "“%(value)s” value has an invalid date format. It must be in YYYY-MM-DD format."
         ),
         "invalid_date": _(
-            "“%(value)s” value has the correct format (YYYY-MM-DD) "
-            "but it is an invalid date."
+            "“%(value)s” value has the correct format (YYYY-MM-DD) but it is an invalid date."
         ),
     }
 
@@ -62,11 +61,10 @@ class EncryptedDateField(DateTimeCheckMixin, BaseRsaField):
 
     def pre_save(self, model_instance, add):
         if self.auto_now or (self.auto_now_add and add):
-            value = date.today()
+            value = timezone.now().date()
             setattr(model_instance, self.attname, value)
             return value
-        else:
-            return super().pre_save(model_instance, add)
+        return super().pre_save(model_instance, add)
 
     def get_prep_value(self, value: date | None) -> str | None:
         if value:
@@ -82,12 +80,12 @@ class EncryptedDateField(DateTimeCheckMixin, BaseRsaField):
             parsed = parse_date(value)
             if parsed is not None:
                 return parsed
-        except ValueError:
+        except ValueError as e:
             raise ValidationError(
                 self.error_messages["invalid_date"],
                 code="invalid_date",
                 params={"value": value},
-            )
+            ) from e
         raise ValidationError(
             self.error_messages["invalid"],
             code="invalid",

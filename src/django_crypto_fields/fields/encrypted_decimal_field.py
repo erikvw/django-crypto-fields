@@ -1,10 +1,13 @@
 from decimal import Decimal, InvalidOperation
+from gettext import gettext as _
 
 from django.core.exceptions import ValidationError
 
 from .base_rsa_field import BaseRsaField
 
 __all__ = ["EncryptedDecimalField"]
+
+INVALID_VALUE = _("Invalid value. Expected a decimal")
 
 
 class EncryptedDecimalField(BaseRsaField):
@@ -33,10 +36,8 @@ class EncryptedDecimalField(BaseRsaField):
             return value
         try:
             value = Decimal(value)
-        except InvalidOperation:
+        except InvalidOperation as e:
             raise ValidationError(
-                "Invalid value. Expected a decimal",
-                code="invalid",
-                params={"value": value},
-            )
+                INVALID_VALUE, code="invalid", params={"value": value}
+            ) from e
         return value
