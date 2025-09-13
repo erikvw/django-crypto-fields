@@ -1,0 +1,3 @@
+furo==2025.7.19
+# Defining the exact version will make sure things don't break
+Sphinx==8.2.3

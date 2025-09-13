@@ -1,4 +1,0 @@
-[run]
-include = django_crypto_fields/*
-omit = django_crypto_fields/tests/*,django_crypto_fields/migrations/*
-branch = 1

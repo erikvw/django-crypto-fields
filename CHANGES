@@ -1,5 +1,17 @@
 CHANGES
 
+1.2.0
+-----
+- change build to uv, update project.toml
+- move library to src
+- add docs thru readthedocs
+- pin python >=3.12,<3.14
+
+1.0.1
+-----
+- update pyproject.toml
+- lint line length to 88
+
 1.0.0
 -----
 - add system check previously in edc_appconfig

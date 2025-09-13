@@ -1,27 +1,28 @@
 [build-system]
-requires = ["setuptools>=64", "setuptools-scm>=8"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.8.2,<0.9.0"]
+build-backend = "uv_build"
 
-[tool.setuptools_scm]
-version_file="_version.py"
-
-[tool.setuptools.packages.find]
-include = ["django_crypto_fields*", "django_crypto_fields/locale/*/LC_MESSAGES/*"]
-exclude = [
-    "examples*",
-    "tools*",
-    "docs*",
-    "bin*",
-    "image*",
-]
-namespaces = false  # true by default
+[tool.uv.build-backend]
+module-root = "src"
+source-exclude = ["bin"]
+namespace = false
 
 [project]
 name = "django_crypto_fields"
-dynamic = ["version"]
+version = "1.0.2"
 description = "Add encrypted field classes and more to your Django models"
 readme = {file = "README.rst", content-type = "text/x-rst"}
-keywords = ["django", "clinicedc", "edc", "clinical trials", "research", "data management", "esource", "encryption", "security"]
+keywords = [
+    "django",
+    "clinicedc",
+    "edc",
+    "clinical trials",
+    "research",
+    "data management",
+    "esource",
+    "encryption",
+    "security"
+]
 authors = [
     { name = "Erik van Widenfelt", email = "ew2789@gmail.com" },
 ]
@@ -29,48 +30,99 @@ maintainers = [
     { name = "Erik van Widenfelt", email = "ew2789@gmail.com" },
 ]
 classifiers = [
-    "Environment :: Web Environment",
+    "Development Status :: 5 - Production/Stable",
     "Framework :: Django",
     "Framework :: Django :: 5.2",
-    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
 license = "GPL-3.0-or-later"
 license-files = ["LICEN[CS]E*"]
-requires-python = '>=3.12'
+requires-python = '>=3.12,<3.14'
 dependencies = [
-    "pycryptodomex",
-    "django-audit-fields",
-    "edc-utils",
-    "edc-model-fields",
-    "django-extensions",
-    "django-revision",
+    "django-audit-fields>=2.0.0",
+    "django-extensions>=4.1",
+    "django-revision>=1.0.0",
+    "pycryptodomex>=3.23.0",
+    "python-dateutil>=2.9.0.post0",
+    "tqdm>=4.67.1",
 ]
 
 [project.urls]
 Homepage = "https://github.com/erikvw/django-crypto-fields"
-Documentation = "https://github.com/erikvw/django-crypto-fields/blob/develop/README.rst"
+Documentation = "https://django-crypto-fields.readthedocs.io/en/latest/"
 Repository = "https://github.com/erikvw/django-crypto-fields.git"
 Changelog = "https://github.com/erikvw/django-crypto-fields/blob/main/CHANGES"
 
-[project.optional-dependencies]
+[dependency-groups]
+lint = [
+    "ruff>=0.12.5"
+]
+
+docs = [
+    "furo>=2025.7.19",
+    "sphinx>=8.2.3",
+    "sphinx-design>=0.6.1",
+    "sphinx-inline-tabs>=2023.4.21",
+]
 test = [
+    "coverage>=7.10.1",
+    "tox-uv>=1.26.2",
     "edc-test-settings",
 ]
 
-[tool.black]
-line-length = 88
-target-version = ["py312"]
-extend-exclude = '''^(.*\/)*\b(migrations)\b($|\/.*$)'''
+[tool.ruff]
+line-length = 95
+indent-width = 4
+target-version = "py312"
+exclude = ["migrations", ".tox", ".venv"]
 
-[tool.isort]
-profile = "black"
-py_version = "312"
-skip = [".tox", ".eggs", "migrations", "_version.py"]
+[tool.ruff.lint]
+select = [
+    "A",
+    "ARG",
+    "B",
+    "C90",
+    "COM",
+    "DJ",
+    "DTZ",
+    "E",
+    "F",
+    "FA",
+    "FURB",
+    "I",
+    "INT",
+    "N",
+    "PD",
+    "PERF",
+    "PL",
+    "PLR",
+    "PTH",
+    "RET",
+    "RUF",
+    "S",
+    "SIM",
+    "T20",
+    "TRY",
+    "UP",
+    "W",
+    # "FIX",
+]
+ignore = ["DJ008", "DJ007", "DJ006", "COM812", "PLC0206"]
+
+[tool.ruff.lint.per-file-ignores]
+    "__init__.py" = ["F401"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.coverage.run]
 parallel = false
@@ -89,46 +141,7 @@ exclude_lines = [
   "if TYPE_CHECKING:",
 ]
 
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist =
-    py{312}-dj{52,dev},
-    lint
-
-isolated_build = true
-
-[gh-actions]
-python =
-    3.12: py312, lint
-
-[gh-actions:env]
-DJANGO =
-    5.2: dj52
-    dev: djdev, lint
-
-[testenv]
-deps =
-    pre-commit
-    edc-test-utils
-    edc-test-settings
-    coverage[toml]
-    tox
-    tox-gh-actions
-    dj52: Django>=5.2,<5.3
-    djdev: https://github.com/django/django/tarball/main
-
-commands =
-    pip install -U pip
-    pip --version
-    pip freeze
-    coverage run -a runtests.py
-    coverage report
-
-[testenv:lint]
-deps = -r https://raw.githubusercontent.com/clinicedc/edc/develop/requirements.tests/lint.txt
-commands =
-    isort --profile=black --check --diff .
-    black --check --diff .
-    flake8 .
-"""
+[tool.uv.sources]
+django-crypto-fields = { workspace = true }
+django-audit-fields = { path = "../django-audit-fields", editable = true }
+django-revision = { path = "../django-revision", editable = true }
