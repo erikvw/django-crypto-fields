@@ -25,14 +25,14 @@ class CryptModelManager(models.Manager):
 class Crypt(AuditUuidModelMixin, models.Model):
     """A `secrets` lookup model searchable by hash."""
 
-    hash = models.CharField(verbose_name="Hash", max_length=128, db_index=True)
+    hash = models.CharField(verbose_name="Hash", max_length=128, default="", db_index=True)
 
     # causes problems with Postgres!!
     secret = models.BinaryField(verbose_name="Secret")
 
-    algorithm = models.CharField(max_length=25, db_index=True)
+    algorithm = models.CharField(max_length=25, default="", db_index=True)
 
-    mode = models.CharField(max_length=25, db_index=True)
+    mode = models.CharField(max_length=25, default="", db_index=True)
 
     cipher_mode = models.IntegerField(
         null=True, help_text="pycryptodomex AES cipher mode (e.g. MODE_CBC)"

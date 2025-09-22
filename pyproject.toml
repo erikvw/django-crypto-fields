@@ -9,7 +9,7 @@ namespace = false
 
 [project]
 name = "django_crypto_fields"
-version = "1.0.2"
+version = "1.1.0"
 description = "Add encrypted field classes and more to your Django models"
 readme = {file = "README.rst", content-type = "text/x-rst"}
 keywords = [
@@ -42,7 +42,7 @@ license = "GPL-3.0-or-later"
 license-files = ["LICEN[CS]E*"]
 requires-python = '>=3.12,<3.14'
 dependencies = [
-    "django-audit-fields>=2.0.0",
+    "django-audit-fields>=2.0.2",
     "django-extensions>=4.1",
     "django-revision>=1.0.0",
     "pycryptodomex>=3.23.0",
@@ -143,5 +143,4 @@ exclude_lines = [
 
 [tool.uv.sources]
 django-crypto-fields = { workspace = true }
-django-audit-fields = { path = "../django-audit-fields", editable = true }
 django-revision = { path = "../django-revision", editable = true }

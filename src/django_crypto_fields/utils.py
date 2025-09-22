@@ -37,6 +37,10 @@ def get_encrypted_fields(model: models.Model) -> list[BaseField]:
     return [field for field in model._meta.get_fields() if hasattr(field, "field_cryptor")]
 
 
+def get_encrypted_field_names(model: models.Model) -> list[str]:
+    return [f.name for f in model._meta.get_fields() if hasattr(f, "field_cryptor")]
+
+
 def get_crypt_model() -> str:
     return getattr(settings, "DJANGO_CRYPTO_FIELDS_MODEL", "django_crypto_fields.crypt")
 
