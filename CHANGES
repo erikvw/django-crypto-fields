@@ -1,6 +1,6 @@
 CHANGES
 
-1.2.0
+1.1.0
 -----
 - change build to uv, update project.toml
 - move library to src
