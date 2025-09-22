@@ -6,6 +6,7 @@ CHANGES
 - move library to src
 - add docs thru readthedocs
 - pin python >=3.12,<3.14
+- replace model CharField null=True with default=""
 
 1.0.1
 -----
