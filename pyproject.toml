@@ -9,7 +9,7 @@ namespace = false
 
 [project]
 name = "django_crypto_fields"
-version = "1.1.0"
+version = "1.1.1"
 description = "Add encrypted field classes and more to your Django models"
 readme = {file = "README.rst", content-type = "text/x-rst"}
 keywords = [
@@ -127,15 +127,15 @@ line-ending = "auto"
 [tool.coverage.run]
 parallel = false
 branch = true
-source = ["django_crypto_fields"]
+source = ["src"]
 
 [tool.coverage.paths]
-source = ["django_crypto_fields"]
+source = ["src"]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-omit = ["requirements.txt"]
+omit = ["requirements.txt", "*/migrations/*"]
 exclude_lines = [
   "pragma: no cover",
   "if TYPE_CHECKING:",
@@ -144,3 +144,4 @@ exclude_lines = [
 [tool.uv.sources]
 django-crypto-fields = { workspace = true }
 django-revision = { path = "../django-revision", editable = true }
+django-audit-fields = { path = "../django-audit-fields", editable = true }
