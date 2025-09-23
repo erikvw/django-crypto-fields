@@ -31,18 +31,6 @@ repos:
       - id: rstcheck
         additional_dependencies: ['rstcheck[sphinx,toml]']
 
-#  - repo: https://github.com/astral-sh/uv-pre-commit
-#    rev: 0.8.17
-#    hooks:
-#      - id: uv-lock
-#        args: ["--no-sources"]
-#
-#
-#  - repo: https://github.com/astral-sh/uv-pre-commit
-#    rev: 0.8.17
-#    hooks:
-#      - id: uv-export
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.13.0
     hooks:
