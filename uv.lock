@@ -195,18 +195,33 @@ wheels = [
 [[package]]
 name = "django-audit-fields"
 version = "2.0.3"
-source = { registry = "https://pypi.org/simple" }
+source = { editable = "../django-audit-fields" }
 dependencies = [
     { name = "django-revision" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8a/d1/157752f11c13beec30e3e25d0c8ffc148dab4d5d505ec8df5799fcf9408e/django_audit_fields-2.0.3.tar.gz", hash = "sha256:968b9af6338bceb4b3d6afc5f4a47328a11aa22cf082ffdaafa994263dc62c5e", size = 22485, upload-time = "2025-09-23T23:51:10.782Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/7b/54a50f38152e930c0d09fc855ffd05338eedb15968af2b8d7ccdb2dad90d/django_audit_fields-2.0.3-py3-none-any.whl", hash = "sha256:b1afb54242093c6a11bb5bf5c75f8af0f9bc77a28a146311035a68a4dc18dff2", size = 28910, upload-time = "2025-09-23T23:51:09.43Z" },
+
+[package.metadata]
+requires-dist = [{ name = "django-revision", editable = "../django-revision" }]
+
+[package.metadata.requires-dev]
+develop = [{ name = "django", specifier = ">=5.2.5" }]
+docs = [
+    { name = "furo", specifier = ">=2025.7.19" },
+    { name = "sphinx", specifier = ">=8.2.3" },
+    { name = "sphinx-design", specifier = ">=0.6.1" },
+    { name = "sphinx-inline-tabs", specifier = ">=2023.4.21" },
+]
+lint = [{ name = "ruff", specifier = ">=0.12.5" }]
+test = [
+    { name = "coverage", specifier = ">=7.10.3" },
+    { name = "django", specifier = ">=5.2" },
+    { name = "edc-test-settings", specifier = ">=1.1.2" },
+    { name = "tox-uv", specifier = ">=1.28.0" },
 ]
 
 [[package]]
 name = "django-crypto-fields"
-version = "1.1.1"
+version = "1.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "django-audit-fields" },
@@ -235,9 +250,9 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "django-audit-fields", specifier = ">=2.0.2" },
+    { name = "django-audit-fields", editable = "../django-audit-fields" },
     { name = "django-extensions", specifier = ">=4.1" },
-    { name = "django-revision", specifier = ">=1.0.0" },
+    { name = "django-revision", editable = "../django-revision" },
     { name = "pycryptodomex", specifier = ">=3.23.0" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0" },
     { name = "tqdm", specifier = ">=4.67.1" },
@@ -272,14 +287,32 @@ wheels = [
 [[package]]
 name = "django-revision"
 version = "2.0.3"
-source = { registry = "https://pypi.org/simple" }
+source = { editable = "../django-revision" }
 dependencies = [
     { name = "gitpython" },
     { name = "python-dateutil" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6f/e1/a85557f0c101b9da7b6e80989d8bcff0de843daafcc70c6804d9b7ba8981/django_revision-2.0.3.tar.gz", hash = "sha256:1b50f3a8a5f0a64cb49d42b054c86dd7bd94854cffb9861bd79e66e9e36b10c3", size = 14182, upload-time = "2025-09-23T23:19:05.285Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/73/730d3a922d42908d3ee03624eae0df834645fac2608d72c73ae5592d536a/django_revision-2.0.3-py3-none-any.whl", hash = "sha256:323a91955f63e94e797a7aa02c277220fe675a80c45633207269a36881de5582", size = 17683, upload-time = "2025-09-23T23:19:04.009Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "gitpython" },
+    { name = "python-dateutil", specifier = ">=2.9.0.post0" },
+]
+
+[package.metadata.requires-dev]
+docs = [
+    { name = "furo", specifier = ">=2025.7.19" },
+    { name = "sphinx", specifier = ">=8.2.3" },
+    { name = "sphinx-design", specifier = ">=0.6.1" },
+    { name = "sphinx-inline-tabs", specifier = ">=2023.4.21" },
+]
+lint = [{ name = "ruff", specifier = ">=0.12.5" }]
+test = [
+    { name = "coverage", specifier = ">=7.10.3" },
+    { name = "django", specifier = ">=5.2" },
+    { name = "edc-test-settings", editable = "../edc-test-settings" },
+    { name = "python-dateutil", specifier = ">=2.9.0.post0" },
+    { name = "tox-uv", specifier = ">=1.28.0" },
 ]
 
 [[package]]
