@@ -54,7 +54,8 @@ class KeyPath:
                 KEY_PATH_DOES_NOT_EXIST.format(invalid_path=str(path))
             )
         if (
-            not settings.DEBUG
+            not getattr(settings, "DJANGO_CRYPTO_FIELDS_KEY_PATH_IN_APP_FOLDER", False)
+            and not settings.DEBUG
             and (
                 get_test_module_from_settings()
                 not in list(itertools.chain(*[x.split("/") for x in sys.argv]))
